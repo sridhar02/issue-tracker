@@ -1,0 +1,37 @@
+CREATE TABLE  users
+	id UUID PRIMARY KEY NOT NULL,
+	name VARCHAR(500) NOT NULL,
+	username VARCHAR(100) NOT NULL,
+	email VARCHAR(100) NOT NULL,
+	created_at DATE NOT NULL,
+	updated_at DATE NOT NULL,
+);
+
+CREATE TABLE repos(
+	id UUID PRIMARY KEY NOT NULL,
+	name VARCHAR(200) NOT NULL,
+	user_id UUID REFERENCES users(id),
+	issue_count BIGINT NOT NULL,
+	created_at DATE NOT NULL,
+	updated_at DATE NOT NULL,
+);
+
+
+CREATE TABLE issues(
+	id BIGSERIAL PRIMARY KEY NOT NULL,
+	title VARCHAR(500) NOT NULL,
+	author VARCHAR(300) NOT NULL,
+	body VARCHAR(3000) NOT NULL,
+	repos_id UUID REFERENCES repos(id),
+	issue_number BIGINT NOT NULL,
+	created_at DATE NOT NULL,
+	updated_at DATE NOT NULL,	
+)
+
+CREATE TABLE comments(
+	id BIGSERIAL NOT NULL PRIMARY KEY,
+	author VARCHAR(500) NOT NULL,
+	body VARCHAR(3000) NOT NULL,
+	isssue_id BIGINT REFERENCES issues(id),
+	repos_id UUID REFERENCES repos(id),
+);
