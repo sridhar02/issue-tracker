@@ -4,52 +4,72 @@ import (
 	"database/sql"
 	"fmt"
 	_ "github.com/lib/pq"
+	"time"
 )
 
-type Users struct {
-	Id       int    `json:"id,omitempty"`
+type User struct {
+	ID       string `json:"id,omitempty"`
 	Name     string `json:"name,omitempty"`
 	Username string `json:"username,omitempty"`
 	Email    string `json:email,omitempty`
 	// Password   string `json:"password,omitempty"`
-	Created_at string `json:"created_at,omitempty"`
-	Updated_at string `json:"updated_at,omitempty"`
+	CreatedAt time.Time `json:"created_at,omitempty"`
+	UpdatedAt time.Time `json:"updated_at,omitempty"`
 }
 
-func GetUser(db *sql.DB, id int) (User, error) {
+func GetUser(db *sql.DB, id string) (User, error) {
 
-	var name, username, email, created_at, updated_at string
+	var name, username, email, createdAt, updatedAt string
 
 	row := db.QueryRow("SELECT name, username, email,created_at, updated_at FROM users WHERE id=$1", id)
-	err := row.Scan(&name, &username, &email, &created_at, &updated_at)
+	err := row.Scan(&name, &username, &email, &createdAt, &updatedAt)
+	if err != nil {
+		return User{}, err
+	}
+
+	CreatedAt, err := time.Parse(time.RFC3339, createdAt)
+
+	if err != nil {
+		return User{}, err
+	}
+
+	UpdatedAt, err := time.Parse(time.RFC3339, updatedAt)
+
 	if err != nil {
 		return User{}, err
 	}
 
 	user := User{
-		Name:       name,
-		Username:   username,
-		Email:      email,
-		Created_at: created_at,
-		Updated_at: updated_at,
+		Name:      name,
+		Username:  username,
+		Email:     email,
+		CreatedAt: CreatedAt,
+		UpdatedAt: UpdatedAt,
 	}
 
 	return user, nil
 }
 
-func CreateIssue(db *sql.DB, user User) error {
+func CreateUser(db *sql.DB, user User) error {
 
-	_, err := db.Exec(`INSERT INTO users(username, email, created_at, updated_at)
-													VALUES($1,$2,$3,$4)`, User.Username, User.Email, User.Created_at, User.Updated_at)
+	_, err := db.Exec(`INSERT INTO users(id,name, username, email, created_at, updated_at)
+						VALUES($1,$2,$3,$4,$5,$6)`,
+		user.ID,
+		user.Name,
+		user.Username,
+		user.Email,
+		user.CreatedAt.Format(time.RFC3339),
+		user.UpdatedAt.Format(time.RFC3339))
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func UpdateIssue(db *sql.DB, user User, id int) error {
+func UpdateUser(db *sql.DB, user User) error {
 
-	_, err := db.Exec(`UPDATE issues SET username = $1,email =$2,created_at = $3,updated_at = $4 WHERE number = $5`, User.Username, User.Email, User.Created_at, User.Updated_at)
+	_, err := db.Exec(`UPDATE issues SET username = $1,email =$2, updated_at = $3 WHERE id = $4`,
+		user.Username, user.Email, time.Now().Format(time.RFC3339), user.ID)
 
 	if err != nil {
 		return err
@@ -57,7 +77,7 @@ func UpdateIssue(db *sql.DB, user User, id int) error {
 	return nil
 }
 
-func DeletedIssue(db *sql.DB, id int) error {
+func DeleteUser(db *sql.DB, id string) error {
 
 	_, err := db.Exec(`DELETE FROM users WHERE id = $1`, id)
 
@@ -66,4 +86,77 @@ func DeletedIssue(db *sql.DB, id int) error {
 	}
 
 	return nil
+}
+
+// type Repo struct {
+// 	Id         string    `json:"id,omitempty"`
+// 	Name       string    `json:"name,omitempty"`
+// 	UserId     string    `json:"user_id,omitempty"`
+// 	IssueCount int       `json:"issue_count,omitempty"`
+// 	CreatedAt  time.Time `json:"created_at,omitempty"`
+// 	UpdatedAt  string    `json:"updated_at,omitempty"`
+// }
+
+// func GetRepo(db *sql.DB, id string) (repo, error) {
+// 	var name, userId, issueCount, createdAt, updatedAt string
+
+// 	row := db.QueryRow("SELECT name, user_id,issueCount,created_at, updated_at FROM reposs WHERE id=$1", id)
+// 	err := row.Scan(&name, &userId, &issueCount, &createdAt, &updatedAt)
+// 	if err != nil {
+// 		return User{}, err
+// 	}
+
+// 	repo := Repos{
+// 		Name:        name,
+// 		UserId:      user_id,
+// 		IssuesCount: issue_count,
+// 		CreatedAt:   created_at,
+// 		UpdatedAt:   updated_at,
+// 	}
+
+// }
+
+func main() {
+
+	connStr := "user=postgres dbname=issue_tracker host=localhost password=test1234 sslmode=disable"
+	db, err := sql.Open("postgres", connStr)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	// defer fmt.Println("succesfully closed end")
+	defer db.Close()
+	// defer fmt.Println("succesfully closed")
+
+	err = db.Ping()
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	// user, err := GetUser(db, 1)
+	// if err != nil {
+	// 	fmt.Println(err)
+	// 	return
+	// }
+
+	// fmt.Println(user)
+
+	// user.ID, user.Username, user.Email,user.CreatedAt.Format(time.RFC3339), user.UpdatedAt.Format(time.RFC3339)
+
+	err = CreateUser(db, User{
+		ID:        "ac6f8b68-8f31-48ea-a436-05b9813b484b",
+		Name:      "sridhar",
+		Username:  "sridhar02",
+		Email:     "kattasridhar02@gmail.com",
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now()})
+
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	fmt.Println("created an user")
+
 }

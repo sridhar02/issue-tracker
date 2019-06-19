@@ -3,8 +3,8 @@ CREATE TABLE  users(
 	name VARCHAR(500) NOT NULL,
 	username VARCHAR(100) NOT NULL,
 	email VARCHAR(100) NOT NULL,
-	created_at DATE NOT NULL,
-	updated_at DATE NOT NULL
+	created_at TIMESTAMP NOT NULL,
+	updated_at TIMESTAMP NOT NULL
 );
 
 CREATE TABLE repos(
