@@ -390,21 +390,21 @@ func main() {
 
 	// fmt.Println(issue)
 
-	err = CreateIssue(db, Issue{
-		Title:       "new issue",
-		UserId:      "ac6f8b68-8f31-48ea-a436-05b9813b484b",
-		Body:        "a new has been created in the data base of issues",
-		RepoId:      "d360c6f3-60dc-4846-bb6a-0919a1817d5e",
-		IssueNumber: 0,
-		CreatedAt:   time.Now(),
-		UpdatedAt:   time.Now()},
-		"d360c6f3-60dc-4846-bb6a-0919a1817d5e")
+	// err = CreateIssue(db, Issue{
+	// 	Title:       "new issue",
+	// 	UserId:      "ac6f8b68-8f31-48ea-a436-05b9813b484b",
+	// 	Body:        "a new has been created in the data base of issues",
+	// 	RepoId:      "d360c6f3-60dc-4846-bb6a-0919a1817d5e",
+	// 	IssueNumber: 0,
+	// 	CreatedAt:   time.Now(),
+	// 	UpdatedAt:   time.Now()},
+	// 	"d360c6f3-60dc-4846-bb6a-0919a1817d5e")
 
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	fmt.Println("created an Issue")
+	// if err != nil {
+	// 	fmt.Println(err)
+	// 	return
+	// }
+	// fmt.Println("created an Issue")
 
 	// err = UpdateIssue(db, Issue{
 	// 	ID:    1,
