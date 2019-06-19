@@ -68,8 +68,8 @@ func CreateUser(db *sql.DB, user User) error {
 
 func UpdateUser(db *sql.DB, user User) error {
 
-	_, err := db.Exec(`UPDATE issues SET username = $1,email =$2, updated_at = $3 WHERE id = $4`,
-		user.Username, user.Email, time.Now().Format(time.RFC3339), user.ID)
+	_, err := db.Exec(`UPDATE users SET name = $1,username = $2,email =$3, updated_at = $4 WHERE id = $5`,
+		user.Name, user.Username, user.Email, time.Now().Format(time.RFC3339), user.ID)
 
 	if err != nil {
 		return err
@@ -88,33 +88,35 @@ func DeleteUser(db *sql.DB, id string) error {
 	return nil
 }
 
-// type Repo struct {
-// 	Id         string    `json:"id,omitempty"`
-// 	Name       string    `json:"name,omitempty"`
-// 	UserId     string    `json:"user_id,omitempty"`
-// 	IssueCount int       `json:"issue_count,omitempty"`
-// 	CreatedAt  time.Time `json:"created_at,omitempty"`
-// 	UpdatedAt  string    `json:"updated_at,omitempty"`
-// }
+type Repo struct {
+	Id         string    `json:"id,omitempty"`
+	Name       string    `json:"name,omitempty"`
+	UserId     string    `json:"user_id,omitempty"`
+	IssueCount int       `json:"issue_count,omitempty"`
+	CreatedAt  time.Time `json:"created_at,omitempty"`
+	UpdatedAt  time.Time `json:"updated_at,omitempty"`
+}
 
-// func GetRepo(db *sql.DB, id string) (repo, error) {
-// 	var name, userId, issueCount, createdAt, updatedAt string
+func GetRepo(db *sql.DB, id string) (repo, error) {
 
-// 	row := db.QueryRow("SELECT name, user_id,issueCount,created_at, updated_at FROM reposs WHERE id=$1", id)
-// 	err := row.Scan(&name, &userId, &issueCount, &createdAt, &updatedAt)
-// 	if err != nil {
-// 		return User{}, err
-// 	}
+	var name, userId, createdAt, updatedAt string
+	var issueCount int
 
-// 	repo := Repos{
-// 		Name:        name,
-// 		UserId:      user_id,
-// 		IssuesCount: issue_count,
-// 		CreatedAt:   created_at,
-// 		UpdatedAt:   updated_at,
-// 	}
+	row := db.QueryRow("SELECT name, user_id,issueCount,created_at, updated_at FROM repos WHERE id=$1", id)
+	err := row.Scan(&name, &userId, &issueCount, &createdAt, &updatedAt)
+	if err != nil {
+		return User{}, err
+	}
 
-// }
+	repo := Repos{
+		Name:        name,
+		UserId:      user_id,
+		IssuesCount: issue_count,
+		CreatedAt:   created_at,
+		UpdatedAt:   updated_at,
+	}
+
+}
 
 func main() {
 
@@ -135,7 +137,7 @@ func main() {
 		return
 	}
 
-	// user, err := GetUser(db, 1)
+	// user, err := GetUser(db, "ac6f8b68-8f31-48ea-a436-05b9813b484b")
 	// if err != nil {
 	// 	fmt.Println(err)
 	// 	return
@@ -143,20 +145,39 @@ func main() {
 
 	// fmt.Println(user)
 
-	// user.ID, user.Username, user.Email,user.CreatedAt.Format(time.RFC3339), user.UpdatedAt.Format(time.RFC3339)
+	// err = CreateUser(db, User{
+	// 	ID:        "ac6f8b68-8f31-48ea-a436-05b9813b484b",
+	// 	Name:      "sridhar",
+	// 	Username:  "sridhar02",
+	// 	Email:     "kattasridhar02@gmail.com",
+	// 	CreatedAt: time.Now(),
+	// 	UpdatedAt: time.Now()})
 
-	err = CreateUser(db, User{
-		ID:        "ac6f8b68-8f31-48ea-a436-05b9813b484b",
-		Name:      "sridhar",
-		Username:  "sridhar02",
-		Email:     "kattasridhar02@gmail.com",
-		CreatedAt: time.Now(),
-		UpdatedAt: time.Now()})
+	// if err != nil {
+	// 	fmt.Println(err)
+	// 	return
+	// }
+	// fmt.Println("created an user")
 
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	fmt.Println("created an user")
+	// err = UpdateUser(db, User{
+	// 	ID:       "ac6f8b68-8f31-48ea-a436-05b9813b484b",
+	// 	Name:     "vramana",
+	// 	Username: "vramana08",
+	// 	Email:    "vramana@gmail.com",
+	// 	// CreatedAt: time.Now()
+	// 	UpdatedAt: time.Now()})
+
+	// if err != nil {
+	// 	fmt.Println(err)
+	// 	return
+	// }
+	// fmt.Println("updated issue")
+
+	// err = DeleteUser(db, "ac6f8b68-8f31-48ea-a436-05b9813b484b")
+	// if err != nil {
+	// 	fmt.Println(err)
+	// 	return
+	// }
+	// fmt.Println("deleted issue")
 
 }
