@@ -174,7 +174,7 @@ type Issue struct {
 	Title       string    `json:"title,omitempty"`
 	UserId      string    `json:"user_id"`
 	Body        string    `json:body,omitempty`
-	RepoId      string    `repos_id,omitempty`
+	RepoId      string    `repo_id,omitempty`
 	IssueNumber int       `issue_number,omitempty`
 	CreatedAt   time.Time `json:"created_at,omitempty"`
 	UpdatedAt   time.Time `json:"updated_at,omitempty"`
@@ -185,7 +185,7 @@ func GetIssue(db *sql.DB, id int) (Issue, error) {
 	var title, userId, body, repoId, createdAt, updatedAt string
 	var issueNumber int
 
-	row := db.QueryRow("SELECT title, user_id,body,repos_id,issue_number,created_at, updated_at FROM issues WHERE id=$1", id)
+	row := db.QueryRow("SELECT title, user_id,body,repo_id,issue_number,created_at, updated_at FROM issues WHERE id=$1", id)
 	err := row.Scan(&title, &userId, &body, &repoId, &issueNumber, &createdAt, &updatedAt)
 	if err != nil {
 		return Issue{}, err
@@ -226,7 +226,7 @@ func CreateIssue(db *sql.DB, issue Issue, repoId string) error {
 		return err
 	}
 
-	_, err = db.Exec(`INSERT INTO issues(title, user_id,body,repos_id,issue_number, created_at, updated_at)
+	_, err = db.Exec(`INSERT INTO issues(title, user_id,body,repo_id,issue_number, created_at, updated_at)
 						VALUES($1,$2,$3,$4,$5,$6,$7)`,
 		issue.Title,
 		issue.UserId,
@@ -263,6 +263,91 @@ func UpdateIssue(db *sql.DB, issue Issue) error {
 func DeleteIssue(db *sql.DB, id int) error {
 
 	_, err := db.Exec(`DELETE FROM issues WHERE id = $1`, id)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+type Comment struct {
+	ID        int       `json:"id,omitempty"`
+	UserId    string    `json:"user_id,omitempty"`
+	Body      string    `json:"body,omitempty"`
+	IssueId   int       `json:"issue_id,omitempty"`
+	RepoId    string    `json:"repos_id,omitempty"`
+	CreatedAt time.Time `json:"created_at,omitempty"`
+	UpdatedAt time.Time `json:"updated_at,omitempty"`
+}
+
+func GetComment(db *sql.DB, id int) (Comment, error) {
+
+	var userId, body, repoId, createdAt, updatedAt string
+	var issueId int
+
+	row := db.QueryRow("SELECT  user_id,body,issue_id,repos_id,created_at, updated_at FROM comments WHERE id=$1", id)
+	err := row.Scan(&userId, &body, &issueId, &repoId, &createdAt, &updatedAt)
+	if err != nil {
+		return Comment{}, err
+	}
+
+	CreatedAt, err := time.Parse(time.RFC3339, createdAt)
+
+	if err != nil {
+		return Comment{}, err
+	}
+
+	UpdatedAt, err := time.Parse(time.RFC3339, updatedAt)
+
+	if err != nil {
+		return Comment{}, err
+	}
+
+	comment := Comment{
+		UserId:    userId,
+		Body:      body,
+		IssueId:   issueId,
+		RepoId:    repoId,
+		CreatedAt: CreatedAt,
+		UpdatedAt: UpdatedAt,
+	}
+
+	return comment, nil
+
+}
+
+func CreateComment(db *sql.DB, comment Comment) error {
+
+	_, err := db.Exec(`INSERT INTO comments(user_id,body,issue_id,repos_id,created_at, updated_at)
+						VALUES($1,$2,$3,$4,$5,$6)`,
+		comment.UserId,
+		comment.Body,
+		comment.IssueId,
+		comment.RepoId,
+		comment.CreatedAt.Format(time.RFC3339),
+		comment.UpdatedAt.Format(time.RFC3339))
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func UpdateComment(db *sql.DB, comment Comment) error {
+
+	_, err := db.Exec(`UPDATE comments SET body =$1, updated_at =$2 WHERE id = $3`,
+		comment.Body, time.Now().Format(time.RFC3339), comment.ID)
+
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func DeleteComment(db *sql.DB, id int) error {
+
+	_, err := db.Exec(`DELETE FROM comments WHERE id = $1`, id)
 
 	if err != nil {
 		return err
@@ -418,9 +503,52 @@ func main() {
 	// 	fmt.Println(err)
 	// 	return
 	// }
-	// fmt.Println("updated repo")
+	// fmt.Println("updated issue")
 
 	// err = DeleteIssue(db, 1)
+	// if err != nil {
+	// 	fmt.Println(err)
+	// 	return
+	// }
+	// fmt.Println("deleted issue")
+
+	//CRUD functions for comments under this section
+
+	// comment, err := GetComment(db, 1)
+	// if err != nil {
+	// 	fmt.Println(err)
+	// 	return
+	// }
+
+	// fmt.Println(comment)
+
+	// err = CreateComment(db, Comment{
+	// 	UserId:    "ac6f8b68-8f31-48ea-a436-05b9813b484b",
+	// 	Body:      "a new comment has been created in the database",
+	// 	IssueId:   1,
+	// 	RepoId:    "d360c6f3-60dc-4846-bb6a-0919a1817d5e",
+	// 	CreatedAt: time.Now(),
+	// 	UpdatedAt: time.Now()})
+
+	// if err != nil {
+	// 	fmt.Println(err)
+	// 	return
+	// }
+
+	// fmt.Println("created an Comment")
+
+	// err = UpdateComment(db, Comment{
+	// 	ID:        1,
+	// 	Body:      "a new comment has been updated",
+	// 	UpdatedAt: time.Now()})
+
+	// if err != nil {
+	// 	fmt.Println(err)
+	// 	return
+	// }
+	// fmt.Println("updated comment")
+
+	// err = DeleteComment(db, 1)
 	// if err != nil {
 	// 	fmt.Println(err)
 	// 	return

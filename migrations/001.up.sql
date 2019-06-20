@@ -22,7 +22,7 @@ CREATE TABLE issues(
 	title VARCHAR(500) NOT NULL,
 	user_id UUID REFERENCES users(id),
 	body VARCHAR(3000) NOT NULL,
-	repos_id UUID REFERENCES repos(id),
+	repo_id UUID REFERENCES repos(id),
 	issue_number BIGINT NOT NULL,
 	created_at TIMESTAMP NOT NULL,
 	updated_at TIMESTAMP NOT NULL
@@ -32,7 +32,7 @@ CREATE TABLE comments(
 	id BIGSERIAL NOT NULL PRIMARY KEY,
 	user_id UUID REFERENCES users(id),
 	body VARCHAR(3000) NOT NULL,
-	isssue_id BIGINT REFERENCES issues(id),
+	issue_id BIGINT REFERENCES issues(id),
 	repos_id UUID REFERENCES repos(id),
 	created_at TIMESTAMP NOT NULL,
 	updated_at TIMESTAMP NOT NULL
