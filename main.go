@@ -3,361 +3,75 @@ package main
 import (
 	"database/sql"
 	"fmt"
+	"log"
+	"net/http"
+
+	"github.com/gin-gonic/gin"
 	_ "github.com/lib/pq"
-	"time"
 )
 
-type User struct {
-	ID       string `json:"id,omitempty"`
-	Name     string `json:"name,omitempty"`
-	Username string `json:"username,omitempty"`
-	Email    string `json:email,omitempty`
-	// Password   string `json:"password,omitempty"`
-	CreatedAt time.Time `json:"created_at,omitempty"`
-	UpdatedAt time.Time `json:"updated_at,omitempty"`
-}
+func getUserHandler(c *gin.Context, db *sql.DB) {
 
-func GetUser(db *sql.DB, id string) (User, error) {
+	id := c.Param("id")
 
-	var name, username, email, createdAt, updatedAt string
-
-	row := db.QueryRow("SELECT id,name, username, email,created_at, updated_at FROM users WHERE id=$1", id)
-	err := row.Scan(&id, &name, &username, &email, &createdAt, &updatedAt)
-	if err != nil {
-		return User{}, err
-	}
-
-	CreatedAt, err := time.Parse(time.RFC3339, createdAt)
+	_, err := GetUser(db, id)
 
 	if err != nil {
-		return User{}, err
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
 	}
+	c.JSON(http.StatusOK, user)
 
-	UpdatedAt, err := time.Parse(time.RFC3339, updatedAt)
-
-	if err != nil {
-		return User{}, err
-	}
-
-	user := User{
-		ID:        id,
-		Name:      name,
-		Username:  username,
-		Email:     email,
-		CreatedAt: CreatedAt,
-		UpdatedAt: UpdatedAt,
-	}
-
-	return user, nil
-}
-
-func CreateUser(db *sql.DB, user User) error {
-
-	_, err := db.Exec(`INSERT INTO users(id,name, username, email, created_at, updated_at)
-						VALUES($1,$2,$3,$4,$5,$6)`,
-		user.ID,
-		user.Name,
-		user.Username,
-		user.Email,
-		user.CreatedAt.Format(time.RFC3339),
-		user.UpdatedAt.Format(time.RFC3339))
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func UpdateUser(db *sql.DB, user User) error {
-
-	_, err := db.Exec(`UPDATE users SET name = $1,username = $2,email =$3, updated_at = $4 WHERE id = $5`,
-		user.Name, user.Username, user.Email, time.Now().Format(time.RFC3339), user.ID)
-
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func DeleteUser(db *sql.DB, id string) error {
-
-	_, err := db.Exec(`DELETE FROM users WHERE id = $1`, id)
-
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-type Repo struct {
-	ID          string    `json:"id,omitempty"`
-	Name        string    `json:"name,omitempty"`
-	UserId      string    `json:"user_id,omitempty"`
-	IssuesCount int       `json:"issue_count,omitempty"`
-	CreatedAt   time.Time `json:"created_at,omitempty"`
-	UpdatedAt   time.Time `json:"updated_at,omitempty"`
-}
-
-func GetRepo(db *sql.DB, id string) (Repo, error) {
-
-	var name, userId, createdAt, updatedAt string
-	var issueCount int
-
-	row := db.QueryRow("SELECT id,name, user_id,issue_count,created_at, updated_at FROM repos WHERE id=$1", id)
-	err := row.Scan(&id, &name, &userId, &issueCount, &createdAt, &updatedAt)
-	if err != nil {
-		return Repo{}, err
-	}
-
-	CreatedAt, err := time.Parse(time.RFC3339, createdAt)
-
-	if err != nil {
-		return Repo{}, err
-	}
-
-	UpdatedAt, err := time.Parse(time.RFC3339, updatedAt)
-
-	if err != nil {
-		return Repo{}, err
-	}
-
-	repo := Repo{
-		ID:          id,
-		Name:        name,
-		UserId:      userId,
-		IssuesCount: issueCount,
-		CreatedAt:   CreatedAt,
-		UpdatedAt:   UpdatedAt,
-	}
-
-	return repo, nil
-}
-
-func CreateRepo(db *sql.DB, repo Repo) error {
-
-	_, err := db.Exec(`INSERT INTO repos(id,name, user_id, issue_count, created_at, updated_at)
-						VALUES($1,$2,$3,$4,$5,$6)`,
-		repo.ID,
-		repo.Name,
-		repo.UserId,
-		repo.IssuesCount,
-		repo.CreatedAt.Format(time.RFC3339),
-		repo.UpdatedAt.Format(time.RFC3339))
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func UpdateRepo(db *sql.DB, repo Repo) error {
-
-	_, err := db.Exec(`UPDATE repos SET name = $1,user_id = $2,issue_count =$3, updated_at = $4 WHERE id = $5`,
-		repo.Name, repo.UserId, repo.IssuesCount, time.Now().Format(time.RFC3339), repo.ID)
-
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func DeleteRepo(db *sql.DB, id string) error {
-
-	_, err := db.Exec(`DELETE FROM repos WHERE id = $1`, id)
-
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-type Issue struct {
-	ID          int       `json:"id,omitempty"`
-	Title       string    `json:"title,omitempty"`
-	UserId      string    `json:"user_id"`
-	Body        string    `json:body,omitempty`
-	RepoId      string    `repo_id,omitempty`
-	IssueNumber int       `issue_number,omitempty`
-	CreatedAt   time.Time `json:"created_at,omitempty"`
-	UpdatedAt   time.Time `json:"updated_at,omitempty"`
-}
-
-func GetIssue(db *sql.DB, id int) (Issue, error) {
-
-	var title, userId, body, repoId, createdAt, updatedAt string
-	var issueNumber int
-
-	row := db.QueryRow("SELECT title, user_id,body,repo_id,issue_number,created_at, updated_at FROM issues WHERE id=$1", id)
-	err := row.Scan(&title, &userId, &body, &repoId, &issueNumber, &createdAt, &updatedAt)
-	if err != nil {
-		return Issue{}, err
-	}
-
-	CreatedAt, err := time.Parse(time.RFC3339, createdAt)
-
-	if err != nil {
-		return Issue{}, err
-	}
-
-	UpdatedAt, err := time.Parse(time.RFC3339, updatedAt)
-
-	if err != nil {
-		return Issue{}, err
-	}
-
-	issue := Issue{
-		ID:          id,
-		Title:       title,
-		UserId:      userId,
-		Body:        body,
-		RepoId:      repoId,
-		IssueNumber: issueNumber,
-		CreatedAt:   CreatedAt,
-		UpdatedAt:   UpdatedAt,
-	}
-
-	return issue, nil
-}
-
-func CreateIssue(db *sql.DB, issue Issue, repoId string) error {
-
-	var issueCount int
-
-	row := db.QueryRow("SELECT issue_count FROM repos WHERE id=$1", issue.RepoId)
-	err := row.Scan(&issueCount)
-	if err != nil {
-		return err
-	}
-
-	_, err = db.Exec(`INSERT INTO issues(title, user_id,body,repo_id,issue_number, created_at, updated_at)
-						VALUES($1,$2,$3,$4,$5,$6,$7)`,
-		issue.Title,
-		issue.UserId,
-		issue.Body,
-		issue.RepoId,
-		issueCount+1,
-		issue.CreatedAt.Format(time.RFC3339),
-		issue.UpdatedAt.Format(time.RFC3339))
-	if err != nil {
-		return err
-	}
-
-	_, err = db.Exec(`UPDATE repos SET issue_count =$1, updated_at = $2 WHERE id = $3`,
-		issueCount+1, time.Now().Format(time.RFC3339), issue.RepoId)
-
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func UpdateIssue(db *sql.DB, issue Issue) error {
-
-	_, err := db.Exec(`UPDATE issues SET title = $1,body =$2, updated_at =$3 WHERE id = $4`,
-		issue.Title, issue.Body, time.Now().Format(time.RFC3339), issue.ID)
-
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func DeleteIssue(db *sql.DB, id int) error {
-
-	_, err := db.Exec(`DELETE FROM issues WHERE id = $1`, id)
-
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-type Comment struct {
-	ID        int       `json:"id,omitempty"`
-	UserId    string    `json:"user_id,omitempty"`
-	Body      string    `json:"body,omitempty"`
-	IssueId   int       `json:"issue_id,omitempty"`
-	RepoId    string    `json:"repos_id,omitempty"`
-	CreatedAt time.Time `json:"created_at,omitempty"`
-	UpdatedAt time.Time `json:"updated_at,omitempty"`
-}
-
-func GetComment(db *sql.DB, id int) (Comment, error) {
-
-	var userId, body, repoId, createdAt, updatedAt string
-	var issueId int
-
-	row := db.QueryRow("SELECT  id,user_id,body,issue_id,repo_id,created_at, updated_at FROM comments WHERE id=$1", id)
-	err := row.Scan(&id, &userId, &body, &issueId, &repoId, &createdAt, &updatedAt)
-	if err != nil {
-		return Comment{}, err
-	}
-
-	CreatedAt, err := time.Parse(time.RFC3339, createdAt)
-
-	if err != nil {
-		return Comment{}, err
-	}
-
-	UpdatedAt, err := time.Parse(time.RFC3339, updatedAt)
-
-	if err != nil {
-		return Comment{}, err
-	}
-
-	comment := Comment{
-		ID:        id,
-		UserId:    userId,
-		Body:      body,
-		IssueId:   issueId,
-		RepoId:    repoId,
-		CreatedAt: CreatedAt,
-		UpdatedAt: UpdatedAt,
-	}
-
-	return comment, nil
+	// c.Status(http.StatusNoContent)
 
 }
 
-func CreateComment(db *sql.DB, comment Comment) error {
+func getUserHandler(c *gin.Context, db *sql.DB) {
 
-	_, err := db.Exec(`INSERT INTO comments(user_id,body,issue_id,repo_id,created_at, updated_at)
-						VALUES($1,$2,$3,$4,$5,$6)`,
-		comment.UserId,
-		comment.Body,
-		comment.IssueId,
-		comment.RepoId,
-		comment.CreatedAt.Format(time.RFC3339),
-		comment.UpdatedAt.Format(time.RFC3339))
+	id := c.Param("id")
+
+	_, err := GetUser(db, id)
+
 	if err != nil {
-		return err
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
 	}
+	c.JSON(http.StatusOK, user)
 
-	return nil
+	// c.Status(http.StatusNoContent)
+
 }
 
-func UpdateComment(db *sql.DB, comment Comment) error {
+func getUserHandler(c *gin.Context, db *sql.DB) {
 
-	_, err := db.Exec(`UPDATE comments SET body =$1, updated_at =$2 WHERE id = $3`,
-		comment.Body, time.Now().Format(time.RFC3339), comment.ID)
+	id := c.Param("id")
+
+	_, err := GetUser(db, id)
 
 	if err != nil {
-		return err
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
 	}
-	return nil
+	c.JSON(http.StatusOK, user)
+
+	// c.Status(http.StatusNoContent)
+
 }
 
-func DeleteComment(db *sql.DB, id int) error {
+func getUserHandler(c *gin.Context, db *sql.DB) {
 
-	_, err := db.Exec(`DELETE FROM comments WHERE id = $1`, id)
+	id := c.Param("id")
+
+	_, err := GetUser(db, id)
 
 	if err != nil {
-		return err
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
 	}
+	c.JSON(http.StatusOK, user)
 
-	return nil
+	// c.Status(http.StatusNoContent)
+
 }
 
 func main() {
@@ -377,6 +91,18 @@ func main() {
 	if err != nil {
 		fmt.Println(err)
 		return
+	}
+
+	router := gin.Default()
+
+	router.GET("/users/:id", func(c *gin.Context) { getUserHandler(c, db) })
+	router.GET("/repos/:id", func(c *gin.Context) { getUserHandler(c, db) })
+	router.GET("/issues/:id", func(c *gin.Context) { getUserHandler(c, db) })
+	router.GET("/comments/:id", func(c *gin.Context) { getUserHandler(c, db) })
+
+	err = router.Run(":8000")
+	if err != nil {
+		log.Fatal(err)
 	}
 
 	//CRUD functions for user under this statement
