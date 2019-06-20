@@ -21,8 +21,8 @@ func GetUser(db *sql.DB, id string) (User, error) {
 
 	var name, username, email, createdAt, updatedAt string
 
-	row := db.QueryRow("SELECT name, username, email,created_at, updated_at FROM users WHERE id=$1", id)
-	err := row.Scan(&name, &username, &email, &createdAt, &updatedAt)
+	row := db.QueryRow("SELECT id,name, username, email,created_at, updated_at FROM users WHERE id=$1", id)
+	err := row.Scan(&id, &name, &username, &email, &createdAt, &updatedAt)
 	if err != nil {
 		return User{}, err
 	}
@@ -40,6 +40,7 @@ func GetUser(db *sql.DB, id string) (User, error) {
 	}
 
 	user := User{
+		ID:        id,
 		Name:      name,
 		Username:  username,
 		Email:     email,
@@ -102,8 +103,8 @@ func GetRepo(db *sql.DB, id string) (Repo, error) {
 	var name, userId, createdAt, updatedAt string
 	var issueCount int
 
-	row := db.QueryRow("SELECT name, user_id,issue_count,created_at, updated_at FROM repos WHERE id=$1", id)
-	err := row.Scan(&name, &userId, &issueCount, &createdAt, &updatedAt)
+	row := db.QueryRow("SELECT id,name, user_id,issue_count,created_at, updated_at FROM repos WHERE id=$1", id)
+	err := row.Scan(&id, &name, &userId, &issueCount, &createdAt, &updatedAt)
 	if err != nil {
 		return Repo{}, err
 	}
@@ -121,6 +122,7 @@ func GetRepo(db *sql.DB, id string) (Repo, error) {
 	}
 
 	repo := Repo{
+		ID:          id,
 		Name:        name,
 		UserId:      userId,
 		IssuesCount: issueCount,
@@ -204,6 +206,7 @@ func GetIssue(db *sql.DB, id int) (Issue, error) {
 	}
 
 	issue := Issue{
+		ID:          id,
 		Title:       title,
 		UserId:      userId,
 		Body:        body,
@@ -286,8 +289,8 @@ func GetComment(db *sql.DB, id int) (Comment, error) {
 	var userId, body, repoId, createdAt, updatedAt string
 	var issueId int
 
-	row := db.QueryRow("SELECT  user_id,body,issue_id,repo_id,created_at, updated_at FROM comments WHERE id=$1", id)
-	err := row.Scan(&userId, &body, &issueId, &repoId, &createdAt, &updatedAt)
+	row := db.QueryRow("SELECT  id,user_id,body,issue_id,repo_id,created_at, updated_at FROM comments WHERE id=$1", id)
+	err := row.Scan(&id, &userId, &body, &issueId, &repoId, &createdAt, &updatedAt)
 	if err != nil {
 		return Comment{}, err
 	}
@@ -305,6 +308,7 @@ func GetComment(db *sql.DB, id int) (Comment, error) {
 	}
 
 	comment := Comment{
+		ID:        id,
 		UserId:    userId,
 		Body:      body,
 		IssueId:   issueId,
