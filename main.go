@@ -286,7 +286,7 @@ func GetComment(db *sql.DB, id int) (Comment, error) {
 	var userId, body, repoId, createdAt, updatedAt string
 	var issueId int
 
-	row := db.QueryRow("SELECT  user_id,body,issue_id,repos_id,created_at, updated_at FROM comments WHERE id=$1", id)
+	row := db.QueryRow("SELECT  user_id,body,issue_id,repo_id,created_at, updated_at FROM comments WHERE id=$1", id)
 	err := row.Scan(&userId, &body, &issueId, &repoId, &createdAt, &updatedAt)
 	if err != nil {
 		return Comment{}, err
@@ -319,7 +319,7 @@ func GetComment(db *sql.DB, id int) (Comment, error) {
 
 func CreateComment(db *sql.DB, comment Comment) error {
 
-	_, err := db.Exec(`INSERT INTO comments(user_id,body,issue_id,repos_id,created_at, updated_at)
+	_, err := db.Exec(`INSERT INTO comments(user_id,body,issue_id,repo_id,created_at, updated_at)
 						VALUES($1,$2,$3,$4,$5,$6)`,
 		comment.UserId,
 		comment.Body,

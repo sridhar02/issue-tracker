@@ -33,7 +33,7 @@ CREATE TABLE comments(
 	user_id UUID REFERENCES users(id),
 	body VARCHAR(3000) NOT NULL,
 	issue_id BIGINT REFERENCES issues(id),
-	repos_id UUID REFERENCES repos(id),
+	repo_id UUID REFERENCES repos(id),
 	created_at TIMESTAMP NOT NULL,
 	updated_at TIMESTAMP NOT NULL
 );
