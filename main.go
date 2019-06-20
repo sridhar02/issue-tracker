@@ -84,6 +84,78 @@ func getCommentHandler(c *gin.Context, db *sql.DB) {
 	c.JSON(http.StatusOK, comment)
 
 	// c.Status(http.StatusNoContent)
+}
+
+func deleteUserHandler(c *gin.Context, db *sql.DB) {
+
+	id := c.Param("id")
+
+	err := DeleteUser(db, id)
+
+	if err != nil {
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	// c.JSON(http.StatusOK, repo)
+
+	c.Status(http.StatusNoContent)
+
+}
+func deleteRepoHandler(c *gin.Context, db *sql.DB) {
+
+	id := c.Param("id")
+
+	err := DeleteRepo(db, id)
+
+	if err != nil {
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	// c.JSON(http.StatusOK, repo)
+
+	c.Status(http.StatusNoContent)
+
+}
+func deleteIssueHandler(c *gin.Context, db *sql.DB) {
+
+	id := c.Param("id")
+
+	Id, err := strconv.Atoi(id)
+	if err != nil {
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	err = DeleteIssue(db, Id)
+
+	if err != nil {
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	// c.JSON(http.StatusOK, repo)
+
+	c.Status(http.StatusNoContent)
+
+}
+func deleteCommentHandler(c *gin.Context, db *sql.DB) {
+
+	id := c.Param("id")
+
+	Id, err := strconv.Atoi(id)
+	if err != nil {
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	err = DeleteComment(db, Id)
+
+	if err != nil {
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	// c.JSON(http.StatusOK, repo)
+
+	c.Status(http.StatusNoContent)
 
 }
 
@@ -112,6 +184,10 @@ func main() {
 	router.GET("/repos/:id", func(c *gin.Context) { getRepoHandler(c, db) })
 	router.GET("/issues/:id", func(c *gin.Context) { getIssueHandler(c, db) })
 	router.GET("/comments/:id", func(c *gin.Context) { getCommentHandler(c, db) })
+	router.DELETE("/users/:id", func(c *gin.Context) { deleteUserHandler(c, db) })
+	router.DELETE("/repos/:id", func(c *gin.Context) { deleteRepoHandler(c, db) })
+	router.DELETE("/issues/:id", func(c *gin.Context) { deleteIssueHandler(c, db) })
+	router.DELETE("/comments/:id", func(c *gin.Context) { deleteCommentHandler(c, db) })
 
 	err = router.Run(":8000")
 	if err != nil {
