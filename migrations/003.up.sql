@@ -1,0 +1,1 @@
+CREATE INDEX name_index ON repos (name);
