@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	_ "github.com/lib/pq"
@@ -14,7 +15,7 @@ func getUserHandler(c *gin.Context, db *sql.DB) {
 
 	id := c.Param("id")
 
-	_, err := GetUser(db, id)
+	user, err := GetUser(db, id)
 
 	if err != nil {
 		c.AbortWithStatus(http.StatusInternalServerError)
@@ -26,49 +27,61 @@ func getUserHandler(c *gin.Context, db *sql.DB) {
 
 }
 
-func getUserHandler(c *gin.Context, db *sql.DB) {
+func getRepoHandler(c *gin.Context, db *sql.DB) {
 
 	id := c.Param("id")
 
-	_, err := GetUser(db, id)
+	repo, err := GetRepo(db, id)
 
 	if err != nil {
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
-	c.JSON(http.StatusOK, user)
+	c.JSON(http.StatusOK, repo)
 
 	// c.Status(http.StatusNoContent)
 
 }
 
-func getUserHandler(c *gin.Context, db *sql.DB) {
+func getIssueHandler(c *gin.Context, db *sql.DB) {
 
 	id := c.Param("id")
 
-	_, err := GetUser(db, id)
+	Id, err := strconv.Atoi(id)
+	if err != nil {
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	issue, err := GetIssue(db, Id)
 
 	if err != nil {
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
-	c.JSON(http.StatusOK, user)
+	c.JSON(http.StatusOK, issue)
 
 	// c.Status(http.StatusNoContent)
 
 }
 
-func getUserHandler(c *gin.Context, db *sql.DB) {
+func getCommentHandler(c *gin.Context, db *sql.DB) {
 
 	id := c.Param("id")
 
-	_, err := GetUser(db, id)
+	Id, err := strconv.Atoi(id)
+	if err != nil {
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	comment, err := GetComment(db, Id)
 
 	if err != nil {
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
-	c.JSON(http.StatusOK, user)
+	c.JSON(http.StatusOK, comment)
 
 	// c.Status(http.StatusNoContent)
 
@@ -96,9 +109,9 @@ func main() {
 	router := gin.Default()
 
 	router.GET("/users/:id", func(c *gin.Context) { getUserHandler(c, db) })
-	router.GET("/repos/:id", func(c *gin.Context) { getUserHandler(c, db) })
-	router.GET("/issues/:id", func(c *gin.Context) { getUserHandler(c, db) })
-	router.GET("/comments/:id", func(c *gin.Context) { getUserHandler(c, db) })
+	router.GET("/repos/:id", func(c *gin.Context) { getRepoHandler(c, db) })
+	router.GET("/issues/:id", func(c *gin.Context) { getIssueHandler(c, db) })
+	router.GET("/comments/:id", func(c *gin.Context) { getCommentHandler(c, db) })
 
 	err = router.Run(":8000")
 	if err != nil {
