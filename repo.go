@@ -57,8 +57,8 @@ func CreateRepo(db *sql.DB, repo Repo) error {
 		repo.Name,
 		repo.UserId,
 		repo.IssuesCount,
-		repo.CreatedAt.Format(time.RFC3339),
-		repo.UpdatedAt.Format(time.RFC3339))
+		time.Now().Format(time.RFC3339),
+		time.Now().Format(time.RFC3339))
 	if err != nil {
 		return err
 	}

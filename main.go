@@ -159,6 +159,163 @@ func deleteCommentHandler(c *gin.Context, db *sql.DB) {
 
 }
 
+func postUserHandler(c *gin.Context, db *sql.DB) {
+
+	user := User{}
+	err := c.BindJSON(&user)
+	if err != nil {
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	err = CreateUser(db, user)
+	if err != nil {
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	c.Status(http.StatusCreated)
+
+}
+
+func postRepoHandler(c *gin.Context, db *sql.DB) {
+
+	repo := Repo{}
+	err := c.BindJSON(&repo)
+	if err != nil {
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	err = CreateRepo(db, repo)
+	if err != nil {
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	c.Status(http.StatusCreated)
+
+}
+
+func postIssueHandler(c *gin.Context, db *sql.DB) {
+
+	issue := Issue{}
+	err := c.BindJSON(&issue)
+	if err != nil {
+		fmt.Println(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	err = CreateIssue(db, issue)
+	if err != nil {
+		fmt.Println(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	c.Status(http.StatusCreated)
+
+}
+
+func postCommentHandler(c *gin.Context, db *sql.DB) {
+
+	comment := Comment{}
+	err := c.BindJSON(&comment)
+	if err != nil {
+		fmt.Println(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	err = CreateComment(db, comment)
+	if err != nil {
+		fmt.Println(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	c.Status(http.StatusCreated)
+
+}
+
+func putUserHandler(c *gin.Context, db *sql.DB) {
+
+	user := User{}
+	err := c.BindJSON(&user)
+	if err != nil {
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	err = UpdateUser(db, user)
+	if err != nil {
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	c.Status(http.StatusCreated)
+}
+
+func putRepoHandler(c *gin.Context, db *sql.DB) {
+
+	repo := Repo{}
+	err := c.BindJSON(&repo)
+	if err != nil {
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	err = UpdateRepo(db, repo)
+	if err != nil {
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	c.Status(http.StatusCreated)
+
+}
+
+func putIssueHandler(c *gin.Context, db *sql.DB) {
+
+	issue := Issue{}
+	err := c.BindJSON(&issue)
+	if err != nil {
+		fmt.Println(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	err = UpdateIssue(db, issue)
+	if err != nil {
+		fmt.Println(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	c.Status(http.StatusCreated)
+}
+
+func putCommentHandler(c *gin.Context, db *sql.DB) {
+
+	comment := Comment{}
+	err := c.BindJSON(&comment)
+	if err != nil {
+		fmt.Println(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	err = UpdateComment(db, comment)
+	if err != nil {
+		fmt.Println(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	c.Status(http.StatusCreated)
+}
+
 func main() {
 
 	connStr := "user=postgres dbname=issue_tracker host=localhost password=test1234 sslmode=disable"
@@ -188,6 +345,14 @@ func main() {
 	router.DELETE("/repos/:id", func(c *gin.Context) { deleteRepoHandler(c, db) })
 	router.DELETE("/issues/:id", func(c *gin.Context) { deleteIssueHandler(c, db) })
 	router.DELETE("/comments/:id", func(c *gin.Context) { deleteCommentHandler(c, db) })
+	router.POST("/users", func(c *gin.Context) { postUserHandler(c, db) })
+	router.POST("/repos", func(c *gin.Context) { postRepoHandler(c, db) })
+	router.POST("/issues", func(c *gin.Context) { postIssueHandler(c, db) })
+	router.POST("/comments", func(c *gin.Context) { postCommentHandler(c, db) })
+	router.PUT("/users", func(c *gin.Context) { putUserHandler(c, db) })
+	router.PUT("/repos", func(c *gin.Context) { putRepoHandler(c, db) })
+	router.PUT("/issues", func(c *gin.Context) { putIssueHandler(c, db) })
+	router.PUT("/comments", func(c *gin.Context) { putCommentHandler(c, db) })
 
 	err = router.Run(":8000")
 	if err != nil {

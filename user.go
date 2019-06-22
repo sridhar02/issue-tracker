@@ -57,8 +57,8 @@ func CreateUser(db *sql.DB, user User) error {
 		user.Name,
 		user.Username,
 		user.Email,
-		user.CreatedAt.Format(time.RFC3339),
-		user.UpdatedAt.Format(time.RFC3339))
+		time.Now().Format(time.RFC3339),
+		time.Now().Format(time.RFC3339))
 	if err != nil {
 		return err
 	}

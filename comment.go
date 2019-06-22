@@ -10,7 +10,7 @@ type Comment struct {
 	UserId    string    `json:"user_id,omitempty"`
 	Body      string    `json:"body,omitempty"`
 	IssueId   int       `json:"issue_id,omitempty"`
-	RepoId    string    `json:"repos_id,omitempty"`
+	RepoId    string    `json:"repo_id,omitempty"`
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 }
@@ -60,8 +60,8 @@ func CreateComment(db *sql.DB, comment Comment) error {
 		comment.Body,
 		comment.IssueId,
 		comment.RepoId,
-		comment.CreatedAt.Format(time.RFC3339),
-		comment.UpdatedAt.Format(time.RFC3339))
+		time.Now().Format(time.RFC3339),
+		time.Now().Format(time.RFC3339))
 	if err != nil {
 		return err
 	}

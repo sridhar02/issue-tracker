@@ -1,0 +1,43 @@
+get('http://localhost:8000/users/ac6f8b68-8f31-48ea-a436-05b9813b484b')
+
+
+post('http://localhost:8000/users',
+	json={
+		'id': 'ac6f8b68-8f31-48ea-a436-05b9813b4840',
+		'name': 'Katta Sridhar',
+		'username': 'srisadasd',
+		'email': 'test+1@example.com'
+	})
+
+post('http://localhost:8000/repos',
+	json={
+		'id': 'ac6f8b68-8f31-48ea-c536-05b9813b4840',
+		'name': 'Katta Sridhar',
+		'user_id': 'ac6f8b68-8f31-48ea-a436-05b9813b4840',
+	})
+
+
+post('http://localhost:8000/issues',
+	json={
+		'title': '2nd issue is created',
+		'user_id':'ac6f8b68-8f31-48ea-a436-05b9813b4840',
+		'body': 'a new issue is created in a new repo',
+		'repo_id': 'ac6f8b68-8f31-48ea-c536-05b9813b4840',
+	})
+
+post('http://localhost:8000/comments',
+	json={
+		'user_id': 'ac6f8b68-8f31-48ea-a436-05b9813b4840',
+		'body': 'Katta Sridhar',
+		'issue_id':2,
+		'repo_id':'ac6f8b68-8f31-48ea-c536-05b9813b4840'
+	})
+
+put('http://localhost:8000/users',
+	json={
+		'id': 'ac6f8b68-8f31-48ea-a436-05b9813b4840',
+		'name': 'vramana',
+		'username': 'ram02',
+		'email': 'idlike2dream@gmail.com'
+	})
+

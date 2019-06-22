@@ -8,10 +8,10 @@ import (
 type Issue struct {
 	ID          int       `json:"id,omitempty"`
 	Title       string    `json:"title,omitempty"`
-	UserId      string    `json:"user_id"`
-	Body        string    `json:body,omitempty`
-	RepoId      string    `repo_id,omitempty`
-	IssueNumber int       `issue_number,omitempty`
+	UserId      string    `json:"user_id,omitempty"`
+	Body        string    `json:"body,omitempty"`
+	RepoId      string    `json:"repo_id,omitempty"`
+	IssueNumber int       `json:"issue_number,omitempty"`
 	CreatedAt   time.Time `json:"created_at,omitempty"`
 	UpdatedAt   time.Time `json:"updated_at,omitempty"`
 }
@@ -53,7 +53,7 @@ func GetIssue(db *sql.DB, id int) (Issue, error) {
 	return issue, nil
 }
 
-func CreateIssue(db *sql.DB, issue Issue, repoId string) error {
+func CreateIssue(db *sql.DB, issue Issue) error {
 
 	var issueCount int
 
@@ -63,6 +63,8 @@ func CreateIssue(db *sql.DB, issue Issue, repoId string) error {
 		return err
 	}
 
+	// fmt.Println(issue)
+
 	_, err = db.Exec(`INSERT INTO issues(title, user_id,body,repo_id,issue_number, created_at, updated_at)
 						VALUES($1,$2,$3,$4,$5,$6,$7)`,
 		issue.Title,
@@ -70,8 +72,8 @@ func CreateIssue(db *sql.DB, issue Issue, repoId string) error {
 		issue.Body,
 		issue.RepoId,
 		issueCount+1,
-		issue.CreatedAt.Format(time.RFC3339),
-		issue.UpdatedAt.Format(time.RFC3339))
+		time.Now().Format(time.RFC3339),
+		time.Now().Format(time.RFC3339))
 	if err != nil {
 		return err
 	}
