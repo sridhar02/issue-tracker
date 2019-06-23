@@ -1,38 +1,57 @@
 <style type="text/css">
-
 *{
 	margin: 0;
 	padding: 0;
 }
-	
+body{
+	padding-top: 20px;
+	padding-right: 200px;
+	padding-left: 200px;
+}
 .div1{
-/*	margin: 5px;
-	padding: 5px;*/
-	background-color: grey;
+	/*margin: 5px;*/
+	/*padding-left: 200px;
+	padding-right: 200px;*/
+	background-color: white;
+	border: 1px solid rgb(227,225,216);
+	border-bottom: 0;
+}
+.div1:last-child{
+	border-bottom: 1px solid rgb(227,225,216);
+}
+.div2:hover{
+	background-color: rgb(247,247,247);
+}
+.div2{
+	padding: 8px;
+	padding-left: 30px;
+
 }
 
-.div2{
-
+.div2 h1{
+	font-size: 20px;
+}
+.div3{
+	padding-right: 0px;
 	/*display: flex;*/
 }
-
-
-
-
+.title{
+	text-decoration: none;
+	color: black;
+}
+.title:hover{
+	color: blue;
+}
 </style>
-
-
-{{range .}} 
-	<div class="div1">
-		
-	<h1 class="h1" >{{ .Title }}</h1>
-
+{{range .}}
+<div class="div1">
 	<div class="div2">
-	<span>#{{.IssueNumber}} </span>
-
-	<span>{{.Username}}</span>
+		<h1> <a class="title" href="/issues/{{.ID}}">{{ .Title }}</a></h1>
+		<div >
+			<span class="div3">#{{.IssueNumber}} opened yesterday by </span>
+			<span><a class="title" href="">{{.Username}}</a></span>
+		</div>
 	</div>
-	</div>
+</div>
 
-	
 {{end}}

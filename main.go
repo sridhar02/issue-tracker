@@ -25,6 +25,7 @@ func getUserPageHandler(c *gin.Context, db *sql.DB) {
 }
 
 type IssueName struct {
+	ID          int
 	Title       string
 	Username    string
 	IssueNumber int
@@ -33,7 +34,7 @@ type IssueName struct {
 func getIssuesPageHandler(c *gin.Context, db *sql.DB) {
 
 	rows, err := db.Query(
-		`SELECT issues.title, users.username ,issues.issue_number 
+		`SELECT issues.id,issues.title, users.username ,issues.issue_number 
 		FROM issues JOIN users ON issues.user_id = users.id WHERE repo_id = $1;`,
 		"d360c6f3-60dc-4846-bb6a-0919a1817d5e")
 	if err != nil {
@@ -44,11 +45,11 @@ func getIssuesPageHandler(c *gin.Context, db *sql.DB) {
 
 	issues := []IssueName{}
 
-	var issueNumber int
+	var issueNumber, ID int
 	var title, username string
 
 	for rows.Next() {
-		err = rows.Scan(&title, &username, &issueNumber)
+		err = rows.Scan(&ID, &title, &username, &issueNumber)
 		if err != nil {
 			fmt.Println(err)
 			c.AbortWithStatus(http.StatusInternalServerError)
@@ -56,6 +57,7 @@ func getIssuesPageHandler(c *gin.Context, db *sql.DB) {
 		}
 
 		issue := IssueName{
+			ID:          ID,
 			Title:       title,
 			Username:    username,
 			IssueNumber: issueNumber,
@@ -65,6 +67,32 @@ func getIssuesPageHandler(c *gin.Context, db *sql.DB) {
 	}
 
 	c.HTML(http.StatusOK, "issues.html", issues)
+}
+
+func getIssuePageHandler(c *gin.Context, db *sql.DB) {
+
+	var issueNumber, ID int
+	var title, username string
+
+	row := db.QueryRow(
+		`SELECT issues.id,issues.title, users.username ,issues.issue_number 
+		 FROM issues JOIN users ON issues.user_id = users.id WHERE repo_id = $1;`,
+		"d360c6f3-60dc-4846-bb6a-0919a1817d5e")
+
+	err := row.Scan(&ID, &title, &username, &issueNumber)
+	if err != nil {
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	issue := IssueName{
+		ID:          ID,
+		Title:       title,
+		Username:    username,
+		IssueNumber: issueNumber,
+	}
+
+	c.HTML(http.StatusOK, "issue.html", issue)
 }
 
 func main() {
@@ -111,6 +139,7 @@ func main() {
 
 	router.GET("/user", func(c *gin.Context) { getUserPageHandler(c, db) })
 	router.GET("/issues", func(c *gin.Context) { getIssuesPageHandler(c, db) })
+	router.GET("/issues/:id", func(c *gin.Context) { getIssuePageHandler(c, db) })
 
 	err = router.Run(":8000")
 	if err != nil {

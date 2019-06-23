@@ -1,0 +1,77 @@
+<style type="text/css">
+	
+*{
+	margin: 0;
+	padding: 0;
+}
+body{
+	padding-top: 20px;
+	/*padding-left: 200px;
+	padding-right: 200px;
+	*/
+	width:900px;
+	margin: 0 auto;
+}
+.issue{
+}
+.title{
+	font-size: 30px;
+}
+.issue-number{
+	font-size: 40px;
+	padding-left: 10px;
+}
+.edit{
+	padding-left: 500px;
+}
+.title-buttons {
+		padding: 8px;
+	border-radius: 5px;
+}
+.edit-button{
+}
+.new-issue{
+	background-color: green;
+	color: white;
+	font-weight: 900px;
+}
+.new-issue:hover{
+}
+.username{
+	padding-top: 5px;
+	padding-bottom:10px;
+}
+.issue-content{
+	border: 1px solid rgb(227,225,216);
+	height :200px;
+	width: 600px;
+	/*margin: 0 auto;*/
+}
+.status-button{
+	background-color: #62ce58;
+	padding: 5px;
+	width: 50px;
+}
+.issue-header{
+	padding: 15px;
+	background-color: lightblue;
+}
+.username-header{
+	text-decoration: none;
+	color: rgb(110,113,115);
+}
+</style>
+<div class="issue">
+	<span class="title">{{.Title }}</span>
+	<span class="issue-number   ">#{{.IssueNumber}}</span>
+	<span class="edit"><button class="edit-button title-buttons">Edit</button></span>
+	<span><button class="new-issue title-buttons">New issue</button></span>
+	<div class="username"><button class="status-button">status</button>{{.Username}}</div>
+	<div class="issue-content">
+		
+		<header class="issue-header">
+			<span><a href="" class="username-header">{{.Username}}</a></span>
+			<button>owner</button>
+		</header>
+	</div>
+</div>
