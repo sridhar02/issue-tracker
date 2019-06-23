@@ -5,315 +5,66 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"strconv"
+	// "strconv"
 
 	"github.com/gin-gonic/gin"
 	_ "github.com/lib/pq"
 )
 
-func getUserHandler(c *gin.Context, db *sql.DB) {
+func getUserPageHandler(c *gin.Context, db *sql.DB) {
 
-	id := c.Param("id")
-
-	user, err := GetUser(db, id)
+	user, err := GetUser(db, "ac6f8b68-8f31-48ea-a436-05b9813b484b")
 
 	if err != nil {
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
-	c.JSON(http.StatusOK, user)
 
-	// c.Status(http.StatusNoContent)
+	c.HTML(http.StatusOK, "user.html", user)
 
 }
 
-func getRepoHandler(c *gin.Context, db *sql.DB) {
-
-	id := c.Param("id")
-
-	repo, err := GetRepo(db, id)
-
-	if err != nil {
-		c.AbortWithStatus(http.StatusInternalServerError)
-		return
-	}
-	c.JSON(http.StatusOK, repo)
-
-	// c.Status(http.StatusNoContent)
-
+type IssueName struct {
+	Title       string
+	Username    string
+	IssueNumber int
 }
 
-func getIssueHandler(c *gin.Context, db *sql.DB) {
+func getIssuesPageHandler(c *gin.Context, db *sql.DB) {
 
-	id := c.Param("id")
-
-	Id, err := strconv.Atoi(id)
-	if err != nil {
-		c.AbortWithStatus(http.StatusInternalServerError)
-		return
-	}
-
-	issue, err := GetIssue(db, Id)
-
-	if err != nil {
-		c.AbortWithStatus(http.StatusInternalServerError)
-		return
-	}
-	c.JSON(http.StatusOK, issue)
-
-	// c.Status(http.StatusNoContent)
-
-}
-
-func getCommentHandler(c *gin.Context, db *sql.DB) {
-
-	id := c.Param("id")
-
-	Id, err := strconv.Atoi(id)
-	if err != nil {
-		c.AbortWithStatus(http.StatusInternalServerError)
-		return
-	}
-
-	comment, err := GetComment(db, Id)
-
-	if err != nil {
-		c.AbortWithStatus(http.StatusInternalServerError)
-		return
-	}
-	c.JSON(http.StatusOK, comment)
-
-	// c.Status(http.StatusNoContent)
-}
-
-func deleteUserHandler(c *gin.Context, db *sql.DB) {
-
-	id := c.Param("id")
-
-	err := DeleteUser(db, id)
-
-	if err != nil {
-		c.AbortWithStatus(http.StatusInternalServerError)
-		return
-	}
-	// c.JSON(http.StatusOK, repo)
-
-	c.Status(http.StatusNoContent)
-
-}
-func deleteRepoHandler(c *gin.Context, db *sql.DB) {
-
-	id := c.Param("id")
-
-	err := DeleteRepo(db, id)
-
-	if err != nil {
-		c.AbortWithStatus(http.StatusInternalServerError)
-		return
-	}
-	// c.JSON(http.StatusOK, repo)
-
-	c.Status(http.StatusNoContent)
-
-}
-func deleteIssueHandler(c *gin.Context, db *sql.DB) {
-
-	id := c.Param("id")
-
-	Id, err := strconv.Atoi(id)
-	if err != nil {
-		c.AbortWithStatus(http.StatusInternalServerError)
-		return
-	}
-
-	err = DeleteIssue(db, Id)
-
-	if err != nil {
-		c.AbortWithStatus(http.StatusInternalServerError)
-		return
-	}
-	// c.JSON(http.StatusOK, repo)
-
-	c.Status(http.StatusNoContent)
-
-}
-func deleteCommentHandler(c *gin.Context, db *sql.DB) {
-
-	id := c.Param("id")
-
-	Id, err := strconv.Atoi(id)
-	if err != nil {
-		c.AbortWithStatus(http.StatusInternalServerError)
-		return
-	}
-
-	err = DeleteComment(db, Id)
-
-	if err != nil {
-		c.AbortWithStatus(http.StatusInternalServerError)
-		return
-	}
-	// c.JSON(http.StatusOK, repo)
-
-	c.Status(http.StatusNoContent)
-
-}
-
-func postUserHandler(c *gin.Context, db *sql.DB) {
-
-	user := User{}
-	err := c.BindJSON(&user)
-	if err != nil {
-		c.AbortWithStatus(http.StatusInternalServerError)
-		return
-	}
-
-	err = CreateUser(db, user)
-	if err != nil {
-		c.AbortWithStatus(http.StatusInternalServerError)
-		return
-	}
-
-	c.Status(http.StatusCreated)
-
-}
-
-func postRepoHandler(c *gin.Context, db *sql.DB) {
-
-	repo := Repo{}
-	err := c.BindJSON(&repo)
-	if err != nil {
-		c.AbortWithStatus(http.StatusInternalServerError)
-		return
-	}
-
-	err = CreateRepo(db, repo)
-	if err != nil {
-		c.AbortWithStatus(http.StatusInternalServerError)
-		return
-	}
-
-	c.Status(http.StatusCreated)
-
-}
-
-func postIssueHandler(c *gin.Context, db *sql.DB) {
-
-	issue := Issue{}
-	err := c.BindJSON(&issue)
+	rows, err := db.Query(
+		`SELECT issues.title, users.username ,issues.issue_number 
+		FROM issues JOIN users ON issues.user_id = users.id WHERE repo_id = $1;`,
+		"d360c6f3-60dc-4846-bb6a-0919a1817d5e")
 	if err != nil {
 		fmt.Println(err)
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
 
-	err = CreateIssue(db, issue)
-	if err != nil {
-		fmt.Println(err)
-		c.AbortWithStatus(http.StatusInternalServerError)
-		return
+	issues := []IssueName{}
+
+	var issueNumber int
+	var title, username string
+
+	for rows.Next() {
+		err = rows.Scan(&title, &username, &issueNumber)
+		if err != nil {
+			fmt.Println(err)
+			c.AbortWithStatus(http.StatusInternalServerError)
+			return
+		}
+
+		issue := IssueName{
+			Title:       title,
+			Username:    username,
+			IssueNumber: issueNumber,
+		}
+
+		issues = append(issues, issue)
 	}
 
-	c.Status(http.StatusCreated)
-
-}
-
-func postCommentHandler(c *gin.Context, db *sql.DB) {
-
-	comment := Comment{}
-	err := c.BindJSON(&comment)
-	if err != nil {
-		fmt.Println(err)
-		c.AbortWithStatus(http.StatusInternalServerError)
-		return
-	}
-
-	err = CreateComment(db, comment)
-	if err != nil {
-		fmt.Println(err)
-		c.AbortWithStatus(http.StatusInternalServerError)
-		return
-	}
-
-	c.Status(http.StatusCreated)
-
-}
-
-func putUserHandler(c *gin.Context, db *sql.DB) {
-
-	user := User{}
-	err := c.BindJSON(&user)
-	if err != nil {
-		c.AbortWithStatus(http.StatusInternalServerError)
-		return
-	}
-
-	err = UpdateUser(db, user)
-	if err != nil {
-		c.AbortWithStatus(http.StatusInternalServerError)
-		return
-	}
-
-	c.Status(http.StatusCreated)
-}
-
-func putRepoHandler(c *gin.Context, db *sql.DB) {
-
-	repo := Repo{}
-	err := c.BindJSON(&repo)
-	if err != nil {
-		c.AbortWithStatus(http.StatusInternalServerError)
-		return
-	}
-
-	err = UpdateRepo(db, repo)
-	if err != nil {
-		c.AbortWithStatus(http.StatusInternalServerError)
-		return
-	}
-
-	c.Status(http.StatusCreated)
-
-}
-
-func putIssueHandler(c *gin.Context, db *sql.DB) {
-
-	issue := Issue{}
-	err := c.BindJSON(&issue)
-	if err != nil {
-		fmt.Println(err)
-		c.AbortWithStatus(http.StatusInternalServerError)
-		return
-	}
-
-	err = UpdateIssue(db, issue)
-	if err != nil {
-		fmt.Println(err)
-		c.AbortWithStatus(http.StatusInternalServerError)
-		return
-	}
-
-	c.Status(http.StatusCreated)
-}
-
-func putCommentHandler(c *gin.Context, db *sql.DB) {
-
-	comment := Comment{}
-	err := c.BindJSON(&comment)
-	if err != nil {
-		fmt.Println(err)
-		c.AbortWithStatus(http.StatusInternalServerError)
-		return
-	}
-
-	err = UpdateComment(db, comment)
-	if err != nil {
-		fmt.Println(err)
-		c.AbortWithStatus(http.StatusInternalServerError)
-		return
-	}
-
-	c.Status(http.StatusCreated)
+	c.HTML(http.StatusOK, "issues.html", issues)
 }
 
 func main() {
@@ -337,22 +88,29 @@ func main() {
 
 	router := gin.Default()
 
-	router.GET("/users/:id", func(c *gin.Context) { getUserHandler(c, db) })
-	router.GET("/repos/:id", func(c *gin.Context) { getRepoHandler(c, db) })
-	router.GET("/issues/:id", func(c *gin.Context) { getIssueHandler(c, db) })
-	router.GET("/comments/:id", func(c *gin.Context) { getCommentHandler(c, db) })
-	router.DELETE("/users/:id", func(c *gin.Context) { deleteUserHandler(c, db) })
-	router.DELETE("/repos/:id", func(c *gin.Context) { deleteRepoHandler(c, db) })
-	router.DELETE("/issues/:id", func(c *gin.Context) { deleteIssueHandler(c, db) })
-	router.DELETE("/comments/:id", func(c *gin.Context) { deleteCommentHandler(c, db) })
-	router.POST("/users", func(c *gin.Context) { postUserHandler(c, db) })
-	router.POST("/repos", func(c *gin.Context) { postRepoHandler(c, db) })
-	router.POST("/issues", func(c *gin.Context) { postIssueHandler(c, db) })
-	router.POST("/comments", func(c *gin.Context) { postCommentHandler(c, db) })
-	router.PUT("/users", func(c *gin.Context) { putUserHandler(c, db) })
-	router.PUT("/repos", func(c *gin.Context) { putRepoHandler(c, db) })
-	router.PUT("/issues", func(c *gin.Context) { putIssueHandler(c, db) })
-	router.PUT("/comments", func(c *gin.Context) { putCommentHandler(c, db) })
+	router.LoadHTMLGlob("./templates/*")
+
+	api := router.Group("/api")
+
+	api.GET("/users/:id", func(c *gin.Context) { getUserHandler(c, db) })
+	api.GET("/repos/:id", func(c *gin.Context) { getRepoHandler(c, db) })
+	api.GET("/issues/:id", func(c *gin.Context) { getIssueHandler(c, db) })
+	api.GET("/comments/:id", func(c *gin.Context) { getCommentHandler(c, db) })
+	api.DELETE("/users/:id", func(c *gin.Context) { deleteUserHandler(c, db) })
+	api.DELETE("/repos/:id", func(c *gin.Context) { deleteRepoHandler(c, db) })
+	api.DELETE("/issues/:id", func(c *gin.Context) { deleteIssueHandler(c, db) })
+	api.DELETE("/comments/:id", func(c *gin.Context) { deleteCommentHandler(c, db) })
+	api.POST("/users", func(c *gin.Context) { postUserHandler(c, db) })
+	api.POST("/repos", func(c *gin.Context) { postRepoHandler(c, db) })
+	api.POST("/issues", func(c *gin.Context) { postIssueHandler(c, db) })
+	api.POST("/comments", func(c *gin.Context) { postCommentHandler(c, db) })
+	api.PUT("/users", func(c *gin.Context) { putUserHandler(c, db) })
+	api.PUT("/repos", func(c *gin.Context) { putRepoHandler(c, db) })
+	api.PUT("/issues", func(c *gin.Context) { putIssueHandler(c, db) })
+	api.PUT("/comments", func(c *gin.Context) { putCommentHandler(c, db) })
+
+	router.GET("/user", func(c *gin.Context) { getUserPageHandler(c, db) })
+	router.GET("/issues", func(c *gin.Context) { getIssuesPageHandler(c, db) })
 
 	err = router.Run(":8000")
 	if err != nil {

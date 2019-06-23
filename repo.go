@@ -2,6 +2,8 @@ package main
 
 import (
 	"database/sql"
+	"github.com/gin-gonic/gin"
+	"net/http"
 	"time"
 )
 
@@ -85,4 +87,74 @@ func DeleteRepo(db *sql.DB, id string) error {
 	}
 
 	return nil
+}
+
+func getRepoHandler(c *gin.Context, db *sql.DB) {
+
+	id := c.Param("id")
+
+	repo, err := GetRepo(db, id)
+
+	if err != nil {
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	c.JSON(http.StatusOK, repo)
+
+	// c.Status(http.StatusNoContent)
+
+}
+
+func postRepoHandler(c *gin.Context, db *sql.DB) {
+
+	repo := Repo{}
+	err := c.BindJSON(&repo)
+	if err != nil {
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	err = CreateRepo(db, repo)
+	if err != nil {
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	c.Status(http.StatusCreated)
+
+}
+
+func putRepoHandler(c *gin.Context, db *sql.DB) {
+
+	repo := Repo{}
+	err := c.BindJSON(&repo)
+	if err != nil {
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	err = UpdateRepo(db, repo)
+	if err != nil {
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	c.Status(http.StatusNoContent)
+
+}
+
+func deleteRepoHandler(c *gin.Context, db *sql.DB) {
+
+	id := c.Param("id")
+
+	err := DeleteRepo(db, id)
+
+	if err != nil {
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	// c.JSON(http.StatusOK, repo)
+
+	c.Status(http.StatusNoContent)
+
 }

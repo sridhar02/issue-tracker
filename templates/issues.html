@@ -1,0 +1,38 @@
+<style type="text/css">
+
+*{
+	margin: 0;
+	padding: 0;
+}
+	
+.div1{
+/*	margin: 5px;
+	padding: 5px;*/
+	background-color: grey;
+}
+
+.div2{
+
+	/*display: flex;*/
+}
+
+
+
+
+</style>
+
+
+{{range .}} 
+	<div class="div1">
+		
+	<h1 class="h1" >{{ .Title }}</h1>
+
+	<div class="div2">
+	<span>#{{.IssueNumber}} </span>
+
+	<span>{{.Username}}</span>
+	</div>
+	</div>
+
+	
+{{end}}

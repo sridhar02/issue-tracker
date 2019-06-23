@@ -2,6 +2,8 @@ package main
 
 import (
 	"database/sql"
+	"github.com/gin-gonic/gin"
+	"net/http"
 	"time"
 )
 
@@ -85,4 +87,73 @@ func DeleteUser(db *sql.DB, id string) error {
 	}
 
 	return nil
+}
+
+func getUserHandler(c *gin.Context, db *sql.DB) {
+
+	id := c.Param("id")
+
+	user, err := GetUser(db, id)
+
+	if err != nil {
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	c.JSON(http.StatusOK, user)
+
+	// c.Status(http.StatusNoContent)
+
+}
+
+func postUserHandler(c *gin.Context, db *sql.DB) {
+
+	user := User{}
+	err := c.BindJSON(&user)
+	if err != nil {
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	err = CreateUser(db, user)
+	if err != nil {
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	c.Status(http.StatusCreated)
+
+}
+
+func putUserHandler(c *gin.Context, db *sql.DB) {
+
+	user := User{}
+	err := c.BindJSON(&user)
+	if err != nil {
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	err = UpdateUser(db, user)
+	if err != nil {
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	c.Status(http.StatusNoContent)
+}
+
+func deleteUserHandler(c *gin.Context, db *sql.DB) {
+
+	id := c.Param("id")
+
+	err := DeleteUser(db, id)
+
+	if err != nil {
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	// c.JSON(http.StatusOK, repo)
+
+	c.Status(http.StatusNoContent)
+
 }

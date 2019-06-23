@@ -1,7 +1,7 @@
-get('http://localhost:8000/users/ac6f8b68-8f31-48ea-a436-05b9813b484b')
+get('http://localhost:8000/api/users/ac6f8b68-8f31-48ea-a436-05b9813b484b')
 
 
-post('http://localhost:8000/users',
+post('http://localhost:8000/api/users',
 	json={
 		'id': 'ac6f8b68-8f31-48ea-a436-05b9813b4840',
 		'name': 'Katta Sridhar',
@@ -9,7 +9,7 @@ post('http://localhost:8000/users',
 		'email': 'test+1@example.com'
 	})
 
-post('http://localhost:8000/repos',
+post('http://localhost:8000/api/repos',
 	json={
 		'id': 'ac6f8b68-8f31-48ea-c536-05b9813b4840',
 		'name': 'Katta Sridhar',
@@ -17,15 +17,15 @@ post('http://localhost:8000/repos',
 	})
 
 
-post('http://localhost:8000/issues',
+post('http://localhost:8000/api/issues',
 	json={
-		'title': '2nd issue is created',
-		'user_id':'ac6f8b68-8f31-48ea-a436-05b9813b4840',
-		'body': 'a new issue is created in a new repo',
-		'repo_id': 'ac6f8b68-8f31-48ea-c536-05b9813b4840',
+		'title': '4th issue is created',
+		'user_id':'ac6f8b68-8f31-48ea-a436-05b9813b484b',
+		'body': 'a new issue is created in a the same  repo',
+		'repo_id': 'd360c6f3-60dc-4846-bb6a-0919a1817d5e'
 	})
 
-post('http://localhost:8000/comments',
+post('http://localhost:8000/api/comments',
 	json={
 		'user_id': 'ac6f8b68-8f31-48ea-a436-05b9813b4840',
 		'body': 'Katta Sridhar',
@@ -33,7 +33,7 @@ post('http://localhost:8000/comments',
 		'repo_id':'ac6f8b68-8f31-48ea-c536-05b9813b4840'
 	})
 
-put('http://localhost:8000/users',
+put('http://localhost:8000/api/users',
 	json={
 		'id': 'ac6f8b68-8f31-48ea-a436-05b9813b4840',
 		'name': 'vramana',
@@ -41,3 +41,30 @@ put('http://localhost:8000/users',
 		'email': 'idlike2dream@gmail.com'
 	})
 
+put('http://localhost:8000/api/repos',
+	json={
+		'id': 'ac6f8b68-8f31-48ea-c536-05b9813b4840',
+		'name': 'vramana',
+		'user_id': 'ac6f8b68-8f31-48ea-a436-05b9813b4840',
+	})
+
+
+put('http://localhost:8000/api/issues',
+	json={
+		'id': 2,
+		'title': '2nd issue is updated',
+		'user_id':'ac6f8b68-8f31-48ea-a436-05b9813b4840',
+		'body': 'a new issue is updated in a new repo',
+		'repo_id': 'ac6f8b68-8f31-48ea-c536-05b9813b4840'
+	})
+
+put('http://localhost:8000/api/comments',
+	json={
+		'id':2,
+		'body': 'vramana',
+	})
+
+delete('http://localhost:8000/api/comments/2')
+delete('http://localhost:8000/api/issues/2')
+delete('http://localhost:8000/api/repos/ac6f8b68-8f31-48ea-c536-05b9813b4840')
+delete('http://localhost:8000/api/users/ac6f8b68-8f31-48ea-a436-05b9813b4840')

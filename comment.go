@@ -2,6 +2,10 @@ package main
 
 import (
 	"database/sql"
+	"fmt"
+	"github.com/gin-gonic/gin"
+	"net/http"
+	"strconv"
 	"time"
 )
 
@@ -89,4 +93,88 @@ func DeleteComment(db *sql.DB, id int) error {
 	}
 
 	return nil
+}
+
+func getCommentHandler(c *gin.Context, db *sql.DB) {
+
+	id := c.Param("id")
+
+	Id, err := strconv.Atoi(id)
+	if err != nil {
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	comment, err := GetComment(db, Id)
+
+	if err != nil {
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	c.JSON(http.StatusOK, comment)
+
+	// c.Status(http.StatusNoContent)
+}
+
+func postCommentHandler(c *gin.Context, db *sql.DB) {
+
+	comment := Comment{}
+	err := c.BindJSON(&comment)
+	if err != nil {
+		fmt.Println(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	err = CreateComment(db, comment)
+	if err != nil {
+		fmt.Println(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	c.Status(http.StatusCreated)
+
+}
+
+func putCommentHandler(c *gin.Context, db *sql.DB) {
+
+	comment := Comment{}
+	err := c.BindJSON(&comment)
+	if err != nil {
+		fmt.Println(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	err = UpdateComment(db, comment)
+	if err != nil {
+		fmt.Println(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	c.Status(http.StatusNoContent)
+}
+
+func deleteCommentHandler(c *gin.Context, db *sql.DB) {
+
+	id := c.Param("id")
+
+	Id, err := strconv.Atoi(id)
+	if err != nil {
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	err = DeleteComment(db, Id)
+
+	if err != nil {
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	// c.JSON(http.StatusOK, repo)
+
+	c.Status(http.StatusNoContent)
+
 }

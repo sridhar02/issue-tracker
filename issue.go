@@ -2,6 +2,10 @@ package main
 
 import (
 	"database/sql"
+	"fmt"
+	"github.com/gin-gonic/gin"
+	"net/http"
+	"strconv"
 	"time"
 )
 
@@ -108,4 +112,89 @@ func DeleteIssue(db *sql.DB, id int) error {
 	}
 
 	return nil
+}
+
+func getIssueHandler(c *gin.Context, db *sql.DB) {
+
+	id := c.Param("id")
+
+	Id, err := strconv.Atoi(id)
+	if err != nil {
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	issue, err := GetIssue(db, Id)
+
+	if err != nil {
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	c.JSON(http.StatusOK, issue)
+
+	// c.Status(http.StatusNoContent)
+
+}
+
+func postIssueHandler(c *gin.Context, db *sql.DB) {
+
+	issue := Issue{}
+	err := c.BindJSON(&issue)
+	if err != nil {
+		fmt.Println(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	err = CreateIssue(db, issue)
+	if err != nil {
+		fmt.Println(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	c.Status(http.StatusCreated)
+
+}
+
+func putIssueHandler(c *gin.Context, db *sql.DB) {
+
+	issue := Issue{}
+	err := c.BindJSON(&issue)
+	if err != nil {
+		fmt.Println(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	err = UpdateIssue(db, issue)
+	if err != nil {
+		fmt.Println(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	c.Status(http.StatusNoContent)
+}
+
+func deleteIssueHandler(c *gin.Context, db *sql.DB) {
+
+	id := c.Param("id")
+
+	Id, err := strconv.Atoi(id)
+	if err != nil {
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	err = DeleteIssue(db, Id)
+
+	if err != nil {
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	// c.JSON(http.StatusOK, repo)
+
+	c.Status(http.StatusNoContent)
+
 }
