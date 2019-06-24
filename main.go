@@ -71,16 +71,19 @@ func getIssuesPageHandler(c *gin.Context, db *sql.DB) {
 
 func getIssuePageHandler(c *gin.Context, db *sql.DB) {
 
+	Id := c.Param("id")
+
 	var issueNumber, ID int
 	var title, username string
 
 	row := db.QueryRow(
 		`SELECT issues.id,issues.title, users.username ,issues.issue_number 
-		 FROM issues JOIN users ON issues.user_id = users.id WHERE repo_id = $1;`,
-		"d360c6f3-60dc-4846-bb6a-0919a1817d5e")
+		 FROM issues JOIN users ON issues.user_id = users.id WHERE issues.id = $1;`,
+		Id)
 
 	err := row.Scan(&ID, &title, &username, &issueNumber)
 	if err != nil {
+		fmt.Println(err)
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
