@@ -27,6 +27,7 @@ func getUserPageHandler(c *gin.Context, db *sql.DB) {
 type IssueName struct {
 	ID          int
 	Title       string
+	Body        string
 	Username    string
 	IssueNumber int
 }
@@ -69,19 +70,26 @@ func getIssuesPageHandler(c *gin.Context, db *sql.DB) {
 	c.HTML(http.StatusOK, "issues.html", issues)
 }
 
+type CommentsIssue struct {
+	ID       int
+	Username string
+	Body     string
+	issueId  int
+}
+
 func getIssuePageHandler(c *gin.Context, db *sql.DB) {
 
 	Id := c.Param("id")
 
 	var issueNumber, ID int
-	var title, username string
+	var title, username, body string
 
 	row := db.QueryRow(
-		`SELECT issues.id,issues.title, users.username ,issues.issue_number 
+		`SELECT issues.id,issues.title, issues.body, users.username ,issues.issue_number 
 		 FROM issues JOIN users ON issues.user_id = users.id WHERE issues.id = $1;`,
 		Id)
 
-	err := row.Scan(&ID, &title, &username, &issueNumber)
+	err := row.Scan(&ID, &title, &body, &username, &issueNumber)
 	if err != nil {
 		fmt.Println(err)
 		c.AbortWithStatus(http.StatusInternalServerError)
@@ -91,12 +99,42 @@ func getIssuePageHandler(c *gin.Context, db *sql.DB) {
 	issue := IssueName{
 		ID:          ID,
 		Title:       title,
+		Body:        body,
 		Username:    username,
 		IssueNumber: issueNumber,
 	}
 
+	rows, err := db.Query(`SELECT comments.id,users.username,comments.body,
+							comments.issue_id FROM comments JOIN users ON 
+							comments.user_id = users.id WHERE comments.issue_id=$1`, Id)
+
+	if err != nil {
+		fmt.Println(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
 	//gin.H = map[string]interface{}
-	comments := []string{}
+	comments := []CommentsIssue{}
+
+	var IssueId int
+
+	for rows.Next() {
+		err = rows.Scan(&ID, &username, &body, &IssueId)
+		if err != nil {
+			fmt.Println(err)
+			c.AbortWithStatus(http.StatusInternalServerError)
+			return
+		}
+
+		comment := CommentsIssue{
+			ID:       ID,
+			Username: username,
+			Body:     body,
+			issueId:  IssueId,
+		}
+
+		comments = append(comments, comment)
+	}
 
 	c.HTML(http.StatusOK, "issue.html", gin.H{"Issue": issue, "Comments": comments})
 }
