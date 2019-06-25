@@ -95,7 +95,10 @@ func getIssuePageHandler(c *gin.Context, db *sql.DB) {
 		IssueNumber: issueNumber,
 	}
 
-	c.HTML(http.StatusOK, "issue.html", issue)
+	//gin.H = map[string]interface{}
+	comments := []string{}
+
+	c.HTML(http.StatusOK, "issue.html", gin.H{"Issue": issue, "Comments": comments})
 }
 
 func main() {
