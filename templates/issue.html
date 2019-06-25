@@ -13,9 +13,16 @@ body{
 	width:900px;
 	margin: 0 auto;
 }
-.issue{
-	padding-left: 8px;
+
+.title-page{
+	display: flex;
+	justify-content: space-between;
 }
+
+.title-divison{
+	display: flex;
+}
+
 .title{
 	font-size: 40px;
 }
@@ -24,16 +31,12 @@ body{
 	padding-left: 10px;
 	color: #a3aab1;
 }
-.edit{
-				/*padding-left: 50	0px;*/
+
+.edit-button-divison{
+	display: flex;
+	padding-top: 10px;
 }
-.title-buttons {
-	padding: 8px; 
-	padding-right: 10px;
-	padding-left: 10px;
-	border-radius: 5px;
-	font-weight: bold;
-}
+
 .edit-button{
 	background-color:  #f1f5f7;
 	border: 2px solid #bbb;
@@ -42,15 +45,21 @@ body{
 .edit-button:hover{
 	background: #ddd;
 }
-.new-issue{
+
+.new-issue-button{
 	background-color: #53b049;
 	color: white;
 	border: 2px solid hsla(114, 41%, 37%, 1)
 }
-.new-issue:hover{
-
+.title-buttons {
+	padding: 8px; 
+	padding-right: 10px;
+	padding-left: 10px;
+	border-radius: 5px;
+	font-weight: bold;
 }
-.username{
+
+.subsection-title{
 	padding-top: 15px;
 	padding-bottom:20px;
 	padding-right: 15px;
@@ -59,6 +68,15 @@ body{
 	align-items: baseline;
 
 }
+.status{
+	background-color: #62ce58;
+	padding: 5px 10px;
+	width: 50px;
+	font-weight: bold;
+	border-radius: 3px;
+	color: white;
+}
+
 .issue-info{
 	padding-left: 10px;
 	color: #586069;
@@ -73,53 +91,12 @@ body{
 	color: #333;
 	font-weight: bold;
 }
-.issue-content{
-	min-height: 100px;
-	width: 600px;
-	border: 1px solid #DDD;
-	/*margin: 0 auto;*/
-	border-radius: 3px;
-}
-.status{
-	background-color: #62ce58;
-	padding: 5px 10px;
-	width: 50px;
-	font-weight: bold;
-	border-radius: 3px;
-	color: white;
-}
 
-.body-header {
-	padding: 15px;
-	background-color: rgb(247,247,247);
-	/*text-align: center;*/
-}
-.issue-header a{
-	text-decoration: none;
-	color: black;
-}
-
-.body-info a{
-	text-decoration: none;
-	color: #333;
-	font-weight: bold;
-}
-
-.title-div{
-	display: flex;
-	justify-content: space-between;
-}
-.edit-div{
-	display: flex;
-	padding-top: 10px;
-}
-.issue-div{
-	display: flex;
-}
 .issue-body{
 	display: flex;
 	margin-top: 20px;
 }
+
 .user-photo{
 	padding-right: 10px;
 	width: 50px;
@@ -129,19 +106,40 @@ body{
 .user-photo img {
 	border-radius: 3px;
 }
+
+.issue-content{
+	min-height: 100px;
+	width: 600px;
+	border: 1px solid #DDD;
+	/*margin: 0 auto;*/
+	border-radius: 3px;
+}
+
+.body-header {
+	padding: 15px;
+	background-color: rgb(247,247,247);
+	/*text-align: center;*/
+}
+.body-info a{
+	text-decoration: none;
+	color: #333;
+	font-weight: bold;
+}
+
 </style>
-<div class="issue">
-	<div class="title-div">
-		<div class="issue-div">
+<div>
+{{with .Issue }}
+	<div class="title-page">
+		<div class="title-divison">
 			<div class="title">{{.Title }}</div>
 			<div class="issue-number">#{{.IssueNumber}}</div>
 		</div>
-		<div class="edit-div">
+		<div class="edit-button-divison">
 			<div class="edit"><button class="edit-button title-buttons">Edit</button></div>
-			<div class="issue"><button class="new-issue title-buttons">New issue</button></div>
+			<div class="issue"><button class="new-issue-button title-buttons">New issue</button></div>
 		</div>
 	</div>
-	<div class="username">
+	<div class="subsection-title">
 		<span class="status">Open</span>
 		<span class="issue-info"><a href="" class="user-name">{{.Username}}</a> opened this issue on 15 Dec 2018 · 1 comment</span>
 	</div>
@@ -155,4 +153,7 @@ body{
 			</div>
 		</div>
 	</div>
+{{end}}
+
+
 </div>
