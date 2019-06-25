@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	// "strconv"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	_ "github.com/lib/pq"
@@ -25,10 +25,13 @@ func getUserPageHandler(c *gin.Context, db *sql.DB) {
 }
 
 type IssueName struct {
-	ID          int
-	Title       string
-	Body        string
-	Username    string
+	ID       int
+	Title    string
+	Body     string
+	Username string
+	UserId   string
+	RepoId   string
+
 	IssueNumber int
 }
 
@@ -82,14 +85,15 @@ func getIssuePageHandler(c *gin.Context, db *sql.DB) {
 	Id := c.Param("id")
 
 	var issueNumber, ID int
-	var title, username, body string
+	var title, username, body, repoId, userId string
 
 	row := db.QueryRow(
-		`SELECT issues.id,issues.title, issues.body, users.username ,issues.issue_number 
+		`SELECT issues.id,issues.title, issues.body, users.username ,issues.issue_number,
+		issues.repo_id, issues.user_id 
 		 FROM issues JOIN users ON issues.user_id = users.id WHERE issues.id = $1;`,
 		Id)
 
-	err := row.Scan(&ID, &title, &body, &username, &issueNumber)
+	err := row.Scan(&ID, &title, &body, &username, &issueNumber, &repoId, &userId)
 	if err != nil {
 		fmt.Println(err)
 		c.AbortWithStatus(http.StatusInternalServerError)
@@ -102,6 +106,8 @@ func getIssuePageHandler(c *gin.Context, db *sql.DB) {
 		Body:        body,
 		Username:    username,
 		IssueNumber: issueNumber,
+		RepoId:      repoId,
+		UserId:      userId,
 	}
 
 	rows, err := db.Query(`SELECT comments.id,users.username,comments.body,
@@ -137,6 +143,36 @@ func getIssuePageHandler(c *gin.Context, db *sql.DB) {
 	}
 
 	c.HTML(http.StatusOK, "issue.html", gin.H{"Issue": issue, "Comments": comments})
+}
+
+func createIssueComment(c *gin.Context, db *sql.DB) {
+	body := c.PostForm("body")
+	repoId := c.PostForm("repo_id")
+	_issueId := c.PostForm("issue_id")
+	userId := c.PostForm("user_id")
+
+	issueId, err := strconv.Atoi(_issueId)
+	if err != nil {
+		c.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+
+	comment := Comment{
+		Body:    body,
+		UserId:  userId,
+		RepoId:  repoId,
+		IssueId: issueId,
+	}
+
+	err = CreateComment(db, comment)
+	if err != nil {
+		fmt.Println(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	c.Redirect(http.StatusFound, "http://localhost:8000/issues/"+_issueId)
+	c.Header("Content-Type", "application/html")
 }
 
 func main() {
@@ -184,6 +220,7 @@ func main() {
 	router.GET("/user", func(c *gin.Context) { getUserPageHandler(c, db) })
 	router.GET("/issues", func(c *gin.Context) { getIssuesPageHandler(c, db) })
 	router.GET("/issues/:id", func(c *gin.Context) { getIssuePageHandler(c, db) })
+	router.POST("/comments", func(c *gin.Context) { createIssueComment(c, db) })
 
 	err = router.Run(":8000")
 	if err != nil {

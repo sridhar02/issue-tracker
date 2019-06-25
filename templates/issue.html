@@ -28,13 +28,19 @@ body{
 	padding-left: 10px;
 	color: #a3aab1;
 }
-.edit {
-	padding-right: 10px;
-}
+
 .edit-button-divison{
-	display: flex;
-	padding-top: 10px;
+	padding-top: 15px;
 }
+
+.edit-button,.new-issue-button {
+	padding: 8px;
+	padding-right: 10px;
+	padding-left: 10px;
+	border-radius: 5px;
+	font-weight: bold;
+}
+
 .edit-button{
 	background-color:  #f1f5f7;
 	border: 2px solid #bbb;
@@ -42,18 +48,13 @@ body{
 .edit-button:hover{
 	background: #ddd;
 }
+
 .new-issue-button{
 	background-color: #53b049;
 	color: white;
 	border: 2px solid hsla(114, 41%, 37%, 1)
 }
-.title-buttons {
-	padding: 8px;
-	padding-right: 10px;
-	padding-left: 10px;
-	border-radius: 5px;
-	font-weight: bold;
-}
+
 .subsection-title{
 	padding-top: 15px;
 	padding-bottom:20px;
@@ -100,7 +101,8 @@ body{
 }
 
 .issue-section .content,
-.comment-section .content{
+.comment-section .content,
+.write-section .content {
 	min-height: 90px;
 	width: 600px;
 	border: 1px solid #DDD;
@@ -109,7 +111,8 @@ body{
 }
 
 .issue-section .header,
-.comment-section .header {
+.comment-section .header,
+.write-section .header {
 	padding: 15px;
 	background-color: rgb(247,247,247);
 	border-bottom: 1px solid #dddd;
@@ -145,7 +148,6 @@ body{
 
 .write-comment{
 	margin: 10px;
-	color:#ccc;
 	border: 1px solid #ddd;
 	min-height: 100px;
 	width: 95%;
@@ -164,8 +166,8 @@ body{
 			<div class="issue-number">#{{.IssueNumber}}</div>
 		</div>
 		<div class="edit-button-divison">
-			<div class="edit"><button class="edit-button title-buttons">Edit</button></div>
-			<div class="issue"><button class="new-issue-button title-buttons">New issue</button></div>
+			<button class="edit-button">Edit</button>
+			<button class="new-issue-button">New issue</button>
 		</div>
 	</div>
 	<div class="subsection-title">
@@ -200,14 +202,20 @@ body{
 	{{end}}
 	<div class="write-section">
 		<div class="user-photo"><img src="https://picsum.photos/50/50"></div>
-		<div class="write-content">
-			<div class="comment-header">
-				<span></span>
-			</div>
-			<textarea type="" name="" class="write-comment" placeholder="Leave a comment"></textarea> 
-			<div>
-				<span><button></button></span>
-			</div>
+		<div class="content">
+			<form method="POST" action="/comments">
+				<input name="issue_id" value="{{.Issue.ID}}" hidden></input> 
+				<input name="repo_id" value="{{.Issue.RepoId}}" hidden></input> 
+				<input name="user_id" value="{{.Issue.UserId}}" hidden></input> 
+
+				<div class="header">
+					<span></span>
+				</div>
+				<textarea name="body" class="write-comment" placeholder="Leave a comment"></textarea> 
+				<div>
+					<button type="submit">Comment</button>
+				</div>
+			</form>
 		</div>
 	</div>
 
