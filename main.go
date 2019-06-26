@@ -175,6 +175,38 @@ func createIssueComment(c *gin.Context, db *sql.DB) {
 	c.Header("Content-Type", "application/html")
 }
 
+func getNewIssuePageHandler(c *gin.Context, db *sql.DB) {
+
+	c.HTML(http.StatusOK, "issue_new.html", gin.H{"UserId": "ac6f8b68-8f31-48ea-a436-05b9813b484b",
+		"RepoId": "d360c6f3-60dc-4846-bb6a-0919a1817d5e"})
+
+}
+
+func postNewIssuePageHandler(c *gin.Context, db *sql.DB) {
+
+	title := c.PostForm("title")
+	repoId := c.PostForm("repo_id")
+	body := c.PostForm("body")
+	userId := c.PostForm("user_id")
+
+	issue := Issue{
+		Title:  title,
+		RepoId: repoId,
+		Body:   body,
+		UserId: userId,
+	}
+
+	err := CreateIssue(db, issue)
+	if err != nil {
+		fmt.Println(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	c.Redirect(http.StatusFound, "http://localhost:8000/issues")
+
+}
+
 func main() {
 
 	connStr := "user=postgres dbname=issue_tracker host=localhost password=test1234 sslmode=disable"
@@ -219,7 +251,14 @@ func main() {
 
 	router.GET("/user", func(c *gin.Context) { getUserPageHandler(c, db) })
 	router.GET("/issues", func(c *gin.Context) { getIssuesPageHandler(c, db) })
-	router.GET("/issues/:id", func(c *gin.Context) { getIssuePageHandler(c, db) })
+	router.POST("/issues/new", func(c *gin.Context) { postNewIssuePageHandler(c, db) })
+	router.GET("/issues/:id", func(c *gin.Context) {
+		if c.Param("id") == "new" {
+			getNewIssuePageHandler(c, db)
+		} else {
+			getIssuePageHandler(c, db)
+		}
+	})
 	router.POST("/comments", func(c *gin.Context) { createIssueComment(c, db) })
 
 	err = router.Run(":8000")

@@ -1,0 +1,86 @@
+<style type="text/css">
+
+*{
+	margin: 0;
+	padding: 0;
+}
+body{
+	padding-top: 20px;
+	font-family: sans-serif;
+	width:900px;
+	margin: 0 auto;
+}
+	
+.new-section{
+	display: flex;
+}
+
+.user-photo{
+	padding-right: 10px;
+	width: 50px;
+	height: 50px;
+}
+.issue{
+	padding: 10px;
+	min-height: 200px;
+	width: 600px;
+	border: 1px solid #DDD;
+}
+.issue input{
+	width: 100%;
+}
+
+.issue textarea{
+	width: 100%;
+	min-height: 100px;
+}
+
+.issue input {
+	/*display: block;*/
+	padding: 10px;
+	border-radius: 3px;
+}
+
+.input:focus{
+	outline: 3px solid blue;
+	border-radius: 10px;
+}
+
+.body{
+	padding-top: 10px;
+}
+.write-button{
+	width: 100%;
+	min-height: 20px;
+	border: 1px solid #DDD;
+	border-radius: 3px;	
+}
+
+.issue-body{
+	padding: 10px;
+
+}
+
+
+</style>
+
+<div class="new-section">
+	<div class="user-photo"><img src="https://picsum.photos/50/50"></div>
+	<form method="POST" action="/issues/new">
+		<input name="repo_id" value="{{.RepoId}}" hidden></input> 
+		<input name="user_id" value="{{.UserId}}" hidden></input> 
+	<div class="issue">
+		<input  class="input" type="text" name="title" placeholder="Title">
+
+		<div class="body">
+			<!-- <div class="write-button">
+				<button>write</button>
+				<button>Preview</button>
+			</div> -->
+			<textarea class="issue-body" name="body" placeholder="leave a comment here"></textarea>
+		</div>
+		<button type="submit">SUBMIT ISSUE</button>
+	</div>
+	</form>
+</div>
+
