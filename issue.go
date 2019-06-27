@@ -16,17 +16,18 @@ type Issue struct {
 	Body        string    `json:"body,omitempty"`
 	RepoId      string    `json:"repo_id,omitempty"`
 	IssueNumber int       `json:"issue_number,omitempty"`
+	Status      string    `json:"status,omitempty"`
 	CreatedAt   time.Time `json:"created_at,omitempty"`
 	UpdatedAt   time.Time `json:"updated_at,omitempty"`
 }
 
 func GetIssue(db *sql.DB, id int) (Issue, error) {
 
-	var title, userId, body, repoId, createdAt, updatedAt string
+	var title, userId, body, repoId, status, createdAt, updatedAt string
 	var issueNumber int
 
-	row := db.QueryRow("SELECT title, user_id,body,repo_id,issue_number,created_at, updated_at FROM issues WHERE id=$1", id)
-	err := row.Scan(&title, &userId, &body, &repoId, &issueNumber, &createdAt, &updatedAt)
+	row := db.QueryRow("SELECT title, user_id,body,repo_id,issue_number,status,created_at, updated_at FROM issues WHERE id=$1", id)
+	err := row.Scan(&title, &userId, &body, &repoId, &issueNumber, &status, &createdAt, &updatedAt)
 	if err != nil {
 		return Issue{}, err
 	}
@@ -50,6 +51,7 @@ func GetIssue(db *sql.DB, id int) (Issue, error) {
 		Body:        body,
 		RepoId:      repoId,
 		IssueNumber: issueNumber,
+		Status:      status,
 		CreatedAt:   CreatedAt,
 		UpdatedAt:   UpdatedAt,
 	}
@@ -69,13 +71,14 @@ func CreateIssue(db *sql.DB, issue Issue) error {
 
 	// fmt.Println(issue)
 
-	_, err = db.Exec(`INSERT INTO issues(title, user_id,body,repo_id,issue_number, created_at, updated_at)
-						VALUES($1,$2,$3,$4,$5,$6,$7)`,
+	_, err = db.Exec(`INSERT INTO issues(title, user_id,body,repo_id,issue_number,status, created_at, updated_at)
+						VALUES($1,$2,$3,$4,$5,$6,$7,$8)`,
 		issue.Title,
 		issue.UserId,
 		issue.Body,
 		issue.RepoId,
 		issueCount+1,
+		"Open",
 		time.Now().Format(time.RFC3339),
 		time.Now().Format(time.RFC3339))
 	if err != nil {

@@ -6,9 +6,7 @@
 }
 body{
 	padding-top: 20px;
-	/*padding-left: 200px;
-	padding-right: 200px;
-	*/
+	padding-bottom: 20px;
 	font-family: sans-serif;
 	width:900px;
 	margin: 0 auto;
@@ -63,12 +61,19 @@ body{
 	display: flex;
 	align-items: baseline;
 }
-.status{
+.status-open{
 	background-color: #62ce58;
 	padding: 5px 10px;
-	padding-right: 0px;
-	width: 50px;
 	font-weight: bold;
+	border-radius: 3px;
+	color: white;
+}
+.status-closed{
+	background-color:red;
+	padding: 5px 10px;
+	/*padding-right: 0px;*/
+/*	width: 50px;
+*/	font-weight: bold;
 	border-radius: 3px;
 	color: white;
 }
@@ -118,6 +123,10 @@ body{
 	border-bottom: 1px solid #dddd;
 }
 
+.write-section .header{
+	padding-bottom: 0px;
+}
+
 .issue-section .info,
 .comment-section .info{
 	color:#586069;
@@ -151,9 +160,52 @@ body{
 	border: 1px solid #ddd;
 	min-height: 100px;
 	width: 95%;
+	border-radius: 3px;
+	background-color: #fafbfc;
 }
 .write-comment:focus{
-	outline: 3px solid #2188ff;
+	/*outline: 3px solid #2188ff;*/
+	outline: none;
+	box-shadow: 0 0 0 0.1em rgba(3,102,214,.3);
+	border-color: #2188ff;
+	background-color: #fff;
+}
+.comment-buttons{
+	display: flex;
+	justify-content: flex-end;
+}
+
+
+.write-section .header button{
+	padding:8px 12px;
+	background-color: #d1d5da;
+	border: 2px solid #d1d5da;
+	border-bottom: 0px;
+	border-radius: 4px;	
+}
+
+.preview{
+	margin-left: 10px;
+}
+
+
+.comment-buttons .comment{
+	background-color: #28a745;
+	padding: 10px;
+	color: white;
+	font-weight: bold;
+	border-radius: 3px;
+	border: 1px solid #ccc;
+}
+
+.comment-buttons .close{
+	background-color: #eff3f6;
+	background-image: linear-gradient(-180deg, #fafbfc,#eff3f6 90%);
+	color: #24292e;
+	padding:10px;
+	border-radius: 3px;
+	margin-right: 10px;
+	border: 2px solid #ccc;
 }
 
 </style>
@@ -171,7 +223,12 @@ body{
 		</div>
 	</div>
 	<div class="subsection-title">
-		<span class="status">Open</span>
+		{{if eq .Status "Open"}}
+		<span class="status-open">{{.Status}}</span>
+		{{else}}
+		<span class="status-closed">{{.Status}}</span>
+		{{end}}
+
 		<span class="issue-info"><a href="" class="user-name">{{.Username}}</a> opened this issue on 15 Dec 2018 · 1 comment</span>
 	</div>
 	
@@ -209,11 +266,17 @@ body{
 				<input name="user_id" value="{{.Issue.UserId}}" hidden></input> 
 
 				<div class="header">
-					<span></span>
+					<button type="button">Write</button>
+					<button class="preview" type="button">Preview</button>
 				</div>
 				<textarea name="body" class="write-comment" placeholder="Leave a comment"></textarea> 
-				<div>
-					<button type="submit">Comment</button>
+				<div class="comment-buttons">
+					{{if eq .Issue.Status "Open"}} 
+					<button class="close" name="comment_and_close" value="1" type="submit">Close issue</button>
+					{{else}}
+					<button class="close" name="comment_and_open" value="1" type="submit">Reopen issue</button>
+					{{end}}
+					<button class="comment" type="submit">Comment</button>
 				</div>
 			</form>
 		</div>

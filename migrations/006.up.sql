@@ -1,0 +1,1 @@
+UPDATE issues SET status = 'Open' WHERE status IS NULL;

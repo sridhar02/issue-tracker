@@ -25,14 +25,14 @@ func getUserPageHandler(c *gin.Context, db *sql.DB) {
 }
 
 type IssueName struct {
-	ID       int
-	Title    string
-	Body     string
-	Username string
-	UserId   string
-	RepoId   string
-
+	ID          int
+	Title       string
+	Body        string
+	Username    string
+	UserId      string
+	RepoId      string
 	IssueNumber int
+	Status      string
 }
 
 func getIssuesPageHandler(c *gin.Context, db *sql.DB) {
@@ -85,15 +85,15 @@ func getIssuePageHandler(c *gin.Context, db *sql.DB) {
 	Id := c.Param("id")
 
 	var issueNumber, ID int
-	var title, username, body, repoId, userId string
+	var title, username, body, repoId, userId, status string
 
 	row := db.QueryRow(
 		`SELECT issues.id,issues.title, issues.body, users.username ,issues.issue_number,
-		issues.repo_id, issues.user_id 
+		issues.repo_id, issues.user_id ,issues.status
 		 FROM issues JOIN users ON issues.user_id = users.id WHERE issues.id = $1;`,
 		Id)
 
-	err := row.Scan(&ID, &title, &body, &username, &issueNumber, &repoId, &userId)
+	err := row.Scan(&ID, &title, &body, &username, &issueNumber, &repoId, &userId, &status)
 	if err != nil {
 		fmt.Println(err)
 		c.AbortWithStatus(http.StatusInternalServerError)
@@ -108,6 +108,7 @@ func getIssuePageHandler(c *gin.Context, db *sql.DB) {
 		IssueNumber: issueNumber,
 		RepoId:      repoId,
 		UserId:      userId,
+		Status:      status,
 	}
 
 	rows, err := db.Query(`SELECT comments.id,users.username,comments.body,
@@ -150,6 +151,29 @@ func createIssueComment(c *gin.Context, db *sql.DB) {
 	repoId := c.PostForm("repo_id")
 	_issueId := c.PostForm("issue_id")
 	userId := c.PostForm("user_id")
+
+	fmt.Println(c.PostForm("comment_and_close"))
+
+	if c.PostForm("comment_and_close") == "1" {
+		_, err := db.Exec(`UPDATE issues SET status = 'Closed' WHERE id = $1`, _issueId)
+		if err != nil {
+			fmt.Println(err)
+			c.AbortWithStatus(http.StatusInternalServerError)
+			return
+		}
+
+		c.Redirect(http.StatusFound, "http://localhost:8000/issues/"+_issueId)
+	}
+
+	if c.PostForm("comment_and_open") == "1" {
+		_, err := db.Exec(`UPDATE issues SET status = 'Open' WHERE id = $1`, _issueId)
+		if err != nil {
+			fmt.Println(err)
+			c.AbortWithStatus(http.StatusInternalServerError)
+			return
+		}
+		c.Redirect(http.StatusFound, "http://localhost:8000/issues/"+_issueId)
+	}
 
 	issueId, err := strconv.Atoi(_issueId)
 	if err != nil {

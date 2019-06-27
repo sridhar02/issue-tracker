@@ -32,22 +32,31 @@ body{
 
 .issue textarea{
 	width: 100%;
-	min-height: 100px;
+	min-height: 200px;
 }
 
 .issue input {
 	/*display: block;*/
+	background-color: #fafbfc;	
 	padding: 10px;
 	border-radius: 3px;
+	border-style: solid;
+	border-color: rgb(169,169,169);
+	border-width: 1px;
 }
 
 .input:focus{
-	outline: 3px solid blue;
-	border-radius: 10px;
+	/*outline: 3px solid blue;*/
+	background-color: #fff;
+	outline: none;
+	box-shadow: 0 0 0 0.1em rgba(3,102,214,.3);
+	/*border-radius: 10px;*/
+	border-color: #2188ff;
 }
 
 .body{
 	padding-top: 10px;
+	padding-bottom: 10px;
 }
 .write-button{
 	width: 100%;
@@ -58,7 +67,31 @@ body{
 
 .issue-body{
 	padding: 10px;
+	border-radius: 3px;
+	background-color: #fafbfc;
+}
+.issue-body:focus{
+	outline: none;
+	box-shadow: 0 0 0 0.1em rgba(3,102,214,.3);
+	/*border-radius: 10px;*/
+	border-color: #2188ff;
+	background-color: #fff;
+}
 
+
+
+.submit-button button{
+	border-radius: 5px;
+	padding: 10px;
+	background-color: #53b049;
+	color: white;
+	text-align: end;
+	font-weight: bold;
+}
+
+.submit-button{
+	display: flex;
+	justify-content: flex-end;
 }
 
 
@@ -70,16 +103,16 @@ body{
 		<input name="repo_id" value="{{.RepoId}}" hidden></input> 
 		<input name="user_id" value="{{.UserId}}" hidden></input> 
 	<div class="issue">
-		<input  class="input" type="text" name="title" placeholder="Title">
+		<input  class="input" type="text" name="title" placeholder="Title" required="title" >
 
 		<div class="body">
 			<!-- <div class="write-button">
 				<button>write</button>
 				<button>Preview</button>
 			</div> -->
-			<textarea class="issue-body" name="body" placeholder="leave a comment here"></textarea>
+			<textarea class="issue-body" name="body" placeholder="leave a comment here" required="text"></textarea>
 		</div>
-		<button type="submit">SUBMIT ISSUE</button>
+		<div class="submit-button"><button type="submit">SUBMIT ISSUE</button></div>
 	</div>
 	</form>
 </div>
