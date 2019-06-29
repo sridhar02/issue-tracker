@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"net/http"
 	"time"
 )
@@ -14,15 +15,17 @@ type Repo struct {
 	IssuesCount int       `json:"issue_count,omitempty"`
 	CreatedAt   time.Time `json:"created_at,omitempty"`
 	UpdatedAt   time.Time `json:"updated_at,omitempty"`
+	Description string    `json:"description,omitempty"`
+	Type        string    `json:"type,omitempty"`
 }
 
 func GetRepo(db *sql.DB, id string) (Repo, error) {
 
-	var name, userId, createdAt, updatedAt string
+	var name, userId, createdAt, updatedAt, description, TYPE string
 	var issueCount int
 
-	row := db.QueryRow("SELECT id,name, user_id,issue_count,created_at, updated_at FROM repos WHERE id=$1", id)
-	err := row.Scan(&id, &name, &userId, &issueCount, &createdAt, &updatedAt)
+	row := db.QueryRow("SELECT id,name, user_id,issue_count,created_at, updated_at,description,type FROM repos WHERE id=$1", id)
+	err := row.Scan(&id, &name, &userId, &issueCount, &createdAt, &updatedAt, &description, &TYPE)
 	if err != nil {
 		return Repo{}, err
 	}
@@ -46,6 +49,8 @@ func GetRepo(db *sql.DB, id string) (Repo, error) {
 		IssuesCount: issueCount,
 		CreatedAt:   CreatedAt,
 		UpdatedAt:   UpdatedAt,
+		Description: description,
+		Type:        TYPE,
 	}
 
 	return repo, nil
@@ -53,14 +58,18 @@ func GetRepo(db *sql.DB, id string) (Repo, error) {
 
 func CreateRepo(db *sql.DB, repo Repo) error {
 
-	_, err := db.Exec(`INSERT INTO repos(id,name, user_id, issue_count, created_at, updated_at)
-						VALUES($1,$2,$3,$4,$5,$6)`,
-		repo.ID,
+	ID := uuid.New().String()
+
+	_, err := db.Exec(`INSERT INTO repos(id,name, user_id, issue_count, created_at, updated_at,description,type)
+						VALUES($1,$2,$3,$4,$5,$6,$7,$8)`,
+		ID,
 		repo.Name,
 		repo.UserId,
 		repo.IssuesCount,
 		time.Now().Format(time.RFC3339),
-		time.Now().Format(time.RFC3339))
+		time.Now().Format(time.RFC3339),
+		repo.Description,
+		repo.Type)
 	if err != nil {
 		return err
 	}

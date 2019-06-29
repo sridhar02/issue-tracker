@@ -231,6 +231,73 @@ func postNewIssuePageHandler(c *gin.Context, db *sql.DB) {
 
 }
 
+// type RepoNew struct {
+// 	Id     string
+// 	Name   string
+// 	UserId string
+// }
+
+func getRepoNewPageHandler(c *gin.Context, db *sql.DB) {
+
+	c.HTML(http.StatusOK, "repo_new.html", gin.H{"UserId": "ac6f8b68-8f31-48ea-a436-05b9813b484b"})
+
+}
+
+func PostRepoNewPageHandler(c *gin.Context, db *sql.DB) {
+
+	name := c.PostForm("name")
+	userId := c.PostForm("user_id")
+	description := c.PostForm("description")
+	TYpe := c.PostForm("type")
+
+	repo := Repo{
+		Name:        name,
+		UserId:      userId,
+		Description: description,
+		Type:        TYpe,
+	}
+
+	err := CreateRepo(db, repo)
+	if err != nil {
+		fmt.Println(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	c.Redirect(http.StatusFound, "http://localhost:8000/issues")
+
+}
+
+func getUserNewPageHandler(c *gin.Context, db *sql.DB) {
+
+	c.HTML(http.StatusOK, "user_signup.html", gin.H{})
+}
+
+func PostUserNewPageHandler(c *gin.Context, db *sql.DB) {
+
+	name := c.PostForm("name")
+	username := c.PostForm("username")
+	email := c.PostForm("email")
+	password := c.PostForm("password")
+
+	user := User{
+		Name:     name,
+		Username: username,
+		Email:    email,
+		Password: password,
+	}
+
+	err := CreateUser(db, user)
+	if err != nil {
+		fmt.Println(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	c.Redirect(http.StatusFound, "http://localhost:8000/issues")
+
+}
+
 func main() {
 
 	connStr := "user=postgres dbname=issue_tracker host=localhost password=test1234 sslmode=disable"
@@ -240,7 +307,7 @@ func main() {
 		return
 	}
 
-	// defer fmt.Println("succesfully closed end")
+	// defecr fmt.Println("succesfully closed end")
 	defer db.Close()
 	// defer fmt.Println("succesfully closed")
 
@@ -283,7 +350,12 @@ func main() {
 			getIssuePageHandler(c, db)
 		}
 	})
+
 	router.POST("/comments", func(c *gin.Context) { createIssueComment(c, db) })
+	router.GET("/repos/new", func(c *gin.Context) { getRepoNewPageHandler(c, db) })
+	router.POST("/repos/new", func(c *gin.Context) { PostRepoNewPageHandler(c, db) })
+	router.GET("/user/sign-up", func(c *gin.Context) { getUserNewPageHandler(c, db) })
+	router.POST("/user/sign-up", func(c *gin.Context) { PostUserNewPageHandler(c, db) })
 
 	err = router.Run(":8000")
 	if err != nil {

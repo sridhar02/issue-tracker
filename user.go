@@ -3,26 +3,27 @@ package main
 import (
 	"database/sql"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"net/http"
 	"time"
 )
 
 type User struct {
-	ID       string `json:"id,omitempty"`
-	Name     string `json:"name,omitempty"`
-	Username string `json:"username,omitempty"`
-	Email    string `json:"email,omitempty"`
-	// Password   string `json:"password,omitempty"`
+	ID        string    `json:"id,omitempty"`
+	Name      string    `json:"name,omitempty"`
+	Username  string    `json:"username,omitempty"`
+	Email     string    `json:"email,omitempty"`
+	Password  string    `json:"password,omitempty"`
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 }
 
 func GetUser(db *sql.DB, id string) (User, error) {
 
-	var name, username, email, createdAt, updatedAt string
+	var name, username, email, createdAt, updatedAt, password string
 
-	row := db.QueryRow("SELECT id,name, username, email,created_at, updated_at FROM users WHERE id=$1", id)
-	err := row.Scan(&id, &name, &username, &email, &createdAt, &updatedAt)
+	row := db.QueryRow("SELECT id,name, username, email,created_at, updated_at,password FROM users WHERE id=$1", id)
+	err := row.Scan(&id, &name, &username, &email, &createdAt, &updatedAt, &password)
 	if err != nil {
 		return User{}, err
 	}
@@ -46,6 +47,7 @@ func GetUser(db *sql.DB, id string) (User, error) {
 		Email:     email,
 		CreatedAt: CreatedAt,
 		UpdatedAt: UpdatedAt,
+		Password:  password,
 	}
 
 	return user, nil
@@ -53,14 +55,17 @@ func GetUser(db *sql.DB, id string) (User, error) {
 
 func CreateUser(db *sql.DB, user User) error {
 
-	_, err := db.Exec(`INSERT INTO users(id,name, username, email, created_at, updated_at)
-						VALUES($1,$2,$3,$4,$5,$6)`,
-		user.ID,
+	ID := uuid.New().String()
+
+	_, err := db.Exec(`INSERT INTO users(id,name, username, email, created_at, updated_at,password)
+						VALUES($1,$2,$3,$4,$5,$6,$7)`,
+		ID,
 		user.Name,
 		user.Username,
 		user.Email,
 		time.Now().Format(time.RFC3339),
-		time.Now().Format(time.RFC3339))
+		time.Now().Format(time.RFC3339),
+		user.Password)
 	if err != nil {
 		return err
 	}

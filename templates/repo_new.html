@@ -1,0 +1,113 @@
+<style type="text/css">
+	
+body{
+	padding-top: 100px;
+	padding-bottom: 30px;
+	font-family: sans-serif;
+	width:700px;
+	margin: 0 auto;
+}
+.repo-intro{
+	border-bottom: 1px solid #ddd;
+}
+.repo-intro a{
+	text-decoration: none;
+	color: black;
+}
+.repo-section{
+	padding-top: 30px;
+}
+.repo-section .owner{
+	padding-right: 40px;
+}
+.repo-section .repo-details{
+	padding-top: 10px;
+	display: flex;
+}
+.repo-section span{
+	padding-left: 10px;
+	padding-right: 10px;
+	font-weight: bold;
+}
+.repo-section .username{
+	border: 1px solid #ccc;
+	padding: 4.5px;
+}
+.repo-section input{
+	border: 2px solid #ddd;
+	border-radius: 3px;
+	background-color: #fafbfc;
+}
+.repo-section input:focus{
+	box-shadow: 0 0 0 0.1em rgba(3,102,214,.3);
+	border-color: #2188ff;
+		background-color: #fff;
+}
+.slash{
+		font-size: 21px;
+}
+.description input{
+	width: 100%;
+	height: 30px;
+	border-radius: 3px;
+	border: 2px solid #ddd;
+	background-color: #fafbfc;
+}
+.description input:focus{
+	outline: none;
+	box-shadow: 0 0 0 0.1em rgba(3,102,214,.3);
+	border-color: #2188ff;
+	background-color: #fff;
+}
+.description div {
+	padding-bottom: 20px;
+	border-bottom: 1px solid #ccc;
+	width:100%;
+}
+.repo-type{
+	padding-top: 20px;
+	padding-bottom: 10px
+}
+.text{
+	padding-top:10px;
+	padding-bottom: 10px;
+}
+</style>
+{{with .}}
+<div>
+	<div class="repo-intro">
+		<h2>Create a new repository</h2>
+		<p>A repository contains all project files, including the revision history. Already have a project repository elsewhere?
+			<a href="#">Import a repository</a>
+		</p>
+	</div>
+	<div class="repo-section">
+		<span class="owner">Owner</span>
+		<span>Repository name*</span>
+		<form method="POST" action="/repos/new">
+			<input name="user_id" value="{{.UserId}}" hidden >
+			<div class="repo-details">
+				<div class="username">sridhar02</div>
+				<span class="slash">/</span>
+				<input name="name" required="text"></input>
+			</div>
+			<div class="text">Great repository names are short and memorable. Need inspiration? How about curly-palm-tree?</div>
+			<div class="description">
+				<h4>Description(optional)</h4>
+				<input  type="text" name="description" ></input>
+				<div></div>
+			</div>
+		<div class="repo-type">
+			<input type="radio" name="type" id="public" value="public">
+			<label for="public">Public</label>
+		</div>
+		<div>
+			<input type="radio" name="type" id="private" value="private">
+			<label for="private">Private</label>
+		</div>
+		<hr>
+		<button class="" type="submit">Create repository</button>
+		</form>
+	</div>
+</div>
+{{end}}
