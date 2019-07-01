@@ -2,9 +2,13 @@ package main
 
 import (
 	"database/sql"
+	"encoding/json"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"io/ioutil"
 	"net/http"
+	"os"
 	"time"
 )
 
@@ -16,14 +20,15 @@ type User struct {
 	Password  string    `json:"password,omitempty"`
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
+	Image     string    `json:"image,omitempty"`
 }
 
 func GetUser(db *sql.DB, id string) (User, error) {
 
-	var name, username, email, createdAt, updatedAt, password string
+	var name, username, email, createdAt, updatedAt, password, image string
 
-	row := db.QueryRow("SELECT id,name, username, email,created_at, updated_at,password FROM users WHERE id=$1", id)
-	err := row.Scan(&id, &name, &username, &email, &createdAt, &updatedAt, &password)
+	row := db.QueryRow("SELECT id,name, username, email,created_at, updated_at,password,image FROM users WHERE id=$1", id)
+	err := row.Scan(&id, &name, &username, &email, &createdAt, &updatedAt, &password, &image)
 	if err != nil {
 		return User{}, err
 	}
@@ -48,6 +53,7 @@ func GetUser(db *sql.DB, id string) (User, error) {
 		CreatedAt: CreatedAt,
 		UpdatedAt: UpdatedAt,
 		Password:  password,
+		Image:     image,
 	}
 
 	return user, nil
@@ -57,15 +63,23 @@ func CreateUser(db *sql.DB, user User) error {
 
 	ID := uuid.New().String()
 
-	_, err := db.Exec(`INSERT INTO users(id,name, username, email, created_at, updated_at,password)
-						VALUES($1,$2,$3,$4,$5,$6,$7)`,
+	UserImage, err := getPhoto()
+	if err != nil {
+		return err
+	}
+	fmt.Println(UserImage)
+
+	_, err = db.Exec(`INSERT INTO users(id,name, username, email, created_at, updated_at,password,image)
+						VALUES($1,$2,$3,$4,$5,$6,$7,$8)`,
 		ID,
 		user.Name,
 		user.Username,
 		user.Email,
 		time.Now().Format(time.RFC3339),
 		time.Now().Format(time.RFC3339),
-		user.Password)
+		user.Password,
+		UserImage)
+
 	if err != nil {
 		return err
 	}
@@ -161,4 +175,40 @@ func deleteUserHandler(c *gin.Context, db *sql.DB) {
 
 	c.Status(http.StatusNoContent)
 
+}
+
+type Image struct {
+	Name     string `json:"name,omitempty"`
+	Email    string `json:"email,omitempty"`
+	Position string `json:"position,omitempty"`
+	Photo    string `json:"photo,omitempty"`
+}
+
+func getPhoto() (string, error) {
+
+	url := "https://uifaces.co/api?limit=1&random"
+
+	req, err := http.NewRequest(http.MethodGet, url, nil)
+	if err != nil {
+		return "", err
+	}
+	req.Header.Add("X-API-KEY", os.Getenv("UI_FACES_KEY"))
+
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return "", err
+	}
+
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		return "", err
+	}
+
+	var data []Image
+	err = json.Unmarshal(body, &data)
+	if err != nil {
+		return "", err
+	}
+
+	return data[0].Photo, nil
 }

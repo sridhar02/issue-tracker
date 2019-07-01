@@ -3,10 +3,10 @@ get('http://localhost:8000/api/users/ac6f8b68-8f31-48ea-a436-05b9813b484b')
 
 post('http://localhost:8000/api/users',
 	json={
-		'id': 'ac6f8b68-8f31-48ea-a436-05b9813b4840',
 		'name': 'Katta Sridhar',
 		'username': 'srisadasd',
 		'email': 'test+1@example.com'
+		'password':'ttff565f67',
 	})
 
 post('http://localhost:8000/api/repos',

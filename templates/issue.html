@@ -233,7 +233,7 @@ body{
 	</div>
 	
 	<div class="issue-section">
-		<div class="user-photo"><img src="https://picsum.photos/50/50"></div>
+		<div class="user-photo"><img class="user-photo" src="{{.Image}}"></div>
 		<div class="content">
 			<div class="header">
 				<span class="info"><a href="" >{{.Username}}</a> commented on 15 Dec 2018</span>
@@ -248,7 +248,7 @@ body{
 	{{end}}
 	{{range .Comments}}
 	<div class="comment-section">
-		<div class="user-photo"><img src="https://picsum.photos/50/50"></div>
+		<div class="user-photo"><img class="user-photo" src="{{.Image}}"></div>
 		<div class="content">
 			<div class="header">
 				<span class="info"><a href="" >{{.Username}}</a> commented on 15 Dec 2018</span>
@@ -258,8 +258,8 @@ body{
 	</div>		
 	{{end}}
 	<div class="write-section">
-		<div class="user-photo"><img src="https://picsum.photos/50/50"></div>
-		<div class="content">
+		<div class="user-photo"><img class="user-photo" src="{{.Issue.Image}}"></div>
+		<div class="content"> 
 			<form method="POST" action="/comments">
 				<input name="issue_id" value="{{.Issue.ID}}" hidden></input> 
 				<input name="repo_id" value="{{.Issue.RepoId}}" hidden></input> 

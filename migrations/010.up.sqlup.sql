@@ -1,0 +1,1 @@
+UPDATE users SET image = 'https://tinyfac.es/data/avatars/475605E3-69C5-4D2B-8727-61B7BB8C4699-500w.jpeg' WHERE image IS NULL;

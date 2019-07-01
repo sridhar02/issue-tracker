@@ -8,6 +8,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 )
 
@@ -33,6 +34,7 @@ type IssueName struct {
 	RepoId      string
 	IssueNumber int
 	Status      string
+	Image       string
 }
 
 func getIssuesPageHandler(c *gin.Context, db *sql.DB) {
@@ -78,6 +80,7 @@ type CommentsIssue struct {
 	Username string
 	Body     string
 	issueId  int
+	Image    string
 }
 
 func getIssuePageHandler(c *gin.Context, db *sql.DB) {
@@ -85,15 +88,15 @@ func getIssuePageHandler(c *gin.Context, db *sql.DB) {
 	Id := c.Param("id")
 
 	var issueNumber, ID int
-	var title, username, body, repoId, userId, status string
+	var title, username, body, repoId, userId, status, image string
 
 	row := db.QueryRow(
 		`SELECT issues.id,issues.title, issues.body, users.username ,issues.issue_number,
-		issues.repo_id, issues.user_id ,issues.status
+		issues.repo_id, issues.user_id ,issues.status,users.image
 		 FROM issues JOIN users ON issues.user_id = users.id WHERE issues.id = $1;`,
 		Id)
 
-	err := row.Scan(&ID, &title, &body, &username, &issueNumber, &repoId, &userId, &status)
+	err := row.Scan(&ID, &title, &body, &username, &issueNumber, &repoId, &userId, &status, &image)
 	if err != nil {
 		fmt.Println(err)
 		c.AbortWithStatus(http.StatusInternalServerError)
@@ -109,10 +112,11 @@ func getIssuePageHandler(c *gin.Context, db *sql.DB) {
 		RepoId:      repoId,
 		UserId:      userId,
 		Status:      status,
+		Image:       image,
 	}
 
 	rows, err := db.Query(`SELECT comments.id,users.username,comments.body,
-							comments.issue_id FROM comments JOIN users ON 
+							comments.issue_id,users.image FROM comments JOIN users ON 
 							comments.user_id = users.id WHERE comments.issue_id=$1`, Id)
 
 	if err != nil {
@@ -124,9 +128,10 @@ func getIssuePageHandler(c *gin.Context, db *sql.DB) {
 	comments := []CommentsIssue{}
 
 	var IssueId int
+	var IMAGE string
 
 	for rows.Next() {
-		err = rows.Scan(&ID, &username, &body, &IssueId)
+		err = rows.Scan(&ID, &username, &body, &IssueId, &IMAGE)
 		if err != nil {
 			fmt.Println(err)
 			c.AbortWithStatus(http.StatusInternalServerError)
@@ -138,6 +143,7 @@ func getIssuePageHandler(c *gin.Context, db *sql.DB) {
 			Username: username,
 			Body:     body,
 			issueId:  IssueId,
+			Image:    IMAGE,
 		}
 
 		comments = append(comments, comment)
@@ -220,14 +226,14 @@ func postNewIssuePageHandler(c *gin.Context, db *sql.DB) {
 		UserId: userId,
 	}
 
-	err := CreateIssue(db, issue)
+	id, err := CreateIssue(db, issue)
 	if err != nil {
 		fmt.Println(err)
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
 
-	c.Redirect(http.StatusFound, "http://localhost:8000/issues")
+	c.Redirect(http.StatusFound, "http://localhost:8000/issues/"+strconv.Itoa(id))
 
 }
 
@@ -332,6 +338,10 @@ func PostUserSigninPageHandler(c *gin.Context, db *sql.DB) {
 }
 
 func main() {
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
 
 	connStr := "user=postgres dbname=issue_tracker host=localhost password=test1234 sslmode=disable"
 	db, err := sql.Open("postgres", connStr)
@@ -396,185 +406,5 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	//CRUD functions for user under this statement
-
-	// user, err := GetUser(db, "ac6f8b68-8f31-48ea-a436-05b9813b484b")
-	// if err != nil {
-	// 	fmt.Println(err)
-	// 	return
-	// }
-
-	// fmt.Println(user)
-
-	// err = CreateUser(db, User{
-	// 	ID:        "ac6f8b68-8f31-48ea-a436-05b9813b484b",
-	// 	Name:      "sridhar",
-	// 	Username:  "sridhar02",
-	// 	Email:     "kattasridhar02@gmail.com",
-	// 	CreatedAt: time.Now(),
-	// 	UpdatedAt: time.Now()})
-
-	// if err != nil {
-	// 	fmt.Println(err)
-	// 	return
-	// }
-	// fmt.Println("created an user")
-
-	// err = UpdateUser(db, User{
-	// 	ID:       "ac6f8b68-8f31-48ea-a436-05b9813b484b",
-	// 	Name:     "vramana",
-	// 	Username: "vramana08",
-	// 	Email:    "vramana@gmail.com",
-	// 	// CreatedAt: time.Now()
-	// 	UpdatedAt: time.Now()})
-
-	// if err != nil {
-	// 	fmt.Println(err)
-	// 	return
-	// }
-	// fmt.Println("updated issue")
-
-	// err = DeleteUser(db, "ac6f8b68-8f31-48ea-a436-05b9813b484b")
-	// if err != nil {
-	// 	fmt.Println(err)
-	// 	return
-	// }
-	// fmt.Println("deleted issue")
-
-	// CRUD functions for repos under this statement
-
-	// repo, err := GetRepo(db, "d360c6f3-60dc-4846-bb6a-0919a1817d5e")
-	// if err != nil {
-	// 	fmt.Println(err)
-	// 	return
-	// }
-
-	// fmt.Println(repo)
-
-	// err = CreateRepo(db, Repo{
-	// 	ID:          "d360c6f3-60dc-4846-bb6a-0919a1817d5e",
-	// 	Name:        "sridhar",
-	// 	UserId:      "ac6f8b68-8f31-48ea-a436-05b9813b484b",
-	// 	IssuesCount: 0,
-	// 	CreatedAt:   time.Now(),
-	// 	UpdatedAt:   time.Now()})
-
-	// if err != nil {
-	// 	fmt.Println(err)
-	// 	return
-	// }
-	// fmt.Println("created an Repo")
-
-	// err = UpdateRepo(db, Repo{
-	// 	ID:          "d360c6f3-60dc-4846-bb6a-0919a1817d5e",
-	// 	Name:        "vramana",
-	// 	UserId:      "ac6f8b68-8f31-48ea-a436-05b9813b484b",
-	// 	IssuesCount: 10,
-	// 	// CreatedAt: time.Now()
-	// 	UpdatedAt: time.Now()})
-
-	// if err != nil {
-	// 	fmt.Println(err)
-	// 	return
-	// }
-	// fmt.Println("updated repo")
-
-	// err = DeleteRepo(db, "d360c6f3-60dc-4846-bb6a-0919a1817d5e")
-	// if err != nil {
-	// 	fmt.Println(err)
-	// 	return
-	// }
-	// fmt.Println("deleted repo")
-
-	//CRUD functions for issues under this section
-
-	// issue, err := GetIssue(db, 1)
-	// if err != nil {
-	// 	fmt.Println(err)
-	// 	return
-	// }
-
-	// fmt.Println(issue)
-
-	// err = CreateIssue(db, Issue{
-	// 	Title:       "new issue",
-	// 	UserId:      "ac6f8b68-8f31-48ea-a436-05b9813b484b",
-	// 	Body:        "a new has been created in the data base of issues",
-	// 	RepoId:      "d360c6f3-60dc-4846-bb6a-0919a1817d5e",
-	// 	IssueNumber: 0,
-	// 	CreatedAt:   time.Now(),
-	// 	UpdatedAt:   time.Now()},
-	// 	"d360c6f3-60dc-4846-bb6a-0919a1817d5e")
-
-	// if err != nil {
-	// 	fmt.Println(err)
-	// 	return
-	// }
-	// fmt.Println("created an Issue")
-
-	// err = UpdateIssue(db, Issue{
-	// 	ID:    1,
-	// 	Title: "vramana",
-	// 	Body:  "a new issue has been updated",
-	// 	// IssuesCount: 10,
-	// 	// CreatedAt: time.Now()
-	// 	UpdatedAt: time.Now()})
-
-	// if err != nil {
-	// 	fmt.Println(err)
-	// 	return
-	// }
-	// fmt.Println("updated issue")
-
-	// err = DeleteIssue(db, 1)
-	// if err != nil {
-	// 	fmt.Println(err)
-	// 	return
-	// }
-	// fmt.Println("deleted issue")
-
-	//CRUD functions for comments under this section
-
-	// comment, err := GetComment(db, 1)
-	// if err != nil {
-	// 	fmt.Println(err)
-	// 	return
-	// }
-
-	// fmt.Println(comment)
-
-	// err = CreateComment(db, Comment{
-	// 	UserId:    "ac6f8b68-8f31-48ea-a436-05b9813b484b",
-	// 	Body:      "a new comment has been created in the database",
-	// 	IssueId:   1,
-	// 	RepoId:    "d360c6f3-60dc-4846-bb6a-0919a1817d5e",
-	// 	CreatedAt: time.Now(),
-	// 	UpdatedAt: time.Now()})
-
-	// if err != nil {
-	// 	fmt.Println(err)
-	// 	return
-	// }
-
-	// fmt.Println("created an Comment")
-
-	// err = UpdateComment(db, Comment{
-	// 	ID:        1,
-	// 	Body:      "a new comment has been updated",
-	// 	UpdatedAt: time.Now()})
-
-	// if err != nil {
-	// 	fmt.Println(err)
-	// 	return
-	// }
-	// fmt.Println("updated comment")
-
-	// err = DeleteComment(db, 1)
-	// if err != nil {
-	// 	fmt.Println(err)
-	// 	return
-	// }
-	// fmt.Println("deleted repo")
 
 }
