@@ -17,7 +17,8 @@ body{
 }
 
 .main-section .signup-data{
-	width:600px;
+	width:400px;
+	margin:10px;
 	min-height: 500px; 
 	padding:20px;
 	background-color: white;
@@ -25,12 +26,12 @@ body{
 
 }
 
-.signup-button,{
-	padding-top:20px;
+.signup-section{
+	padding-top:30px;
 } 
 
 
-.signup-button button{
+.signup-button{
 
 	padding: 20px;
 	background-color: #28a745;
@@ -45,17 +46,20 @@ body{
 	font-weight: bold;
 }
 .name-section input,.username-section input,.email-section input,.password-section input{
-
+	background-color: #fafbfc;	
+	padding: 10px;
+	border-radius: 3px;
+	border-style: solid;
+	border-color: rgb(169,169,169);
+	border-width: 1px;
 	width: 100%;
 	height: 40px;
-	background-color: #ccc; 
 }
-
-.name-section input,.username-section input,.email-section input,.password-section input {
+input:focus{
+	background-color: #fff;
 	outline: none;
 	box-shadow: 0 0 0 0.1em rgba(3,102,214,.3);
-	/*border-color: #ddd;*/
-	background-color: white	;
+	border-color: #2188ff;
 }
 
 </style>
@@ -82,8 +86,8 @@ body{
 			<div class="password">Password</div>
 			<input type="password" name="password" required="password">
 		</div>
-		<div class="signup-button">
-			<button type="submit">Sign up for Github</button>
+		<div class="signup-section">
+			<button class="signup-button" type="submit">Sign up</button>
 		</div>
 	</div>
 

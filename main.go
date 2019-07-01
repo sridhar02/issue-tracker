@@ -298,6 +298,39 @@ func PostUserNewPageHandler(c *gin.Context, db *sql.DB) {
 
 }
 
+func getUserSigninPageHandler(c *gin.Context, db *sql.DB) {
+
+	c.HTML(http.StatusOK, "user_signin.html", gin.H{})
+
+}
+
+func PostUserSigninPageHandler(c *gin.Context, db *sql.DB) {
+	username := c.PostForm("username")
+	password := c.PostForm("password")
+
+	// user := User{
+	// 	Username: username,
+	// 	Password: password,
+	// }
+	var Password string
+	row := db.QueryRow(`SELECT password FROM users WHERE username=$1`, username)
+
+	err := row.Scan(&Password)
+	if err != nil {
+		fmt.Println(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	if Password == password {
+		c.Redirect(http.StatusFound, "http://localhost:8000/issues")
+	} else {
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+}
+
 func main() {
 
 	connStr := "user=postgres dbname=issue_tracker host=localhost password=test1234 sslmode=disable"
@@ -356,6 +389,8 @@ func main() {
 	router.POST("/repos/new", func(c *gin.Context) { PostRepoNewPageHandler(c, db) })
 	router.GET("/user/sign-up", func(c *gin.Context) { getUserNewPageHandler(c, db) })
 	router.POST("/user/sign-up", func(c *gin.Context) { PostUserNewPageHandler(c, db) })
+	router.GET("/user/sign-in", func(c *gin.Context) { getUserSigninPageHandler(c, db) })
+	router.POST("/user/sign-in", func(c *gin.Context) { PostUserSigninPageHandler(c, db) })
 
 	err = router.Run(":8000")
 	if err != nil {
