@@ -37,12 +37,46 @@ type IssueName struct {
 	Image       string
 }
 
+type CurrentRepo struct {
+	UserId string
+	RepoId string
+}
+
+func getCurrentRepo(db *sql.DB, username string, repoName string) (CurrentRepo, error) {
+
+	var userId, repoId string
+
+	row := db.QueryRow(`SELECT users.id,repos.id FROM repos JOIN users ON 
+		     repos.user_id = users.id WHERE users.username= $1 AND repos.name = $2`, username, repoName)
+	err := row.Scan(&userId, &repoId)
+	if err != nil {
+		return CurrentRepo{}, err
+	}
+
+	currentRepo := CurrentRepo{
+		UserId: userId,
+		RepoId: repoId,
+	}
+
+	return currentRepo, nil
+}
+
 func getIssuesPageHandler(c *gin.Context, db *sql.DB) {
+
+	username := c.Param("user_name")
+	repoName := c.Param("repo_name")
+
+	currentRepo, err := getCurrentRepo(db, username, repoName)
+	if err != nil {
+		fmt.Println(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
 
 	rows, err := db.Query(
 		`SELECT issues.id,issues.title, users.username ,issues.issue_number 
 		FROM issues JOIN users ON issues.user_id = users.id WHERE repo_id = $1;`,
-		"d360c6f3-60dc-4846-bb6a-0919a1817d5e")
+		currentRepo.RepoId)
 	if err != nil {
 		fmt.Println(err)
 		c.AbortWithStatus(http.StatusInternalServerError)
@@ -52,7 +86,7 @@ func getIssuesPageHandler(c *gin.Context, db *sql.DB) {
 	issues := []IssueName{}
 
 	var issueNumber, ID int
-	var title, username string
+	var title string
 
 	for rows.Next() {
 		err = rows.Scan(&ID, &title, &username, &issueNumber)
@@ -364,43 +398,44 @@ func main() {
 
 	router.LoadHTMLGlob("./templates/*")
 
-	api := router.Group("/api")
+	pages := router.Group("/:user_name/:repo_name")
 
-	api.GET("/users/:id", func(c *gin.Context) { getUserHandler(c, db) })
-	api.GET("/repos/:id", func(c *gin.Context) { getRepoHandler(c, db) })
-	api.GET("/issues/:id", func(c *gin.Context) { getIssueHandler(c, db) })
-	api.GET("/comments/:id", func(c *gin.Context) { getCommentHandler(c, db) })
-	api.DELETE("/users/:id", func(c *gin.Context) { deleteUserHandler(c, db) })
-	api.DELETE("/repos/:id", func(c *gin.Context) { deleteRepoHandler(c, db) })
-	api.DELETE("/issues/:id", func(c *gin.Context) { deleteIssueHandler(c, db) })
-	api.DELETE("/comments/:id", func(c *gin.Context) { deleteCommentHandler(c, db) })
-	api.POST("/users", func(c *gin.Context) { postUserHandler(c, db) })
-	api.POST("/repos", func(c *gin.Context) { postRepoHandler(c, db) })
-	api.POST("/issues", func(c *gin.Context) { postIssueHandler(c, db) })
-	api.POST("/comments", func(c *gin.Context) { postCommentHandler(c, db) })
-	api.PUT("/users", func(c *gin.Context) { putUserHandler(c, db) })
-	api.PUT("/repos", func(c *gin.Context) { putRepoHandler(c, db) })
-	api.PUT("/issues", func(c *gin.Context) { putIssueHandler(c, db) })
-	api.PUT("/comments", func(c *gin.Context) { putCommentHandler(c, db) })
+	// api := router.Group("/api")
+	// api.GET("/users/:id", func(c *gin.Context) { getUserHandler(c, db) })
+	// api.GET("/repos/:id", func(c *gin.Context) { getRepoHandler(c, db) })
+	// api.GET("/issues/:id", func(c *gin.Context) { getIssueHandler(c, db) })
+	// api.GET("/comments/:id", func(c *gin.Context) { getCommentHandler(c, db) })
+	// api.DELETE("/users/:id", func(c *gin.Context) { deleteUserHandler(c, db) })
+	// api.DELETE("/repos/:id", func(c *gin.Context) { deleteRepoHandler(c, db) })
+	// api.DELETE("/issues/:id", func(c *gin.Context) { deleteIssueHandler(c, db) })
+	// api.DELETE("/comments/:id", func(c *gin.Context) { deleteCommentHandler(c, db) })
+	// api.POST("/users", func(c *gin.Context) { postUserHandler(c, db) })
+	// api.POST("/repos", func(c *gin.Context) { postRepoHandler(c, db) })
+	// api.POST("/issues", func(c *gin.Context) { postIssueHandler(c, db) })
+	// api.POST("/comments", func(c *gin.Context) { postCommentHandler(c, db) })
+	// api.PUT("/users", func(c *gin.Context) { putUserHandler(c, db) })
+	// api.PUT("/repos", func(c *gin.Context) { putRepoHandler(c, db) })
+	// api.PUT("/issues", func(c *gin.Context) { putIssueHandler(c, db) })
+	// api.PUT("/comments", func(c *gin.Context) { putCommentHandler(c, db) })
 
-	router.GET("/user", func(c *gin.Context) { getUserPageHandler(c, db) })
-	router.GET("/issues", func(c *gin.Context) { getIssuesPageHandler(c, db) })
-	router.POST("/issues/new", func(c *gin.Context) { postNewIssuePageHandler(c, db) })
-	router.GET("/issues/:id", func(c *gin.Context) {
-		if c.Param("id") == "new" {
-			getNewIssuePageHandler(c, db)
-		} else {
-			getIssuePageHandler(c, db)
-		}
-	})
+	// router.GET("/user", func(c *gin.Context) { getUserPageHandler(c, db) })
+	pages.GET("/issues", func(c *gin.Context) { getIssuesPageHandler(c, db) })
+	// router.POST("/issues/new", func(c *gin.Context) { postNewIssuePageHandler(c, db) })
+	// router.GET("/issues/:id", func(c *gin.Context) {
+	// 	if c.Param("id") == "new" {
+	// 		getNewIssuePageHandler(c, db)
+	// 	} else {
+	// 		getIssuePageHandler(c, db)
+	// 	}
+	// })
 
-	router.POST("/comments", func(c *gin.Context) { createIssueComment(c, db) })
-	router.GET("/repos/new", func(c *gin.Context) { getRepoNewPageHandler(c, db) })
-	router.POST("/repos/new", func(c *gin.Context) { PostRepoNewPageHandler(c, db) })
-	router.GET("/user/sign-up", func(c *gin.Context) { getUserNewPageHandler(c, db) })
-	router.POST("/user/sign-up", func(c *gin.Context) { PostUserNewPageHandler(c, db) })
-	router.GET("/user/sign-in", func(c *gin.Context) { getUserSigninPageHandler(c, db) })
-	router.POST("/user/sign-in", func(c *gin.Context) { PostUserSigninPageHandler(c, db) })
+	// router.POST("/comments", func(c *gin.Context) { createIssueComment(c, db) })
+	// router.GET("/repos/new", func(c *gin.Context) { getRepoNewPageHandler(c, db) })
+	// router.POST("/repos/new", func(c *gin.Context) { PostRepoNewPageHandler(c, db) })
+	// router.GET("/user/sign-up", func(c *gin.Context) { getUserNewPageHandler(c, db) })
+	// router.POST("/user/sign-up", func(c *gin.Context) { PostUserNewPageHandler(c, db) })
+	// router.GET("/user/sign-in", func(c *gin.Context) { getUserSigninPageHandler(c, db) })
+	// router.POST("/user/sign-in", func(c *gin.Context) { PostUserSigninPageHandler(c, db) })
 
 	err = router.Run(":8000")
 	if err != nil {
