@@ -63,10 +63,10 @@ func getCurrentRepo(db *sql.DB, username string, repoName string) (CurrentRepo, 
 
 func getIssuesPageHandler(c *gin.Context, db *sql.DB) {
 
-	username := c.Param("user_name")
+	userName := c.Param("user_name")
 	repoName := c.Param("repo_name")
 
-	currentRepo, err := getCurrentRepo(db, username, repoName)
+	currentRepo, err := getCurrentRepo(db, userName, repoName)
 	if err != nil {
 		fmt.Println(err)
 		c.AbortWithStatus(http.StatusInternalServerError)
@@ -86,7 +86,7 @@ func getIssuesPageHandler(c *gin.Context, db *sql.DB) {
 	issues := []IssueName{}
 
 	var issueNumber, ID int
-	var title string
+	var title, username string
 
 	for rows.Next() {
 		err = rows.Scan(&ID, &title, &username, &issueNumber)
@@ -106,7 +106,7 @@ func getIssuesPageHandler(c *gin.Context, db *sql.DB) {
 		issues = append(issues, issue)
 	}
 
-	c.HTML(http.StatusOK, "issues.html", issues)
+	c.HTML(http.StatusOK, "issues.html", gin.H{"UserName": userName, "RepoName": repoName, "Issues": issues})
 }
 
 type CommentsIssue struct {
@@ -119,18 +119,28 @@ type CommentsIssue struct {
 
 func getIssuePageHandler(c *gin.Context, db *sql.DB) {
 
-	Id := c.Param("id")
+	username := c.Param("user_name")
+	repoName := c.Param("repo_name")
+
+	currentRepo, err := getCurrentRepo(db, username, repoName)
+	if err != nil {
+		fmt.Println(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	Id := c.Param("issue_number")
 
 	var issueNumber, ID int
-	var title, username, body, repoId, userId, status, image string
+	var title, body, repoId, userId, status, image string
 
 	row := db.QueryRow(
 		`SELECT issues.id,issues.title, issues.body, users.username ,issues.issue_number,
 		issues.repo_id, issues.user_id ,issues.status,users.image
-		 FROM issues JOIN users ON issues.user_id = users.id WHERE issues.id = $1;`,
-		Id)
+		 FROM issues JOIN users ON issues.user_id = users.id WHERE issues.issue_number = $1 AND issues.repo_id=$2;`,
+		Id, currentRepo.RepoId)
 
-	err := row.Scan(&ID, &title, &body, &username, &issueNumber, &repoId, &userId, &status, &image)
+	err = row.Scan(&ID, &title, &body, &username, &issueNumber, &repoId, &userId, &status, &image)
 	if err != nil {
 		fmt.Println(err)
 		c.AbortWithStatus(http.StatusInternalServerError)
@@ -183,10 +193,15 @@ func getIssuePageHandler(c *gin.Context, db *sql.DB) {
 		comments = append(comments, comment)
 	}
 
-	c.HTML(http.StatusOK, "issue.html", gin.H{"Issue": issue, "Comments": comments})
+	c.HTML(http.StatusOK, "issue.html", gin.H{
+		"Issue":    issue,
+		"Comments": comments,
+		"UserName": username,
+		"RepoName": repoName})
 }
 
 func createIssueComment(c *gin.Context, db *sql.DB) {
+
 	body := c.PostForm("body")
 	repoId := c.PostForm("repo_id")
 	_issueId := c.PostForm("issue_id")
@@ -236,38 +251,58 @@ func createIssueComment(c *gin.Context, db *sql.DB) {
 	}
 
 	c.Redirect(http.StatusFound, "http://localhost:8000/issues/"+_issueId)
-	c.Header("Content-Type", "application/html")
 }
 
 func getNewIssuePageHandler(c *gin.Context, db *sql.DB) {
 
-	c.HTML(http.StatusOK, "issue_new.html", gin.H{"UserId": "ac6f8b68-8f31-48ea-a436-05b9813b484b",
-		"RepoId": "d360c6f3-60dc-4846-bb6a-0919a1817d5e"})
+	username := c.Param("user_name")
+	repoName := c.Param("repo_name")
 
-}
-
-func postNewIssuePageHandler(c *gin.Context, db *sql.DB) {
-
-	title := c.PostForm("title")
-	repoId := c.PostForm("repo_id")
-	body := c.PostForm("body")
-	userId := c.PostForm("user_id")
-
-	issue := Issue{
-		Title:  title,
-		RepoId: repoId,
-		Body:   body,
-		UserId: userId,
-	}
-
-	id, err := CreateIssue(db, issue)
+	currentRepo, err := getCurrentRepo(db, username, repoName)
 	if err != nil {
 		fmt.Println(err)
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
 
-	c.Redirect(http.StatusFound, "http://localhost:8000/issues/"+strconv.Itoa(id))
+	c.HTML(http.StatusOK, "issue_new.html", gin.H{"UserId": currentRepo.UserId, "RepoId": currentRepo.RepoId,
+		"UserName": username, "RepoName": repoName})
+
+}
+
+func postNewIssuePageHandler(c *gin.Context, db *sql.DB) {
+
+	username := c.Param("user_name")
+	repoName := c.Param("repo_name")
+
+	currentRepo, err := getCurrentRepo(db, username, repoName)
+	if err != nil {
+		fmt.Println(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	fmt.Println(username)
+
+	title := c.PostForm("title")
+	// repoId := c.PostForm("repo_id")
+	body := c.PostForm("body")
+	// userId := c.PostForm("user_id")
+
+	issue := Issue{
+		Title:  title,
+		RepoId: currentRepo.RepoId,
+		Body:   body,
+		UserId: currentRepo.UserId,
+	}
+
+	issueNumber, err := CreateIssue(db, issue)
+	if err != nil {
+		fmt.Println(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	c.Redirect(http.StatusFound, "http://localhost:8000/"+username+"/"+repoName+"/issues/"+strconv.Itoa(issueNumber))
 
 }
 
@@ -279,7 +314,17 @@ func postNewIssuePageHandler(c *gin.Context, db *sql.DB) {
 
 func getRepoNewPageHandler(c *gin.Context, db *sql.DB) {
 
-	c.HTML(http.StatusOK, "repo_new.html", gin.H{"UserId": "ac6f8b68-8f31-48ea-a436-05b9813b484b"})
+	username := c.Param("user_name")
+	repoName := c.Param("repo_name")
+
+	currentRepo, err := getCurrentRepo(db, username, repoName)
+	if err != nil {
+		fmt.Println(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	c.HTML(http.StatusOK, "repo_new.html", gin.H{"UserId": currentRepo.UserId})
 
 }
 
@@ -420,18 +465,18 @@ func main() {
 
 	// router.GET("/user", func(c *gin.Context) { getUserPageHandler(c, db) })
 	pages.GET("/issues", func(c *gin.Context) { getIssuesPageHandler(c, db) })
-	// router.POST("/issues/new", func(c *gin.Context) { postNewIssuePageHandler(c, db) })
-	// router.GET("/issues/:id", func(c *gin.Context) {
-	// 	if c.Param("id") == "new" {
-	// 		getNewIssuePageHandler(c, db)
-	// 	} else {
-	// 		getIssuePageHandler(c, db)
-	// 	}
-	// })
+	pages.POST("/issues/new", func(c *gin.Context) { postNewIssuePageHandler(c, db) })
+	pages.GET("/issues/:issue_number", func(c *gin.Context) {
+		if c.Param("issue_number") == "new" {
+			getNewIssuePageHandler(c, db)
+		} else {
+			getIssuePageHandler(c, db)
+		}
+	})
 
-	// router.POST("/comments", func(c *gin.Context) { createIssueComment(c, db) })
-	// router.GET("/repos/new", func(c *gin.Context) { getRepoNewPageHandler(c, db) })
-	// router.POST("/repos/new", func(c *gin.Context) { PostRepoNewPageHandler(c, db) })
+	// pages.POST("/comments", func(c *gin.Context) { createIssueComment(c, db) })
+	// pages.GET("/repos/new", func(c *gin.Context) { getRepoNewPageHandler(c, db) })
+	// pages.POST("/repos/new", func(c *gin.Context) { PostRepoNewPageHandler(c, db) })
 	// router.GET("/user/sign-up", func(c *gin.Context) { getUserNewPageHandler(c, db) })
 	// router.POST("/user/sign-up", func(c *gin.Context) { PostUserNewPageHandler(c, db) })
 	// router.GET("/user/sign-in", func(c *gin.Context) { getUserSigninPageHandler(c, db) })

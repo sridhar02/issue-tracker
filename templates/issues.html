@@ -66,17 +66,18 @@ body{
 
 </style>
 <div class="issue-button">
-	<button><a href="/issues/new">New Issue</a></button>
+	<button><a href="/{{.UserName}}/{{.RepoName}}/issues/new">New Issue</a></button>
 </div>
-{{range .}}
+
+
+{{range .Issues}}
 <div class="issues-page">
 	<div class="title-division">
-		<h1> <a class="title" href="/issues/{{.ID}}">{{ .Title }}</a></h1>
+		<h1> <a class="title" href="/{{$.UserName}}/{{$.RepoName}}/issues/{{.IssueNumber}}">{{ .Title }}</a></h1>
 		<div >
 			<span class="issue-number">#{{.IssueNumber}} opened yesterday by </span>
 			<span><a class="title" href="">{{.Username}}</a></span>
 		</div>
 	</div>
 </div>
-
 {{end}}
