@@ -93,7 +93,7 @@ func CreateIssue(db *sql.DB, issue Issue) (int, error) {
 		return 0, err
 	}
 
-	return issueCounxt + 1, nil
+	return issueCount + 1, nil
 }
 
 func UpdateIssue(db *sql.DB, issue Issue) error {

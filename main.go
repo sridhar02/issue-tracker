@@ -129,7 +129,7 @@ func getIssuePageHandler(c *gin.Context, db *sql.DB) {
 		return
 	}
 
-	Id := c.Param("issue_number")
+	issueNumberStr := c.Param("issue_number")
 
 	var issueNumber, ID int
 	var title, body, repoId, userId, status, image string
@@ -138,7 +138,7 @@ func getIssuePageHandler(c *gin.Context, db *sql.DB) {
 		`SELECT issues.id,issues.title, issues.body, users.username ,issues.issue_number,
 		issues.repo_id, issues.user_id ,issues.status,users.image
 		 FROM issues JOIN users ON issues.user_id = users.id WHERE issues.issue_number = $1 AND issues.repo_id=$2;`,
-		Id, currentRepo.RepoId)
+		issueNumberStr, currentRepo.RepoId)
 
 	err = row.Scan(&ID, &title, &body, &username, &issueNumber, &repoId, &userId, &status, &image)
 	if err != nil {
@@ -161,7 +161,7 @@ func getIssuePageHandler(c *gin.Context, db *sql.DB) {
 
 	rows, err := db.Query(`SELECT comments.id,users.username,comments.body,
 							comments.issue_id,users.image FROM comments JOIN users ON 
-							comments.user_id = users.id WHERE comments.issue_id=$1`, Id)
+							comments.user_id = users.id WHERE comments.issue_id=$1`, ID)
 
 	if err != nil {
 		fmt.Println(err)
@@ -202,10 +202,21 @@ func getIssuePageHandler(c *gin.Context, db *sql.DB) {
 
 func createIssueComment(c *gin.Context, db *sql.DB) {
 
+	username := c.Param("user_name")
+	repoName := c.Param("repo_name")
+
+	// currentRepo, err := getCurrentRepo(db, username, repoName)
+	// if err != nil {
+	// 	fmt.Println(err)
+	// 	c.AbortWithStatus(http.StatusInternalServerError)
+	// 	return
+	// }
+
 	body := c.PostForm("body")
 	repoId := c.PostForm("repo_id")
 	_issueId := c.PostForm("issue_id")
 	userId := c.PostForm("user_id")
+	IssueNumber := c.PostForm("issue_number")
 
 	fmt.Println(c.PostForm("comment_and_close"))
 
@@ -217,7 +228,8 @@ func createIssueComment(c *gin.Context, db *sql.DB) {
 			return
 		}
 
-		c.Redirect(http.StatusFound, "http://localhost:8000/issues/"+_issueId)
+		c.Redirect(http.StatusFound, "http://localhost:8000/"+username+"/"+repoName+"/issues/"+IssueNumber)
+		return
 	}
 
 	if c.PostForm("comment_and_open") == "1" {
@@ -227,7 +239,8 @@ func createIssueComment(c *gin.Context, db *sql.DB) {
 			c.AbortWithStatus(http.StatusInternalServerError)
 			return
 		}
-		c.Redirect(http.StatusFound, "http://localhost:8000/issues/"+_issueId)
+		c.Redirect(http.StatusFound, "http://localhost:8000/"+username+"/"+repoName+"/issues/"+IssueNumber)
+		return
 	}
 
 	issueId, err := strconv.Atoi(_issueId)
@@ -250,7 +263,7 @@ func createIssueComment(c *gin.Context, db *sql.DB) {
 		return
 	}
 
-	c.Redirect(http.StatusFound, "http://localhost:8000/issues/"+_issueId)
+	c.Redirect(http.StatusFound, "http://localhost:8000/"+username+"/"+repoName+"/issues/"+IssueNumber)
 }
 
 func getNewIssuePageHandler(c *gin.Context, db *sql.DB) {
@@ -474,7 +487,7 @@ func main() {
 		}
 	})
 
-	// pages.POST("/comments", func(c *gin.Context) { createIssueComment(c, db) })
+	pages.POST("/comments", func(c *gin.Context) { createIssueComment(c, db) })
 	// pages.GET("/repos/new", func(c *gin.Context) { getRepoNewPageHandler(c, db) })
 	// pages.POST("/repos/new", func(c *gin.Context) { PostRepoNewPageHandler(c, db) })
 	// router.GET("/user/sign-up", func(c *gin.Context) { getUserNewPageHandler(c, db) })
