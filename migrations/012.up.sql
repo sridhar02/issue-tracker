@@ -1,0 +1,1 @@
+ALTER TABLE issues ADD COLUMN pinned VARCHAR(50);
