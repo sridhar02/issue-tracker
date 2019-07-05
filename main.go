@@ -327,17 +327,7 @@ func postNewIssuePageHandler(c *gin.Context, db *sql.DB) {
 
 func getRepoNewPageHandler(c *gin.Context, db *sql.DB) {
 
-	username := c.Param("user_name")
-	repoName := c.Param("repo_name")
-
-	currentRepo, err := getCurrentRepo(db, username, repoName)
-	if err != nil {
-		fmt.Println(err)
-		c.AbortWithStatus(http.StatusInternalServerError)
-		return
-	}
-
-	c.HTML(http.StatusOK, "repo_new.html", gin.H{"UserId": currentRepo.UserId})
+	c.HTML(http.StatusOK, "repo_new.html", gin.H{"UserId": "ac6f8b68-8f31-48ea-a436-05b9813b484b"})
 
 }
 
@@ -362,7 +352,7 @@ func PostRepoNewPageHandler(c *gin.Context, db *sql.DB) {
 		return
 	}
 
-	c.Redirect(http.StatusFound, "http://localhost:8000/issues")
+	c.Redirect(http.StatusFound, "http://localhost:8000/new")
 
 }
 
@@ -456,7 +446,11 @@ func main() {
 
 	router.LoadHTMLGlob("./templates/*")
 
-	pages := router.Group("/:user_name/:repo_name")
+	userGroup := router.Group("/:user_name")
+
+	pages := userGroup.Group("/:repo_name")
+
+	// users := router.Group("/:user_name")
 
 	// api := router.Group("/api")
 	// api.GET("/users/:id", func(c *gin.Context) { getUserHandler(c, db) })
@@ -488,9 +482,31 @@ func main() {
 	})
 
 	pages.POST("/comments", func(c *gin.Context) { createIssueComment(c, db) })
-	// pages.GET("/repos/new", func(c *gin.Context) { getRepoNewPageHandler(c, db) })
-	// pages.POST("/repos/new", func(c *gin.Context) { PostRepoNewPageHandler(c, db) })
-	// router.GET("/user/sign-up", func(c *gin.Context) { getUserNewPageHandler(c, db) })
+	userGroup.GET("", func(c *gin.Context) {
+		if c.Param("user_name") == "new" {
+			getRepoNewPageHandler(c, db)
+		} else {
+			c.Status(500)
+		}
+	})
+	userGroup.POST("", func(c *gin.Context) {
+		if c.Param("user_name") == "new" {
+			PostRepoNewPageHandler(c, db)
+		} else {
+			c.Status(500)
+		}
+	})
+
+	// UserGroup.GET("/", func(c *gin.Context) {
+	// 	if c.Param("user_name") == "join" {
+	// 		getUserNewPageHandler(c, db)
+	// 	} else {
+	// 		c.Status(500)
+	// 	}
+
+	// })
+
+	router.GET("", func(c *gin.Context) { getUserNewPageHandler(c, db) })
 	// router.POST("/user/sign-up", func(c *gin.Context) { PostUserNewPageHandler(c, db) })
 	// router.GET("/user/sign-in", func(c *gin.Context) { getUserSigninPageHandler(c, db) })
 	// router.POST("/user/sign-in", func(c *gin.Context) { PostUserSigninPageHandler(c, db) })

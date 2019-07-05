@@ -207,6 +207,26 @@ body{
 	margin-right: 10px;
 	border: 2px solid #ccc;
 }
+.pinned-section{
+	display: flex;
+}
+
+.pinned-button{
+	padding: 20px;
+	padding-left: 40px;
+}
+
+.pinned-button button{
+	padding: 5px;
+	font-weight: bold;
+
+}
+
+.pinned-button button:focus{
+	outline: 0;
+	color: black;
+}
+
 
 </style>
 
@@ -231,7 +251,7 @@ body{
 
 		<span class="issue-info"><a href="" class="user-name">{{.Username}}</a> opened this issue on 15 Dec 2018 · 1 comment</span>
 	</div>
-	
+	<div class="pinned-section">
 	<div class="issue-section">
 		<div class="user-photo"><img class="user-photo" src="{{.Image}}"></div>
 		<div class="content">
@@ -244,6 +264,16 @@ body{
 				<div class="body empty-body">No description provided</div>
 			{{end}}
 		</div>
+	</div>
+	
+	<div class="pinned-button">
+
+		<form method="" action="">
+
+		<button type="submit"> pinned issue </button>
+		</form>
+	</div>
+	
 	</div>
 	{{end}}
 	{{range .Comments}}

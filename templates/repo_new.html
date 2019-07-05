@@ -73,7 +73,6 @@ body{
 	padding-bottom: 10px;
 }
 </style>
-{{with .}}
 <div>
 	<div class="repo-intro">
 		<h2>Create a new repository</h2>
@@ -84,8 +83,8 @@ body{
 	<div class="repo-section">
 		<span class="owner">Owner</span>
 		<span>Repository name*</span>
-		<form method="POST" action="/repos/new">
-			<input name="user_id" value="{{.UserId}}" hidden >
+		<form method="POST" action="/new">
+			<input name="user_id" value="{{.UserId}}" hidden>
 			<div class="repo-details">
 				<div class="username">sridhar02</div>
 				<span class="slash">/</span>
@@ -110,4 +109,3 @@ body{
 		</form>
 	</div>
 </div>
-{{end}}
