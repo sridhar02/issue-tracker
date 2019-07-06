@@ -98,7 +98,7 @@ body{
 </style>
 
 <div class="new-section">
-	<div class="user-photo"><img src="https://picsum.photos/50/50"></div>
+	<div class="user-photo"><img  class="user-photo" src="{{.CurrentUser.Image}}"></div>
 	<form method="POST" action="/{{.UserName}}/{{.RepoName}}/issues/new">
 		<!-- <input name="repo_id" value="{{.RepoId}}" hidden></input> 
 		<input name="user_id" value="{{.UserId}}" hidden></input>  -->

@@ -84,9 +84,10 @@ body{
 		<span class="owner">Owner</span>
 		<span>Repository name*</span>
 		<form method="POST" action="/new">
-			<input name="user_id" value="{{.UserId}}" hidden>
+			<input name="user_id" value="{{.CurrentUser.ID}}" hidden>
+			<input name="user_name" value="{{.CurrentUser.Username}}" hidden>
 			<div class="repo-details">
-				<div class="username">sridhar02</div>
+				<div class="username">{{.CurrentUser.Username}}</div>
 				<span class="slash">/</span>
 				<input name="name" required="text"></input>
 			</div>

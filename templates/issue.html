@@ -237,10 +237,12 @@ body{
 			<div class="title">{{.Title }}</div>
 			<div class="issue-number">#{{.IssueNumber}}</div>
 		</div>
+		{{if $.Authorized}}
 		<div class="edit-button-divison">
 			<button class="edit-button">Edit</button>
 			<a href="/{{$.UserName}}/{{$.RepoName}}/issues/new"><button class="new-issue-button">New issue</button></a>
 		</div>
+		{{end}}
 	</div>
 	<div class="subsection-title">
 		{{if eq .Status "Open"}}
@@ -287,13 +289,14 @@ body{
 		</div>
 	</div>		
 	{{end}}
+	{{if .Authorized }}
 	<div class="write-section">
-		<div class="user-photo"><img class="user-photo" src="{{.Issue.Image}}"></div>
+		<div class="user-photo"><img class="user-photo" src="{{.CurrentUser.Image}}"></div>
 		<div class="content"> 
 			<form method="POST" action="/{{.UserName}}/{{.RepoName}}/comments">
 				<input name="issue_id" value="{{.Issue.ID}}" hidden></input> 
 				<input name="repo_id" value="{{.Issue.RepoId}}" hidden></input> 
-				<input name="user_id" value="{{.Issue.UserId}}" hidden></input> 
+				<input name="user_id" value="{{.CurrentUser.ID}}" hidden></input> 
 				<input name="issue_number" value="{{.Issue.IssueNumber}}" hidden></input> 
 
 				<div class="header">
@@ -312,5 +315,6 @@ body{
 			</form>
 		</div>
 	</div>
+	{{end}}
 
 </div>
