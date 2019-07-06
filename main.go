@@ -382,7 +382,7 @@ func PostUserNewPageHandler(c *gin.Context, db *sql.DB) {
 		return
 	}
 
-	c.Redirect(http.StatusFound, "http://localhost:8000/issues")
+	c.Redirect(http.StatusFound, "http://localhost:8000/")
 
 }
 
@@ -411,7 +411,7 @@ func PostUserSigninPageHandler(c *gin.Context, db *sql.DB) {
 	}
 
 	if Password == password {
-		c.Redirect(http.StatusFound, "http://localhost:8000/issues")
+		c.Redirect(http.StatusFound, "http://localhost:8000/new")
 	} else {
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
@@ -485,31 +485,25 @@ func main() {
 	userGroup.GET("", func(c *gin.Context) {
 		if c.Param("user_name") == "new" {
 			getRepoNewPageHandler(c, db)
+		} else if c.Param("user_name") == "login" {
+			getUserSigninPageHandler(c, db)
 		} else {
 			c.Status(500)
 		}
 	})
+
 	userGroup.POST("", func(c *gin.Context) {
 		if c.Param("user_name") == "new" {
 			PostRepoNewPageHandler(c, db)
+		} else if c.Param("user_name") == "login" {
+			PostUserSigninPageHandler(c, db)
 		} else {
 			c.Status(500)
 		}
 	})
 
-	// UserGroup.GET("/", func(c *gin.Context) {
-	// 	if c.Param("user_name") == "join" {
-	// 		getUserNewPageHandler(c, db)
-	// 	} else {
-	// 		c.Status(500)
-	// 	}
-
-	// })
-
 	router.GET("", func(c *gin.Context) { getUserNewPageHandler(c, db) })
-	// router.POST("/user/sign-up", func(c *gin.Context) { PostUserNewPageHandler(c, db) })
-	// router.GET("/user/sign-in", func(c *gin.Context) { getUserSigninPageHandler(c, db) })
-	// router.POST("/user/sign-in", func(c *gin.Context) { PostUserSigninPageHandler(c, db) })
+	router.POST("", func(c *gin.Context) { PostUserNewPageHandler(c, db) })
 
 	err = router.Run(":8000")
 	if err != nil {
