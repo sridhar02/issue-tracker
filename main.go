@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -14,14 +15,19 @@ import (
 
 func getUserPageHandler(c *gin.Context, db *sql.DB) {
 
-	user, err := GetUser(db, "ac6f8b68-8f31-48ea-a436-05b9813b484b")
+	fmt.Println("user")
+
+	username := c.Param("user_name")
+
+	user, err := GetUserByUserName(db, username)
 
 	if err != nil {
+		fmt.Println(err)
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
 
-	c.HTML(http.StatusOK, "user.html", user)
+	c.HTML(http.StatusOK, "user.html", gin.H{"User": user})
 
 }
 
@@ -220,6 +226,11 @@ func getIssuePageHandler(c *gin.Context, db *sql.DB) {
 }
 
 func createIssueComment(c *gin.Context, db *sql.DB) {
+	_, err := authorize(c, db)
+	if err != nil {
+		c.Redirect(http.StatusFound, "http://localhost:8000/login")
+		return
+	}
 
 	username := c.Param("user_name")
 	repoName := c.Param("repo_name")
@@ -314,6 +325,13 @@ func getNewIssuePageHandler(c *gin.Context, db *sql.DB) {
 
 func postNewIssuePageHandler(c *gin.Context, db *sql.DB) {
 
+	_, err := authorize(c, db)
+
+	if err != nil {
+		c.Redirect(http.StatusFound, "http://localhost:8000/login")
+		return
+	}
+
 	username := c.Param("user_name")
 	repoName := c.Param("repo_name")
 
@@ -359,6 +377,12 @@ func getRepoNewPageHandler(c *gin.Context, db *sql.DB) {
 }
 
 func PostRepoNewPageHandler(c *gin.Context, db *sql.DB) {
+	_, err := authorize(c, db)
+
+	if err != nil {
+		c.Redirect(http.StatusFound, "http://localhost:8000/login")
+		return
+	}
 
 	name := c.PostForm("name")
 	userId := c.PostForm("user_id")
@@ -373,7 +397,7 @@ func PostRepoNewPageHandler(c *gin.Context, db *sql.DB) {
 		Type:        Type,
 	}
 
-	err := CreateRepo(db, repo)
+	err = CreateRepo(db, repo)
 	if err != nil {
 		fmt.Println(err)
 		c.AbortWithStatus(http.StatusInternalServerError)
@@ -386,10 +410,22 @@ func PostRepoNewPageHandler(c *gin.Context, db *sql.DB) {
 
 func getUserNewPageHandler(c *gin.Context, db *sql.DB) {
 
+	currentUser, err := authorize(c, db)
+	if err == nil {
+		c.Redirect(http.StatusFound, "http://localhost:8000/"+currentUser.Username)
+		return
+	}
+
 	c.HTML(http.StatusOK, "user_signup.html", gin.H{})
 }
 
 func PostUserNewPageHandler(c *gin.Context, db *sql.DB) {
+
+	currentUser, err := authorize(c, db)
+	if err == nil {
+		c.Redirect(http.StatusFound, "http://localhost:8000/"+currentUser.Username)
+		return
+	}
 
 	name := c.PostForm("name")
 	username := c.PostForm("username")
@@ -403,7 +439,7 @@ func PostUserNewPageHandler(c *gin.Context, db *sql.DB) {
 		Password: password,
 	}
 
-	err := CreateUser(db, user)
+	err = CreateUser(db, user)
 	if err != nil {
 		fmt.Println(err)
 		c.AbortWithStatus(http.StatusInternalServerError)
@@ -416,11 +452,24 @@ func PostUserNewPageHandler(c *gin.Context, db *sql.DB) {
 
 func getUserSigninPageHandler(c *gin.Context, db *sql.DB) {
 
+	currentUser, err := authorize(c, db)
+	if err == nil {
+		c.Redirect(http.StatusFound, "http://localhost:8000/"+currentUser.Username)
+		return
+	}
+
 	c.HTML(http.StatusOK, "user_signin.html", gin.H{})
 
 }
 
 func PostUserSigninPageHandler(c *gin.Context, db *sql.DB) {
+
+	currentUser, err := authorize(c, db)
+	if err == nil {
+		c.Redirect(http.StatusFound, "http://localhost:8000/"+currentUser.Username)
+		return
+	}
+
 	username := c.PostForm("username")
 	password := c.PostForm("password")
 
@@ -432,7 +481,7 @@ func PostUserSigninPageHandler(c *gin.Context, db *sql.DB) {
 	var Password, Id string
 	row := db.QueryRow(`SELECT password,id FROM users WHERE username=$1`, username)
 
-	err := row.Scan(&Password, &Id)
+	err = row.Scan(&Password, &Id)
 	if err != nil {
 		fmt.Println(err)
 		c.AbortWithStatus(http.StatusInternalServerError)
@@ -458,7 +507,6 @@ func PostUserSigninPageHandler(c *gin.Context, db *sql.DB) {
 }
 
 func authorize(c *gin.Context, db *sql.DB) (User, error) {
-
 	session, err := c.Cookie("session")
 	if err != nil {
 		return User{}, err
@@ -468,7 +516,9 @@ func authorize(c *gin.Context, db *sql.DB) (User, error) {
 	if err != nil {
 		return User{}, err
 	}
-
+	if cookie.ExpiresAt.Before(time.Now()) {
+		return User{}, fmt.Errorf("cookie expired")
+	}
 	currentUser, err := GetUser(db, cookie.UserId)
 	if err != nil {
 		return User{}, err

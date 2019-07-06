@@ -23,8 +23,8 @@ func CreateCookie(db *sql.DB, userId string) (string, error) {
 
 		ID,
 		userId,
-		time.Now().Format(time.RFC3339),
-		time.Now().Add(time.Minute*10).Format(time.RFC3339))
+		time.Now().UTC().Format(time.RFC3339),
+		time.Now().UTC().Add(time.Minute*5).Format(time.RFC3339))
 
 	if err != nil {
 		return "", err

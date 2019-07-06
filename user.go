@@ -23,11 +23,49 @@ type User struct {
 	Image     string    `json:"image,omitempty"`
 }
 
+func GetUserByUserName(db *sql.DB, username string) (User, error) {
+
+	var name, id, email, createdAt, updatedAt, password, image string
+
+	row := db.QueryRow(`SELECT id,name, email,created_at, 
+						updated_at,password,image FROM users WHERE username = $1`, username)
+	err := row.Scan(&id, &name, &email, &createdAt, &updatedAt, &password, &image)
+	if err != nil {
+		return User{}, err
+	}
+
+	CreatedAt, err := time.Parse(time.RFC3339, createdAt)
+
+	if err != nil {
+		return User{}, err
+	}
+
+	UpdatedAt, err := time.Parse(time.RFC3339, updatedAt)
+
+	if err != nil {
+		return User{}, err
+	}
+
+	user := User{
+		ID:        id,
+		Name:      name,
+		Username:  username,
+		Email:     email,
+		CreatedAt: CreatedAt,
+		UpdatedAt: UpdatedAt,
+		Password:  password,
+		Image:     image,
+	}
+
+	return user, nil
+}
+
 func GetUser(db *sql.DB, id string) (User, error) {
 
 	var name, username, email, createdAt, updatedAt, password, image string
 
-	row := db.QueryRow("SELECT id,name, username, email,created_at, updated_at,password,image FROM users WHERE id=$1", id)
+	row := db.QueryRow(`SELECT id,name, username, email,created_at, 
+						updated_at,password,image FROM users WHERE id = $1`, id)
 	err := row.Scan(&id, &name, &username, &email, &createdAt, &updatedAt, &password, &image)
 	if err != nil {
 		return User{}, err
