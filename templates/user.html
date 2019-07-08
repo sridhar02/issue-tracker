@@ -1,15 +1,137 @@
 <style type="text/css">
-			
-		.img{
-			margin: 10px;
-			height: 100px;
-		}
+	*{
+		margin: 0px;
+		padding: 0px;
+	}
+	body{
+		background-color: white;
+	}
+	.navigation{
+		padding: 10px;
+		display: flex;
+		justify-content: flex-end;
+	}
+	.img{
+		margin: 10px;
+		height: 100px;
+	}
+	.navigation{
+		display: flex;
+		background-color: black;
+	}
+	.nav-button{
+		padding: 10px;
+	}
+	.repo-section{
+		padding-top: 30px;
+		padding-bottom: 30px;
+		border-top: 1px solid #ccc;
+		/*border-bottom: 1px solid #ccc;*/
+	}
+	.repo-section:last-child{
+	border-bottom: 1px solid rgb(227,225,216);
+}
+	.main-section{
+		display: flex;
+		margin:10px;
+	}
+	.repo-section{
+		padding:20px;
+		margin:10px;
+		width: 1100px;
+		/*display: flex;*/
+		/*justify-content: space-between;*/
+	}
+	.repo-section1{
+		display: flex;
+		justify-content: space-between;
+	}
+	.repo-section2{
+		display: flex;	
+	}
+	.new{
+		display: flex;
+		justify-content: flex-end;
+		text-align: end;
+		padding:20px;
+		padding-bottom: 10PX;
+		
+	}
+	.newRepo-link{
+		padding: 10px;
+		border: 1px solid #ddd;
+		background-color: #28a745;
+		text-decoration: none;
+		font-weight: bold;
+		font-size: 15px;
+		color: white;
+		border-radius: 3px;
+	}
+	.star-button{
+		padding: 10px;
+		background-color: #e6ebf1;
+		background-image: linear-gradient(-180deg,#fafbfc,#eff3f6 90%);
+		color: black;
+		border-radius: 3px;
+		border: 1px solid #ccc;
+	}
+	.star-button:hover {
+		background-color: red;
+	}
+	.signin{
+		padding: 10px;
+	}
+	.signout-buttton{
+		padding: 10px;
+		border-radius: 3px;
+		border: 1px solid #ddd;
+	}
+	.navigation a{
+		padding-top: 10px;
+		color:white;
+					text-decoration: none;
+	}
+	.repo-name{
+		text-decoration: none;
+		color: #0366d6;
+	}
+	.space{
+		padding-right: 20px;
+	}
 </style>
-
-<body>
-	<img class="img" src="{{.User.Image}}">
-	<h2>
-	{{.User.Name}}
-	</h2>
-	<div>{{.User.Username}}</div>
-</body>
+<nav class="navigation">
+	{{if .Authorized}}
+	<form action="/Signout" method="post">
+		<div class="signin">
+			<button class="signout-buttton" type="submit">Signout</button>
+		</div>
+	</form>
+	{{else}}
+	<div class="signin">
+		<a  href="/login" >Signin</a>
+	</div>
+	{{end}}
+</nav>
+<div class="main-section">
+	<div class="user-section">
+		<img class="img" src="{{.User.Image}}">
+		<h2>{{.User.Name}}</h2>
+		<div>{{.User.Username}}</div>
+	</div>
+	<div class="repos">
+		<div class="new"><a class="newRepo-link" href="/new">New</a></div>
+		{{range .RepoNames}}
+		<div class="repo-section">
+			<div class="repo-section1">
+				<div class=""><a class="repo-name" href="/{{$.User.Username}}/{{.}}/issues">{{.}}</a></div>
+				<button class="star-button">STAR</button>
+			</div>
+			<div class="repo-section2">
+				<div class="space">Go</div>
+				<div class="space">1 star</div>
+				<div class="space">Updated 10 hrs ago</div>
+			</div>
+		</div>
+		{{end}}
+	</div>
+</div>
