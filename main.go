@@ -65,6 +65,7 @@ type IssueName struct {
 	IssueNumber int
 	Status      string
 	Image       string
+	Pinned      string
 }
 
 type CurrentRepo struct {
@@ -102,7 +103,7 @@ func getIssuesPageHandler(c *gin.Context, db *sql.DB) {
 		return
 	}
 	rows, err := db.Query(
-		`SELECT issues.id,issues.title, users.username ,issues.issue_number
+		`SELECT issues.id,issues.title, users.username ,issues.issue_number,issues.pinned,issues.status
 		 FROM issues JOIN users ON issues.user_id = users.id WHERE repo_id = $1;`,
 		currentRepo.RepoId)
 	if err != nil {
@@ -112,9 +113,9 @@ func getIssuesPageHandler(c *gin.Context, db *sql.DB) {
 	}
 	issues := []IssueName{}
 	var issueNumber, ID int
-	var title, username string
+	var title, username, pinned, status string
 	for rows.Next() {
-		err = rows.Scan(&ID, &title, &username, &issueNumber)
+		err = rows.Scan(&ID, &title, &username, &issueNumber, &pinned, &status)
 		if err != nil {
 			fmt.Println(err)
 			c.AbortWithStatus(http.StatusInternalServerError)
@@ -125,6 +126,8 @@ func getIssuesPageHandler(c *gin.Context, db *sql.DB) {
 			Title:       title,
 			Username:    username,
 			IssueNumber: issueNumber,
+			Pinned:      pinned,
+			Status:      status,
 		}
 		issues = append(issues, issue)
 	}
@@ -159,13 +162,13 @@ func getIssuePageHandler(c *gin.Context, db *sql.DB) {
 	}
 	issueNumberStr := c.Param("issue_number")
 	var issueNumber, ID int
-	var title, body, repoId, userId, status, image string
+	var title, body, repoId, userId, status, image, pinned string
 	row := db.QueryRow(
 		`SELECT issues.id,issues.title, issues.body, users.username ,issues.issue_number,
-issues.repo_id, issues.user_id ,issues.status,users.image
-FROM issues JOIN users ON issues.user_id = users.id WHERE issues.issue_number = $1 AND issues.repo_id=$2;`,
+		issues.repo_id, issues.user_id ,issues.status,users.image,issues.pinned
+		FROM issues JOIN users ON issues.user_id = users.id WHERE issues.issue_number = $1 AND issues.repo_id=$2;`,
 		issueNumberStr, currentRepo.RepoId)
-	err = row.Scan(&ID, &title, &body, &username, &issueNumber, &repoId, &userId, &status, &image)
+	err = row.Scan(&ID, &title, &body, &username, &issueNumber, &repoId, &userId, &status, &image, &pinned)
 	if err != nil {
 		fmt.Println(err)
 		c.AbortWithStatus(http.StatusInternalServerError)
@@ -181,10 +184,11 @@ FROM issues JOIN users ON issues.user_id = users.id WHERE issues.issue_number = 
 		UserId:      userId,
 		Status:      status,
 		Image:       image,
+		Pinned:      pinned,
 	}
 	rows, err := db.Query(`SELECT comments.id,users.username,comments.body,
-comments.issue_id,users.image FROM comments JOIN users ON
-comments.user_id = users.id WHERE comments.issue_id=$1`, ID)
+		comments.issue_id,users.image FROM comments JOIN users ON
+		comments.user_id = users.id WHERE comments.issue_id=$1`, ID)
 	if err != nil {
 		fmt.Println(err)
 		c.AbortWithStatus(http.StatusInternalServerError)
@@ -486,6 +490,58 @@ func PostUserSignOutHandler(c *gin.Context, db *sql.DB) {
 	}
 
 	c.Redirect(http.StatusFound, "http://localhost:8000/login")
+}
+
+func postPinPageHandler(c *gin.Context, db *sql.DB) {
+
+	// _, err := authorize(c, db)
+	// if err != nil {
+	// 	c.Redirect(http.StatusFound, "http://localhost:8000/login")
+	// 	return
+	// }
+
+	username := c.Param("user_name")
+
+	repoName := c.Param("repo_name")
+
+	_issueId := c.PostForm("issue_id")
+
+	IssueNumber := c.PostForm("issue_number")
+
+	_, err := db.Exec(`UPDATE issues SET pinned = 'Yes' WHERE id = $1`, _issueId)
+	if err != nil {
+		fmt.Println(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	c.Redirect(http.StatusFound, "http://localhost:8000/"+username+"/"+repoName+"/issues/"+IssueNumber)
+}
+
+func postUnPinPageHandler(c *gin.Context, db *sql.DB) {
+
+	// _, err := authorize(c, db)
+	// if err != nil {
+	// 	c.Redirect(http.StatusFound, "http://localhost:8000/login")
+	// 	return
+	// }
+
+	username := c.Param("user_name")
+
+	repoName := c.Param("repo_name")
+
+	_issueId := c.PostForm("issue_id")
+
+	IssueNumber := c.PostForm("issue_number")
+
+	_, err := db.Exec(`UPDATE issues SET pinned = 'No' WHERE id = $1`, _issueId)
+	if err != nil {
+		fmt.Println(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	c.Redirect(http.StatusFound, "http://localhost:8000/"+username+"/"+repoName+"/issues/"+IssueNumber)
 
 }
 
@@ -515,7 +571,14 @@ func main() {
 	// router.GET("/user", func(c *gin.Context) { getUserPageHandler(c, db) })
 	pages.GET("/issues",
 		func(c *gin.Context) { getIssuesPageHandler(c, db) })
-	pages.POST("/issues/new", func(c *gin.Context) { postNewIssuePageHandler(c, db) })
+	pages.POST("/issues/:issue_number", func(c *gin.Context) {
+		if c.Param("issue_number") == "new" {
+			postNewIssuePageHandler(c, db)
+		} else {
+			c.Status(http.StatusNotFound)
+		}
+	})
+
 	pages.GET("/issues/:issue_number",
 		func(c *gin.Context) {
 			if c.Param("issue_number") == "new" {
@@ -524,6 +587,10 @@ func main() {
 				getIssuePageHandler(c, db)
 			}
 		})
+
+	pages.POST("/issues/:issue_number/pin", func(c *gin.Context) { postPinPageHandler(c, db) })
+	pages.POST("/issues/:issue_number/unpin", func(c *gin.Context) { postUnPinPageHandler(c, db) })
+
 	pages.POST("/comments", func(c *gin.Context) { createIssueComment(c, db) })
 	userGroup.GET("", func(c *gin.Context) {
 		if c.Param("user_name") == "new" {

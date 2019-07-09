@@ -26,11 +26,9 @@ body{
 	padding-left: 10px;
 	color: #a3aab1;
 }
-
 .edit-button-divison{
 	padding-top: 15px;
 }
-
 .edit-button,.new-issue-button {
 	padding: 8px;
 	padding-right: 10px;
@@ -38,7 +36,6 @@ body{
 	border-radius: 5px;
 	font-weight: bold;
 }
-
 .edit-button{
 	background-color:  #f1f5f7;
 	border: 2px solid #bbb;
@@ -46,13 +43,11 @@ body{
 .edit-button:hover{
 	background: #ddd;
 }
-
 .new-issue-button{
 	background-color: #53b049;
 	color: white;
 	border: 2px solid hsla(114, 41%, 37%, 1)
 }
-
 .subsection-title{
 	padding-top: 15px;
 	padding-bottom:20px;
@@ -72,8 +67,8 @@ body{
 	background-color:red;
 	padding: 5px 10px;
 	/*padding-right: 0px;*/
-/*	width: 50px;
-*/	font-weight: bold;
+	/*	width: 50px;
+	*/	font-weight: bold;
 	border-radius: 3px;
 	color: white;
 }
@@ -88,14 +83,12 @@ body{
 	color: #333;
 	font-weight: bold;
 }
-
 .issue-section,
 .comment-section,
 .write-section {
 	display: flex;
 	margin-top: 20px;
 }
-
 .user-photo{
 	padding-right: 10px;
 	width: 50px;
@@ -104,7 +97,6 @@ body{
 .user-photo img {
 	border-radius: 3px;
 }
-
 .issue-section .content,
 .comment-section .content,
 .write-section .content {
@@ -114,7 +106,6 @@ body{
 	/*margin: 0 auto;*/
 	border-radius: 3px;
 }
-
 .issue-section .header,
 .comment-section .header,
 .write-section .header {
@@ -122,23 +113,19 @@ body{
 	background-color: rgb(247,247,247);
 	border-bottom: 1px solid #dddd;
 }
-
 .write-section .header{
 	padding-bottom: 0px;
 }
-
 .issue-section .info,
 .comment-section .info{
 	color:#586069;
 }
-
 .issue-section .info a,
 .comment-section .info a{
 	text-decoration: none;
 	color: #333;
 	font-weight: bold;
 }
-
 .issue-section .body,
 .comment-section .body{
 	padding: 10px;
@@ -147,14 +134,12 @@ body{
 	color: #ccc;
 	font-style: italic;
 }
-
 .write-content{
 	min-height: 200px;
 	width: 600px;
 	border: 1px solid #DDD;
-	border-radius: 3px;	
+		border-radius: 3px;
 }
-
 .write-comment{
 	margin: 10px;
 	border: 1px solid #ddd;
@@ -174,21 +159,16 @@ body{
 	display: flex;
 	justify-content: flex-end;
 }
-
-
 .write-section .header button{
 	padding:8px 12px;
 	background-color: #d1d5da;
 	border: 2px solid #d1d5da;
 	border-bottom: 0px;
-	border-radius: 4px;	
+		border-radius: 4px;
 }
-
 .preview{
 	margin-left: 10px;
 }
-
-
 .comment-buttons .comment{
 	background-color: #28a745;
 	padding: 10px;
@@ -197,7 +177,6 @@ body{
 	border-radius: 3px;
 	border: 1px solid #ccc;
 }
-
 .comment-buttons .close{
 	background-color: #eff3f6;
 	background-image: linear-gradient(-180deg, #fafbfc,#eff3f6 90%);
@@ -210,26 +189,19 @@ body{
 .pinned-section{
 	display: flex;
 }
-
 .pinned-button{
 	padding: 20px;
 	padding-left: 40px;
 }
-
 .pinned-button button{
 	padding: 5px;
 	font-weight: bold;
-
 }
-
 .pinned-button button:focus{
 	outline: 0;
 	color: black;
 }
-
-
 </style>
-
 <div>
 	{{with .Issue }}
 	<div class="title-page">
@@ -250,32 +222,42 @@ body{
 		{{else}}
 		<span class="status-closed">{{.Status}}</span>
 		{{end}}
-
 		<span class="issue-info"><a href="" class="user-name">{{.Username}}</a> opened this issue on 15 Dec 2018 · 1 comment</span>
 	</div>
 	<div class="pinned-section">
-	<div class="issue-section">
-		<div class="user-photo"><img class="user-photo" src="{{.Image}}"></div>
-		<div class="content">
-			<div class="header">
-				<span class="info"><a href="" >{{.Username}}</a> commented on 15 Dec 2018</span>
-			</div>
-			{{ if .Body}}
+		<div class="issue-section">
+			<div class="user-photo"><img class="user-photo" src="{{.Image}}"></div>
+			<div class="content">
+				<div class="header">
+					<span class="info"><a href="" >{{.Username}}</a> commented on 15 Dec 2018</span>
+				</div>
+				{{ if .Body}}
 				<div class="body">{{ .Body }}</div>
-			{{else}}
+				{{else}}
 				<div class="body empty-body">No description provided</div>
-			{{end}}
+				{{end}}
+			</div>
 		</div>
-	</div>
-	
-	<div class="pinned-button">
+		
+		<div class="pinned-button">
+			
+			{{if eq .Pinned "No"}}
+			<form method="post" action="/{{$.UserName}}/{{$.RepoName}}/issues/{{.IssueNumber}}/pin">
+				<input name="issue_id" value="{{.ID}}" hidden></input>
+				<input name="issue_number" value="{{.IssueNumber}}" hidden></input>
+				<button type="submit" > pin issue </button>
+			</form>
+			{{end}}
+			{{if eq .Pinned "Yes"}}
+			<form method="post" action="/{{$.UserName}}/{{$.RepoName}}/issues/{{.IssueNumber}}/unpin">
+				<input name="issue_id" value="{{.ID}}" hidden></input>
+				<input name="issue_number" value="{{.IssueNumber}}" hidden></input>				
+				<button type="submit"> unpin issue </button>
+			</form>
+			{{end}}
 
-		<form method="" action="">
-
-		<button type="submit"> pinned issue </button>
-		</form>
-	</div>
-	
+		</div>
+		
 	</div>
 	{{end}}
 	{{range .Comments}}
@@ -287,25 +269,24 @@ body{
 			</div>
 			<div class="body">{{.Body}}</div>
 		</div>
-	</div>		
+	</div>
 	{{end}}
 	{{if .Authorized }}
 	<div class="write-section">
 		<div class="user-photo"><img class="user-photo" src="{{.CurrentUser.Image}}"></div>
-		<div class="content"> 
+		<div class="content">
 			<form method="POST" action="/{{.UserName}}/{{.RepoName}}/comments">
-				<input name="issue_id" value="{{.Issue.ID}}" hidden></input> 
-				<input name="repo_id" value="{{.Issue.RepoId}}" hidden></input> 
-				<input name="user_id" value="{{.CurrentUser.ID}}" hidden></input> 
-				<input name="issue_number" value="{{.Issue.IssueNumber}}" hidden></input> 
-
+				<input name="issue_id" value="{{.Issue.ID}}" hidden></input>
+				<input name="repo_id" value="{{.Issue.RepoId}}" hidden></input>
+				<input name="user_id" value="{{.CurrentUser.ID}}" hidden></input>
+				<input name="issue_number" value="{{.Issue.IssueNumber}}" hidden></input>
 				<div class="header">
 					<button type="button">Write</button>
 					<button class="preview" type="button">Preview</button>
 				</div>
-				<textarea name="body" class="write-comment" placeholder="Leave a comment"></textarea> 
+				<textarea name="body" class="write-comment" placeholder="Leave a comment"></textarea>
 				<div class="comment-buttons">
-					{{if eq .Issue.Status "Open"}} 
+					{{if eq .Issue.Status "Open"}}
 					<button class="close" name="comment_and_close" value="1" type="submit">Close issue</button>
 					{{else}}
 					<button class="close" name="comment_and_open" value="1" type="submit">Reopen issue</button>
@@ -316,5 +297,4 @@ body{
 		</div>
 	</div>
 	{{end}}
-
 </div>
