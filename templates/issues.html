@@ -59,35 +59,37 @@ body{
 	border: 1px solid #ddd;
 	width:30%;
 	height: 80px;
+	padding: 10px;
+	margin:10px;
 }
 .space{
 	padding-top: 10px;
 	padding-bottom: 10px;
 }
-
+.pinned-section{
+	display: flex;
+}
 </style>
-{{range .Issues}}
-<div>
-	{{ if eq .Pinned "Yes"}}
-	<div class="pinned-issue">
-		<b>{{.Title}}</b>
-		<div class="space"> #{{.IssueNumber}} opened 11 days ago by {{.Username}}</div>
-		<div>{{.Status}}</div>
-	</div>
+
+<div class="pinned-section">
+	{{range .Issues}}
+		{{ if eq .Pinned "Yes"}}
+		<div class="pinned-issue">
+			<b>{{.Title}}</b>
+			<div class="space"> #{{.IssueNumber}} opened 11 days ago by {{.Username}}</div>
+			<div>{{.Status}}</div>
+		</div>
+		{{end}}	
 	{{end}}
 </div>
-{{end}}
 
 <div class="space"></div>
-
 {{if .Authorized}}
 <div class="issue-button">
 	<button><a href="/{{.UserName}}/{{.RepoName}}/issues/new">New Issue</a></button>
 </div>
 {{end}}
-
 <div class="space"></div>
-
 {{range .Issues}}
 <div class="issues-page">
 	<div class="title-division">
