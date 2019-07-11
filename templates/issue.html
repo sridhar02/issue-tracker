@@ -4,11 +4,18 @@
 	margin: 0;
 	padding: 0;
 }
-body{
+/*body{
 	padding-top: 20px;
 	padding-bottom: 20px;
 	font-family: sans-serif;
 	width:900px;
+	margin: 0 auto;
+}*/
+
+.main-section{
+	padding-left: 250px;
+	padding-right: 200px;
+	min-width: 500px
 	margin: 0 auto;
 }
 .title-page{
@@ -67,8 +74,8 @@ body{
 	background-color:red;
 	padding: 5px 10px;
 	/*padding-right: 0px;*/
-		/*	width: 50px;
-		*/	font-weight: bold;
+			/*	width: 50px;
+			*/	font-weight: bold;
 	border-radius: 3px;
 	color: white;
 }
@@ -201,8 +208,26 @@ body{
 	outline: 0;
 	color: black;
 }
+.participants{
+	margin-left: 40px;
+	padding-left: 40px;
+	border-bottom: 1px solid #ddd;
+	border-top: 1px solid #ddd;
+	padding-bottom: 10px;
+}
+.number-participants{
+	padding: 10px;
+}
+.participants-photo{
+	display: flex;
+	flex-wrap: wrap;
+}
+
 </style>
-<div>
+
+{{template "nav.html" .}}
+
+<div class="main-section">
 	{{with .Issue }}
 	<div class="title-page">
 		<div class="title-divison">
@@ -238,32 +263,41 @@ body{
 				{{end}}
 			</div>
 		</div>
-		{{if $.Authorized}}
-		{{if $.RepoOwner}}
-		<div class="pinned-button">
-			{{if eq .Pinned "No"}}
-			<form method="post" action="/{{$.UserName}}/{{$.RepoName}}/issues/{{.IssueNumber}}/pin">
-				<input name="issue_id" value="{{.ID}}" hidden></input>
-				<input name="issue_number" value="{{.IssueNumber}}" hidden></input>
-				<input name="repo_id" value="{{.RepoId}}" hidden></input>
-				{{if lt $.PinnedIssueCount 3}}
-				<button type="submit" > pin issue </button>
+		<div>
+			{{if $.Authorized}}
+			{{if $.RepoOwner}}
+			<div class="pinned-button">
+				{{if eq .Pinned "No"}}
+				<form method="post" action="/{{$.UserName}}/{{$.RepoName}}/issues/{{.IssueNumber}}/pin">
+					<input name="issue_id" value="{{.ID}}" hidden></input>
+					<input name="issue_number" value="{{.IssueNumber}}" hidden></input>
+					<input name="repo_id" value="{{.RepoId}}" hidden></input>
+					{{if lt $.PinnedIssuesCount 3}}
+					<button type="submit" > pin issue </button>
+					{{end}}
+				</form>
 				{{end}}
-			</form>
+				{{if eq .Pinned "Yes"}}
+				<form method="post" action="/{{$.UserName}}/{{$.RepoName}}/issues/{{.IssueNumber}}/unpin">
+					<input name="issue_id" value="{{.ID}}" hidden></input>
+					<input name="issue_number" value="{{.IssueNumber}}" hidden></input>
+					<button type="submit"> unpin issue </button>
+				</form>
+				{{end}}
+			</div>
 			{{end}}
-			{{if eq .Pinned "Yes"}}
-			<form method="post" action="/{{$.UserName}}/{{$.RepoName}}/issues/{{.IssueNumber}}/unpin">
-				<input name="issue_id" value="{{.ID}}" hidden></input>
-				<input name="issue_number" value="{{.IssueNumber}}" hidden></input>
-				<button type="submit"> unpin issue </button>
-			</form>
 			{{end}}
+			<div class="participants"> 
+				<div class="number-participants">{{$.NumberOfCommented}} participant</div>
+				<div class="participants-photo">
+				{{range $.CommentedUsers}}
+					<div class="user-photo"><img class="user-photo" src="{{.}}"></div>
+				{{end}}
+				</div>
+			</div>
 		</div>
-		{{end}}
-		{{end}}
-	
-	</div>
 	{{end}}
+	</div>
 	{{range .Comments}}
 	<div class="comment-section">
 		<div class="user-photo"><img class="user-photo" src="{{.Image}}"></div>

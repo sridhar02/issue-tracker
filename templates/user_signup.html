@@ -1,18 +1,24 @@
 <style type="text/css">
 	
 body{
-	padding-top: 100px;
-	padding-bottom: 30px;
-	font-family: sans-serif;
-	width:1000px;
-	margin: 0 auto;
 	background-color:#2b3137;
+}
+*{
+	margin:0;
+	padding:0;
 }
 .title{
 	color: white;
 }
 
 .main-section{
+	padding-top: 100px;
+	padding-bottom: 30px;
+	padding-left: 250px;
+	padding-right: 200px;
+	font-family: sans-serif;
+	min-width:700px;
+	margin: 0 auto;
 	display: flex;
 }
 
@@ -63,6 +69,10 @@ input:focus{
 }
 
 </style>
+
+{{template "nav.html" .}}
+
+
 <div class="main-section">
 	<div class="title">
 		<h1>Built for developers</h1>

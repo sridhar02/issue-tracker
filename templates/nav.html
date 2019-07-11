@@ -1,0 +1,36 @@
+<style type="text/css">
+	.navigation{
+		padding: 10px;
+		display: flex;
+		justify-content: flex-end;
+		background-color: black;
+	}
+
+	.signin{
+		padding: 10px;
+	}
+	.signout-buttton{
+		padding: 10px;
+		border-radius: 3px;
+		border: 1px solid #ddd;
+	}
+	.navigation a{
+		padding-top: 10px;
+		color:white;
+					text-decoration: none;
+	}
+</style>
+
+<nav class="navigation">
+	{{if .Authorized}}
+	<form action="/Signout" method="post">
+		<div class="signin">
+			<button class="signout-buttton" type="submit">Signout</button>
+		</div>
+	</form>
+	{{else}}
+	<div class="signin">
+		<a  href="/login" >Signin</a>
+	</div>
+	{{end}}
+</nav>

@@ -3,11 +3,18 @@
 	margin: 0;
 	padding: 0;
 }
-body{
+/*body{
 	padding-top: 20px;
 	padding-right: 200px;
 	padding-left: 200px;
 	padding-bottom: 20px;
+}*/
+
+.main-section{
+	padding-left: 250px;
+	padding-right: 200px;
+	min-width: 500px
+	margin: 0 auto;
 }
 .issues-page{
 	background-color: white;
@@ -71,33 +78,37 @@ body{
 }
 </style>
 
-<div class="pinned-section">
-	{{range .Issues}}
+
+{{template "nav.html" .}}
+
+<div class="main-section">
+	<div class="pinned-section">
+		{{range .Issues}}
 		{{ if eq .Pinned "Yes"}}
 		<div class="pinned-issue">
 			<b>{{.Title}}</b>
 			<div class="space"> #{{.IssueNumber}} opened 11 days ago by {{.Username}}</div>
 			<div>{{.Status}}</div>
 		</div>
-		{{end}}	
+		{{end}}
+		{{end}}
+	</div>
+	<div class="space"></div>
+	{{if .Authorized}}
+	<div class="issue-button">
+		<button><a href="/{{.UserName}}/{{.RepoName}}/issues/new">New Issue</a></button>
+	</div>
 	{{end}}
-</div>
-
-<div class="space"></div>
-{{if .Authorized}}
-<div class="issue-button">
-	<button><a href="/{{.UserName}}/{{.RepoName}}/issues/new">New Issue</a></button>
-</div>
-{{end}}
-<div class="space"></div>
-{{range .Issues}}
-<div class="issues-page">
-	<div class="title-division">
-		<h1> <a class="title" href="/{{$.UserName}}/{{$.RepoName}}/issues/{{.IssueNumber}}">{{ .Title }}</a></h1>
-		<div >
-			<span class="issue-number">#{{.IssueNumber}} opened yesterday by </span>
-			<span><a class="title" href="">{{.Username}}</a></span>
+	<div class="space"></div>
+	{{range .Issues}}
+	<div class="issues-page">
+		<div class="title-division">
+			<h1> <a class="title" href="/{{$.UserName}}/{{$.RepoName}}/issues/{{.IssueNumber}}">{{ .Title }}</a></h1>
+			<div >
+				<span class="issue-number">#{{.IssueNumber}} opened yesterday by </span>
+				<span><a class="title" href="">{{.Username}}</a></span>
+			</div>
 		</div>
 	</div>
+	{{end}}
 </div>
-{{end}}
