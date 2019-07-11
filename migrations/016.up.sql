@@ -1,0 +1,1 @@
+UPDATE issues SET lock = 'No' WHERE lock IS NULL;

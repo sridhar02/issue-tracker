@@ -4,13 +4,6 @@
 	margin: 0;
 	padding: 0;
 }
-/*body{
-	padding-top: 20px;
-	padding-bottom: 20px;
-	font-family: sans-serif;
-	width:900px;
-	margin: 0 auto;
-}*/
 
 .main-section{
 	padding-left: 250px;
@@ -113,6 +106,7 @@
 	/*margin: 0 auto;*/
 	border-radius: 3px;
 }
+
 .issue-section .header,
 .comment-section .header,
 .write-section .header {
@@ -223,6 +217,24 @@
 	flex-wrap: wrap;
 }
 
+.write-section .content {
+	position: relative;
+}
+
+
+.write-section .locked {
+	position: absolute;
+	width: 100%;
+	top: 0;
+	height: 200px;
+	background: rgba(0,0,0, 0.1);
+
+	display: flex;
+	justify-content: center;
+	align-content: center;
+
+}
+
 </style>
 
 {{template "nav.html" .}}
@@ -295,6 +307,20 @@
 				{{end}}
 				</div>
 			</div>
+			<div>
+				{{if eq .Lock "No"}}
+				<form method="post" action="/{{$.UserName}}/{{$.RepoName}}/issues/{{.IssueNumber}}/lock">
+					<input name="issue_id" value="{{.ID}}" hidden></input>
+					<button type="submit">Lock conversion</button>
+				</form>
+				{{end}}
+				{{if eq .Lock "Yes"}}
+				<form method="post" action="/{{$.UserName}}/{{$.RepoName}}/issues/{{.IssueNumber}}/unlock">
+					<input name="issue_id" value="{{.ID}}" hidden></input>
+					<button type="submit">Unlock conversion</button>
+				</form>
+				{{end}}
+			</div>
 		</div>
 	{{end}}
 	</div>
@@ -332,6 +358,13 @@
 					<button class="comment" type="submit">Comment</button>
 				</div>
 			</form>
+			{{if .Locked}} 
+				<div class="locked">
+					<div>
+					Locked
+					</div>
+				</div> 	
+			{{end}}
 		</div>
 	</div>
 	{{end}}
