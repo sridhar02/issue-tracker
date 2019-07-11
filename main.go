@@ -67,6 +67,7 @@ type IssueName struct {
 	Status      string
 	Image       string
 	Pinned      string
+	Lock        string
 }
 
 type CurrentRepo struct {
@@ -168,13 +169,13 @@ func getIssuePageHandler(c *gin.Context, db *sql.DB) {
 	issueNumberStr := c.Param("issue_number")
 
 	var issueNumber, ID int
-	var title, body, repoId, userId, status, image, pinned string
+	var title, body, repoId, userId, status, image, pinned, lock string
 	row := db.QueryRow(
 		`SELECT issues.id,issues.title, issues.body, users.username ,issues.issue_number,
-		issues.repo_id, issues.user_id ,issues.status,users.image,issues.pinned
+		issues.repo_id, issues.user_id ,issues.status,users.image,issues.pinned,issues.lock
 		FROM issues JOIN users ON issues.user_id = users.id WHERE issues.issue_number = $1 AND issues.repo_id=$2;`,
 		issueNumberStr, currentRepo.RepoId)
-	err = row.Scan(&ID, &title, &body, &username, &issueNumber, &repoId, &userId, &status, &image, &pinned)
+	err = row.Scan(&ID, &title, &body, &username, &issueNumber, &repoId, &userId, &status, &image, &pinned, &lock)
 	if err != nil {
 		fmt.Println(err)
 		c.AbortWithStatus(http.StatusInternalServerError)
@@ -191,6 +192,7 @@ func getIssuePageHandler(c *gin.Context, db *sql.DB) {
 		Status:      status,
 		Image:       image,
 		Pinned:      pinned,
+		Lock:        lock,
 	}
 
 	var PinnedIssuesCount int
@@ -232,10 +234,7 @@ func getIssuePageHandler(c *gin.Context, db *sql.DB) {
 		comments = append(comments, comment)
 	}
 
-	IsRepoOwner := false
-	if username == currentUser.Username {
-		IsRepoOwner = true
-	}
+	IsRepoOwner := c.Param("user_name") == currentUser.Username
 
 	CommentedUsersImages := []string{}
 	var UsersImages string
@@ -274,6 +273,8 @@ func getIssuePageHandler(c *gin.Context, db *sql.DB) {
 
 	NumberOfCommented := len(CommentedUsersImages)
 
+	locked := lock == "Yes" && IsRepoOwner == false
+
 	c.HTML(http.StatusOK, "issue.html", gin.H{
 		"CurrentUser":       currentUser,
 		"Authorized":        authorized,
@@ -284,6 +285,7 @@ func getIssuePageHandler(c *gin.Context, db *sql.DB) {
 		"CommentedUsers":    CommentedUsersImages,
 		"RepoOwner":         IsRepoOwner,
 		"NumberOfCommented": NumberOfCommented,
+		"Locked":            locked,
 		"RepoName":          repoName})
 }
 
@@ -591,12 +593,6 @@ func postPinPageHandler(c *gin.Context, db *sql.DB) {
 
 func postUnPinPageHandler(c *gin.Context, db *sql.DB) {
 
-	// _, err := authorize(c, db)
-	// if err != nil {
-	// 	c.Redirect(http.StatusFound, "http://localhost:8000/login")
-	// 	return
-	// }
-
 	username := c.Param("user_name")
 
 	repoName := c.Param("repo_name")
@@ -606,6 +602,48 @@ func postUnPinPageHandler(c *gin.Context, db *sql.DB) {
 	IssueNumber := c.PostForm("issue_number")
 
 	_, err := db.Exec(`UPDATE issues SET pinned = 'No' WHERE id = $1`, _issueId)
+	if err != nil {
+		fmt.Println(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	c.Redirect(http.StatusFound, "http://localhost:8000/"+username+"/"+repoName+"/issues/"+IssueNumber)
+
+}
+
+func postLockPageHandler(c *gin.Context, db *sql.DB) {
+
+	username := c.Param("user_name")
+
+	repoName := c.Param("repo_name")
+
+	IssueNumber := c.Param("issue_number")
+
+	_issueId := c.PostForm("issue_id")
+
+	_, err := db.Exec(`UPDATE issues SET lock = 'Yes' WHERE id = $1`, _issueId)
+	if err != nil {
+		fmt.Println(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	c.Redirect(http.StatusFound, "http://localhost:8000/"+username+"/"+repoName+"/issues/"+IssueNumber)
+
+}
+
+func postUnlockPageHandler(c *gin.Context, db *sql.DB) {
+
+	username := c.Param("user_name")
+
+	repoName := c.Param("repo_name")
+
+	_issueId := c.PostForm("issue_id")
+
+	IssueNumber := c.Param("issue_number")
+
+	_, err := db.Exec(`UPDATE issues SET lock = 'No' WHERE id = $1`, _issueId)
 	if err != nil {
 		fmt.Println(err)
 		c.AbortWithStatus(http.StatusInternalServerError)
@@ -661,6 +699,8 @@ func main() {
 
 	pages.POST("/issues/:issue_number/pin", func(c *gin.Context) { postPinPageHandler(c, db) })
 	pages.POST("/issues/:issue_number/unpin", func(c *gin.Context) { postUnPinPageHandler(c, db) })
+	pages.POST("/issues/:issue_number/lock", func(c *gin.Context) { postLockPageHandler(c, db) })
+	pages.POST("/issues/:issue_number/unlock", func(c *gin.Context) { postUnlockPageHandler(c, db) })
 
 	pages.POST("/comments", func(c *gin.Context) { createIssueComment(c, db) })
 	userGroup.GET("", func(c *gin.Context) {

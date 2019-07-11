@@ -18,6 +18,7 @@ type Issue struct {
 	IssueNumber int       `json:"issue_number,omitempty"`
 	Status      string    `json:"status,omitempty"`
 	Pinned      string    `json:"pinned,omitempty"`
+	Lock        string    `json:"lock,omitempty"`
 	CreatedAt   time.Time `json:"created_at,omitempty"`
 	UpdatedAt   time.Time `json:"updated_at,omitempty"`
 }
@@ -74,14 +75,15 @@ func CreateIssue(db *sql.DB, issue Issue) (int, error) {
 
 	// fmt.Println(issue)
 
-	err = db.QueryRow(`INSERT INTO issues(title, user_id,body,repo_id,issue_number,status,pinned,created_at, updated_at)
-						VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING id`,
+	err = db.QueryRow(`INSERT INTO issues(title, user_id,body,repo_id,issue_number,status,pinned,lock,created_at, updated_at)
+						VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING id`,
 		issue.Title,
 		issue.UserId,
 		issue.Body,
 		issue.RepoId,
 		issueCount+1,
 		"Open",
+		"No",
 		"No",
 		time.Now().Format(time.RFC3339),
 		time.Now().Format(time.RFC3339)).Scan(&issueId)
