@@ -84,7 +84,7 @@
 <div class="main-section">
 	<div class="pinned-section">
 		{{range .Issues}}
-		{{ if eq .Pinned "Yes"}}
+		{{ if eq .Pinned "Pinned"}}
 		<div class="pinned-issue">
 			<b>{{.Title}}</b>
 			<div class="space"> #{{.IssueNumber}} opened 11 days ago by {{.Username}}</div>

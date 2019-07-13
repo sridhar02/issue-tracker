@@ -197,7 +197,7 @@ func getIssuePageHandler(c *gin.Context, db *sql.DB) {
 
 	var PinnedIssuesCount int
 
-	row = db.QueryRow(`SELECT count(*) FROM issues WHERE pinned = 'Yes' AND repo_id = $1`, repoId)
+	row = db.QueryRow(`SELECT count(*) FROM issues WHERE pinned = 'Pinned' AND repo_id = $1`, repoId)
 	err = row.Scan(&PinnedIssuesCount)
 	if err != nil {
 		fmt.Println(err)
@@ -273,7 +273,7 @@ func getIssuePageHandler(c *gin.Context, db *sql.DB) {
 
 	NumberOfCommented := len(CommentedUsersImages)
 
-	locked := lock == "Yes" && IsRepoOwner == false
+	locked := lock == "Locked" && IsRepoOwner == false
 
 	c.HTML(http.StatusOK, "issue.html", gin.H{
 		"CurrentUser":       currentUser,
@@ -465,7 +465,7 @@ func PostUserNewPageHandler(c *gin.Context, db *sql.DB) {
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
-	c.Redirect(http.StatusFound, "http://localhost:8000/")
+	c.Redirect(http.StatusFound, "http://localhost:8000/login")
 }
 
 func getUserSigninPageHandler(c *gin.Context, db *sql.DB) {
@@ -557,6 +557,12 @@ func PostUserSignOutHandler(c *gin.Context, db *sql.DB) {
 
 func postPinPageHandler(c *gin.Context, db *sql.DB) {
 
+	_, err := authorize(c, db)
+	if err != nil {
+		c.Redirect(http.StatusFound, "http://localhost:8000/login")
+		return
+	}
+
 	username := c.Param("user_name")
 
 	repoName := c.Param("repo_name")
@@ -569,8 +575,8 @@ func postPinPageHandler(c *gin.Context, db *sql.DB) {
 
 	var count int
 
-	row := db.QueryRow(`SELECT count(*) FROM issues WHERE pinned = 'Yes' AND repo_id = $1`, repoId)
-	err := row.Scan(&count)
+	row := db.QueryRow(`SELECT count(*) FROM issues WHERE pinned = 'Pinned' AND repo_id = $1`, repoId)
+	err = row.Scan(&count)
 	if err != nil {
 		fmt.Println(err)
 		c.AbortWithStatus(http.StatusInternalServerError)
@@ -582,7 +588,7 @@ func postPinPageHandler(c *gin.Context, db *sql.DB) {
 		return
 	}
 
-	_, err = db.Exec(`UPDATE issues SET pinned = 'Yes' WHERE id = $1`, _issueId)
+	_, err = db.Exec(`UPDATE issues SET pinned = 'Pinned' WHERE id = $1`, _issueId)
 	if err != nil {
 		fmt.Println(err)
 		c.AbortWithStatus(http.StatusInternalServerError)
@@ -593,6 +599,12 @@ func postPinPageHandler(c *gin.Context, db *sql.DB) {
 
 func postUnPinPageHandler(c *gin.Context, db *sql.DB) {
 
+	_, err := authorize(c, db)
+	if err != nil {
+		c.Redirect(http.StatusFound, "http://localhost:8000/login")
+		return
+	}
+
 	username := c.Param("user_name")
 
 	repoName := c.Param("repo_name")
@@ -601,7 +613,7 @@ func postUnPinPageHandler(c *gin.Context, db *sql.DB) {
 
 	IssueNumber := c.PostForm("issue_number")
 
-	_, err := db.Exec(`UPDATE issues SET pinned = 'No' WHERE id = $1`, _issueId)
+	_, err = db.Exec(`UPDATE issues SET pinned = 'Unpinned' WHERE id = $1`, _issueId)
 	if err != nil {
 		fmt.Println(err)
 		c.AbortWithStatus(http.StatusInternalServerError)
@@ -614,6 +626,12 @@ func postUnPinPageHandler(c *gin.Context, db *sql.DB) {
 
 func postLockPageHandler(c *gin.Context, db *sql.DB) {
 
+	_, err := authorize(c, db)
+	if err != nil {
+		c.Redirect(http.StatusFound, "http://localhost:8000/login")
+		return
+	}
+
 	username := c.Param("user_name")
 
 	repoName := c.Param("repo_name")
@@ -622,7 +640,7 @@ func postLockPageHandler(c *gin.Context, db *sql.DB) {
 
 	_issueId := c.PostForm("issue_id")
 
-	_, err := db.Exec(`UPDATE issues SET lock = 'Yes' WHERE id = $1`, _issueId)
+	_, err = db.Exec(`UPDATE issues SET lock = 'Locked' WHERE id = $1`, _issueId)
 	if err != nil {
 		fmt.Println(err)
 		c.AbortWithStatus(http.StatusInternalServerError)
@@ -635,6 +653,12 @@ func postLockPageHandler(c *gin.Context, db *sql.DB) {
 
 func postUnlockPageHandler(c *gin.Context, db *sql.DB) {
 
+	_, err := authorize(c, db)
+	if err != nil {
+		c.Redirect(http.StatusFound, "http://localhost:8000/login")
+		return
+	}
+
 	username := c.Param("user_name")
 
 	repoName := c.Param("repo_name")
@@ -643,7 +667,7 @@ func postUnlockPageHandler(c *gin.Context, db *sql.DB) {
 
 	IssueNumber := c.Param("issue_number")
 
-	_, err := db.Exec(`UPDATE issues SET lock = 'No' WHERE id = $1`, _issueId)
+	_, err = db.Exec(`UPDATE issues SET lock = 'Unlocked' WHERE id = $1`, _issueId)
 	if err != nil {
 		fmt.Println(err)
 		c.AbortWithStatus(http.StatusInternalServerError)
@@ -651,7 +675,6 @@ func postUnlockPageHandler(c *gin.Context, db *sql.DB) {
 	}
 
 	c.Redirect(http.StatusFound, "http://localhost:8000/"+username+"/"+repoName+"/issues/"+IssueNumber)
-
 }
 
 func main() {

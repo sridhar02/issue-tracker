@@ -83,8 +83,8 @@ func CreateIssue(db *sql.DB, issue Issue) (int, error) {
 		issue.RepoId,
 		issueCount+1,
 		"Open",
-		"No",
-		"No",
+		"Unpinned",
+		"Unlocked",
 		time.Now().Format(time.RFC3339),
 		time.Now().Format(time.RFC3339)).Scan(&issueId)
 	if err != nil {

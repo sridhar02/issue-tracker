@@ -235,6 +235,13 @@
 
 }
 
+.lock-button{
+	padding: 10px;
+	margin: 10px;	
+	margin-left: 40px;
+	font-weight: bold;
+}
+
 </style>
 
 {{template "nav.html" .}}
@@ -279,21 +286,21 @@
 			{{if $.Authorized}}
 			{{if $.RepoOwner}}
 			<div class="pinned-button">
-				{{if eq .Pinned "No"}}
+				{{if eq .Pinned "Unpinned"}}
 				<form method="post" action="/{{$.UserName}}/{{$.RepoName}}/issues/{{.IssueNumber}}/pin">
 					<input name="issue_id" value="{{.ID}}" hidden></input>
 					<input name="issue_number" value="{{.IssueNumber}}" hidden></input>
 					<input name="repo_id" value="{{.RepoId}}" hidden></input>
 					{{if lt $.PinnedIssuesCount 3}}
-					<button type="submit" > pin issue </button>
+					<button type="submit" > Pin Issue </button>
 					{{end}}
 				</form>
 				{{end}}
-				{{if eq .Pinned "Yes"}}
+				{{if eq .Pinned "Pinned"}}
 				<form method="post" action="/{{$.UserName}}/{{$.RepoName}}/issues/{{.IssueNumber}}/unpin">
 					<input name="issue_id" value="{{.ID}}" hidden></input>
 					<input name="issue_number" value="{{.IssueNumber}}" hidden></input>
-					<button type="submit"> unpin issue </button>
+					<button type="submit"> Unpin Issue </button>
 				</form>
 				{{end}}
 			</div>
@@ -307,20 +314,24 @@
 				{{end}}
 				</div>
 			</div>
+			{{if $.Authorized}}
+			{{if $.RepoOwner}}
 			<div>
-				{{if eq .Lock "No"}}
+				{{if eq .Lock "Unlocked"}}
 				<form method="post" action="/{{$.UserName}}/{{$.RepoName}}/issues/{{.IssueNumber}}/lock">
 					<input name="issue_id" value="{{.ID}}" hidden></input>
-					<button type="submit">Lock conversion</button>
+					<button  class="lock-button" type="submit">Lock conversion</button>
 				</form>
 				{{end}}
-				{{if eq .Lock "Yes"}}
+				{{if eq .Lock "Locked"}}
 				<form method="post" action="/{{$.UserName}}/{{$.RepoName}}/issues/{{.IssueNumber}}/unlock">
 					<input name="issue_id" value="{{.ID}}" hidden></input>
-					<button type="submit">Unlock conversion</button>
+					<button  class="lock-button" type="submit">Unlock conversion</button>
 				</form>
 				{{end}}
 			</div>
+			{{end}}
+			{{end}}
 		</div>
 	{{end}}
 	</div>
