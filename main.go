@@ -371,7 +371,7 @@ func getNewIssuePageHandler(c *gin.Context, db *sql.DB) {
 			"RepoName":    repoName})
 }
 func postNewIssuePageHandler(c *gin.Context, db *sql.DB) {
-	_, err := authorize(c, db)
+	currentUser, err := authorize(c, db)
 	if err != nil {
 		c.Redirect(http.StatusFound, "http://localhost:8000/login")
 		return
@@ -394,7 +394,7 @@ func postNewIssuePageHandler(c *gin.Context, db *sql.DB) {
 		Title:  title,
 		RepoId: currentRepo.RepoId,
 		Body:   body,
-		UserId: currentRepo.UserId,
+		UserId: currentUser.ID,
 	}
 	issueNumber, err := CreateIssue(db, issue)
 	if err != nil {
