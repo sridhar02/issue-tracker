@@ -275,12 +275,8 @@ func getIssuePageHandler(c *gin.Context, db *sql.DB) {
 
 	locked := lock == "Locked" && IsRepoOwner == false
 
-	IsRepoOwnerOrIssueUser := false
-	if currentUser.Username == c.Param("user_name") {
-		IsRepoOwnerOrIssueUser = true
-	} else if currentUser.Username == issue.Username {
-		IsRepoOwnerOrIssueUser = true
-	}
+	IsRepoOwnerOrIssueUser := currentUser.Username == c.Param("user_name") ||
+		currentUser.Username == issue.Username
 
 	c.HTML(http.StatusOK, "issue.html", gin.H{
 		"CurrentUser":            currentUser,
