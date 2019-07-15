@@ -563,7 +563,7 @@ func PostUserSignOutHandler(c *gin.Context, db *sql.DB) {
 
 func postPinPageHandler(c *gin.Context, db *sql.DB) {
 
-	_, err := authorize(c, db)
+	currentUser, err := authorize(c, db)
 	if err != nil {
 		c.Redirect(http.StatusFound, "http://localhost:8000/login")
 		return
@@ -578,6 +578,12 @@ func postPinPageHandler(c *gin.Context, db *sql.DB) {
 	repoId := c.PostForm("repo_id")
 
 	IssueNumber := c.PostForm("issue_number")
+
+	IsRepoOwner := currentUser.Username == c.Param("user_name")
+	if !IsRepoOwner {
+		c.Redirect(http.StatusFound, "http://localhost:8000/"+username+"/"+repoName+"/issues/"+IssueNumber)
+		return
+	}
 
 	var count int
 
@@ -605,7 +611,7 @@ func postPinPageHandler(c *gin.Context, db *sql.DB) {
 
 func postUnPinPageHandler(c *gin.Context, db *sql.DB) {
 
-	_, err := authorize(c, db)
+	currentUser, err := authorize(c, db)
 	if err != nil {
 		c.Redirect(http.StatusFound, "http://localhost:8000/login")
 		return
@@ -618,6 +624,12 @@ func postUnPinPageHandler(c *gin.Context, db *sql.DB) {
 	_issueId := c.PostForm("issue_id")
 
 	IssueNumber := c.PostForm("issue_number")
+
+	IsRepoOwner := currentUser.Username == c.Param("user_name")
+	if !IsRepoOwner {
+		c.Redirect(http.StatusFound, "http://localhost:8000/"+username+"/"+repoName+"/issues/"+IssueNumber)
+		return
+	}
 
 	_, err = db.Exec(`UPDATE issues SET pinned = 'Unpinned' WHERE id = $1`, _issueId)
 	if err != nil {
@@ -632,7 +644,7 @@ func postUnPinPageHandler(c *gin.Context, db *sql.DB) {
 
 func postLockPageHandler(c *gin.Context, db *sql.DB) {
 
-	_, err := authorize(c, db)
+	currentUser, err := authorize(c, db)
 	if err != nil {
 		c.Redirect(http.StatusFound, "http://localhost:8000/login")
 		return
@@ -645,6 +657,12 @@ func postLockPageHandler(c *gin.Context, db *sql.DB) {
 	IssueNumber := c.Param("issue_number")
 
 	_issueId := c.PostForm("issue_id")
+
+	IsRepoOwner := currentUser.Username == c.Param("user_name")
+	if !IsRepoOwner {
+		c.Redirect(http.StatusFound, "http://localhost:8000/"+username+"/"+repoName+"/issues/"+IssueNumber)
+		return
+	}
 
 	_, err = db.Exec(`UPDATE issues SET lock = 'Locked' WHERE id = $1`, _issueId)
 	if err != nil {
@@ -659,7 +677,7 @@ func postLockPageHandler(c *gin.Context, db *sql.DB) {
 
 func postUnlockPageHandler(c *gin.Context, db *sql.DB) {
 
-	_, err := authorize(c, db)
+	currentUser, err := authorize(c, db)
 	if err != nil {
 		c.Redirect(http.StatusFound, "http://localhost:8000/login")
 		return
@@ -672,6 +690,12 @@ func postUnlockPageHandler(c *gin.Context, db *sql.DB) {
 	_issueId := c.PostForm("issue_id")
 
 	IssueNumber := c.Param("issue_number")
+
+	IsRepoOwner := currentUser.Username == c.Param("user_name")
+	if !IsRepoOwner {
+		c.Redirect(http.StatusFound, "http://localhost:8000/"+username+"/"+repoName+"/issues/"+IssueNumber)
+		return
+	}
 
 	_, err = db.Exec(`UPDATE issues SET lock = 'Unlocked' WHERE id = $1`, _issueId)
 	if err != nil {
