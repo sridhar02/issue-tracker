@@ -275,18 +275,22 @@ func getIssuePageHandler(c *gin.Context, db *sql.DB) {
 
 	locked := lock == "Locked" && IsRepoOwner == false
 
+	IsRepoOwnerOrIssueUser := currentUser.Username == c.Param("user_name") ||
+		currentUser.Username == issue.Username
+
 	c.HTML(http.StatusOK, "issue.html", gin.H{
-		"CurrentUser":       currentUser,
-		"Authorized":        authorized,
-		"Issue":             issue,
-		"Comments":          comments,
-		"UserName":          c.Param("user_name"),
-		"PinnedIssuesCount": PinnedIssuesCount,
-		"CommentedUsers":    CommentedUsersImages,
-		"RepoOwner":         IsRepoOwner,
-		"NumberOfCommented": NumberOfCommented,
-		"Locked":            locked,
-		"RepoName":          repoName})
+		"CurrentUser":            currentUser,
+		"Authorized":             authorized,
+		"Issue":                  issue,
+		"Comments":               comments,
+		"UserName":               c.Param("user_name"),
+		"PinnedIssuesCount":      PinnedIssuesCount,
+		"CommentedUsers":         CommentedUsersImages,
+		"RepoOwner":              IsRepoOwner,
+		"NumberOfCommented":      NumberOfCommented,
+		"Locked":                 locked,
+		"IsRepoOwnerOrIssueUser": IsRepoOwnerOrIssueUser,
+		"RepoName":               repoName})
 }
 
 func createIssueComment(c *gin.Context, db *sql.DB) {
@@ -304,6 +308,7 @@ func createIssueComment(c *gin.Context, db *sql.DB) {
 	userId := c.PostForm("user_id")
 	IssueNumber := c.PostForm("issue_number")
 	fmt.Println(c.PostForm("comment_and_close"))
+
 	if c.PostForm("comment_and_close") == "1" {
 		_, err := db.Exec(`UPDATE issues SET status = 'Closed' WHERE id = $1`, _issueId)
 		if err != nil {
@@ -373,6 +378,7 @@ func postNewIssuePageHandler(c *gin.Context, db *sql.DB) {
 	}
 	username := c.Param("user_name")
 	repoName := c.Param("repo_name")
+
 	currentRepo, err := getCurrentRepo(db, username, repoName)
 	if err != nil {
 		fmt.Println(err)
