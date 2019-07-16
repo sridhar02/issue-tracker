@@ -1,0 +1,60 @@
+<style type="text/css">
+body{
+	width:90%;
+	margin: 0 auto;
+}
+	
+*{
+	margin: 0px;
+	padding:0px;
+}
+.main-section{
+	border: 1px solid #ddd;
+}
+.heading{
+	padding: 10px;
+	border-bottom: 1px solid #ddd;
+	background-color: lightgrey;
+	display: flex;
+	justify-content: space-between;
+}
+.info{
+	padding: 30px;
+	border-bottom: 1px solid #ddd;
+}
+.button{
+	padding: 10px;
+}
+.collaborator-section{
+	display: flex;
+	justify-content: space-between;
+}
+.input{
+	width: 100%;
+}
+.space{
+	padding: 10px;
+}
+</style>
+{{template "nav.html" .}}
+<div class="main-section">
+	<div class="heading">
+		<span>Collaborators</span>
+		<span>Push access to the repository</span>
+	</div>
+	<div class="info">
+		This repository doesn’t have any collaborators yet. Use the form below to add a collaborator.
+	</div>
+	<div>
+		<div class="space">Search by username, full name or email address</div>
+		<div class="space">You’ll only be able to find a GitHub user by their email address if they’ve chosen to list it publicly. Otherwise, use their username instead.</div>
+		<form method="post" action="/{{.Username}}/{{.RepoName}}/collaboration">
+			<input name="repo_id" value="{{.CurrentRepo.RepoId}}" hidden></input>
+			<input name="user_id" value="{{.CurrentUser.ID}}" hidden></input>
+			<div class="collaborator-section">
+				<input class="input" type="username" name="username">
+				<button class="button" type="submit">Add Collaborator</button>
+			</div>
+		</form>
+	</div>
+</div>
