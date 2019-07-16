@@ -709,6 +709,93 @@ func postUnlockPageHandler(c *gin.Context, db *sql.DB) {
 	c.Redirect(http.StatusFound, "http://localhost:8000/"+username+"/"+repoName+"/issues/"+IssueNumber)
 }
 
+type Collaborator struct {
+	Username  string
+	UserImage string
+}
+
+func getCollaboratorPageHandler(c *gin.Context, db *sql.DB) {
+
+	currentUser, err := authorize(c, db)
+	if err == nil {
+		c.Redirect(http.StatusFound, "http://localhost:8000/"+currentUser.Username)
+		return
+	}
+
+	username := c.Param("user_name")
+	repoName := c.Param("repo_name")
+
+	currentRepo, err := getCurrentRepo(db, username, repoName)
+	if err != nil {
+		fmt.Println(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	rows, err := db.Query(`SELECT users.username,users.image FROM users JOIN collaborators ON users.id = collaborators.user_id 
+								WHERE collaborators.repo_id = $1;`, currentRepo.RepoId)
+	if err != nil {
+		fmt.Println(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	collaborator := Collaborator{}
+
+	var UserName, image string
+
+	for rows.Next() {
+		err = rows.Scan(&UserName, &image)
+		if err != nil {
+			fmt.Println(err)
+			c.AbortWithStatus(http.StatusInternalServerError)
+			return
+		}
+		collaborator = Collaborator{
+			Username:  UserName,
+			UserImage: image,
+		}
+	}
+
+	c.HTML(http.StatusOK, "collaboration.html",
+		gin.H{"Username": username,
+			"RepoName":      repoName,
+			"CurrentRepo":   currentRepo,
+			"Collaborators": collaborator,
+		})
+
+}
+
+func postCollaboratorPageHandler(c *gin.Context, db *sql.DB) {
+
+	currentUser, err := authorize(c, db)
+	if err == nil {
+		c.Redirect(http.StatusFound, "http://localhost:8000/"+currentUser.Username)
+		return
+	}
+
+	username := c.Param("user_name")
+	repoName := c.Param("repo_name")
+
+	IsRepoOwner := currentUser.Username == username
+	if !IsRepoOwner {
+		c.Redirect(http.StatusFound, "http://localhost:8000/"+currentUser.Username)
+		return
+	}
+
+	repoId := c.PostForm("repo_id")
+	userId := c.PostForm("user_id")
+
+	_, err = db.Exec(`INSERT INTO collaborators(repo_id,user_id)VALUES($1,$2,)`, repoId, userId)
+	if err != nil {
+		fmt.Println(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	c.Redirect(http.StatusFound, "http://localhost:8000/"+username+"/"+repoName+"/collaboration")
+}
+
 func main() {
 	err := godotenv.Load()
 	if err != nil {
@@ -756,6 +843,9 @@ func main() {
 	pages.POST("/issues/:issue_number/unpin", func(c *gin.Context) { postUnPinPageHandler(c, db) })
 	pages.POST("/issues/:issue_number/lock", func(c *gin.Context) { postLockPageHandler(c, db) })
 	pages.POST("/issues/:issue_number/unlock", func(c *gin.Context) { postUnlockPageHandler(c, db) })
+
+	pages.GET("/collaboration", func(c *gin.Context) { getCollaboratorPageHandler(c, db) })
+	pages.POST("/collaboration", func(c *gin.Context) { postCollaboratorPageHandler(c, db) })
 
 	pages.POST("/comments", func(c *gin.Context) { createIssueComment(c, db) })
 	userGroup.GET("", func(c *gin.Context) {
