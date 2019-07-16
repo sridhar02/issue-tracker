@@ -1,0 +1,1 @@
+ALTER TABLE collaborators  ADD CONSTRAINT unique_collaborator UNIQUE(repo_id,user_id);
