@@ -949,9 +949,10 @@ func main() {
 
 	pages.POST("/comments", func(c *gin.Context) { createIssueComment(c, db) })
 
-	fs := http.FileServer(http.Dir("./styles/"))
+	stylesRouter := gin.Default()
+	stylesRouter.Static("/styles", "./styles")
 
-	http.Handle("/styles/", http.StripPrefix("/styles/", fs))
+	http.Handle("/styles/", stylesRouter)
 
 	http.Handle("/", router)
 
