@@ -949,8 +949,11 @@ func main() {
 
 	pages.POST("/comments", func(c *gin.Context) { createIssueComment(c, db) })
 
-	err = router.Run(":8000")
-	if err != nil {
-		log.Fatal(err)
-	}
+	fs := http.FileServer(http.Dir("./styles/"))
+
+	http.Handle("/styles/", http.StripPrefix("/styles/", fs))
+
+	http.Handle("/", router)
+
+	http.ListenAndServe(":8000", nil)
 }
