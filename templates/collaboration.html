@@ -119,15 +119,15 @@
 			<span>Push access to the repository</span>
 		</div>
 		{{if .IsCollaboratorsAvailable}}
-		{{range .Collaborators}}
-		<div class="collaborator">
-			<div class="user-photo"><img class="user-photo" src="{{.UserImage}}"></div>
-			<div class="username">
-				<a  href="#">{{.Username}}</a>
-				<div >{{.Name}}</div>
+			{{range .Collaborators}}
+			<div class="collaborator">
+				<div class="user-photo"><img class="user-photo" src="{{.UserImage}}"></div>
+				<div class="username">
+					<a  href="#">{{.Username}}</a>
+					<div >{{.Name}}</div>
+				</div>
 			</div>
-		</div>
-		{{end}}
+			{{end}}
 		{{else}}
 		<div class="collaborator-info">
 			This repository doesn’t have any collaborators yet. Use the form below to add a collaborator.
