@@ -1,0 +1,1 @@
+ALTER TABLE collaborators  DROP CONSTRAINT unique_collaborator;
