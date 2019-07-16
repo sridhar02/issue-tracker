@@ -1,20 +1,42 @@
 <style type="text/css">
-body{
-	width:90%;
-	margin: 0 auto;
-}
-	
 *{
 	margin: 0px;
 	padding:0px;
 }
-.main-section{
+
+.side-bar{
+	width: 30%;
+	display: flex;
+	flex-direction: column;
 	border: 1px solid #ddd;
+	border-radius: 3px;
+	margin-right: 10px;
+}
+.section{
+	margin: 50px;
+	margin-right:200px;
+	margin-left:200px;
+	display: flex;
+	justify-content: space-between;
+}
+
+.main-section{
+	width:70%;
+	border: 1px solid #ddd;
+	border-radius: 3px;
+}
+.side-keys{
+	padding: 20px;
+	border-bottom: 1px solid #ddd;
+}
+.side-keys a {
+	text-decoration:none;
+	color: black;
 }
 .heading{
 	padding: 10px;
 	border-bottom: 1px solid #ddd;
-	background-color: lightgrey;
+	background-color: #f6f8fa;
 	display: flex;
 	justify-content: space-between;
 }
@@ -24,8 +46,15 @@ body{
 }
 .button{
 	padding: 10px;
-	border:1px solid black;
+	border:1px solid rgba(36,41,46,.4);
 	border-radius: 3px;
+	background-color: #eff3f6;
+	min-width: 40px;
+	color: rgba(36,41,46,.4);
+	font-weight: bold;
+	border-left: 0;
+	border-bottom-left-radius: 0;
+    border-top-left-radius: 0;
 }
 .collaborator-section{
 	margin: 10px;
@@ -33,27 +62,26 @@ body{
 	justify-content: space-between;
 }
 .input{
-	width: 90%;
-	border:1px solid #ddd;
+	flex:1;
+	border:1px solid rgba(36,41,46,.4);
 	border-radius: 3px;
+	border-bottom-right-radius: 0;
+    border-top-right-radius: 0;
 }
 .space{
 	padding: 10px;
 }
-
 .user-photo{
 	padding-right: 10px;
 	width: 50px;
 	height: 50px;
 }
-
 .collaborator{
 	display: flex;
 	padding: 10px;
 	padding-left: 20px;
 	border-bottom: 1px solid #ddd;
 }
-
 .collaborator-info{
 	padding: 40px;
 	border-bottom: 1px solid #ddd;
@@ -66,40 +94,62 @@ body{
 }
 .collaborator .username a{
 	text-decoration: none;
-	color: black;
+	color: #666;
+	font-weight: bold;
+	font-size: 18px;
+	padding-bottom: 10px;
+}
+
+.search{
+	background-color: #fcfcfc;
+}
+
+.collaborator .username div{
+	font-size: 12px;
+	padding-top: 10px;
 }
 
 </style>
 {{template "nav.html" .}}
 {{if .Authorized}}
-<div class="main-section">
-	<div class="heading">
-		<span>Collaborators</span>
-		<span>Push access to the repository</span>
+<div class="section">
+	
+	<div class="side-bar">
+		<div class="side-keys" ><a href="#">Options</a></div>
+		<div class="side-keys"><a href="#">Collaborators</a></div>
 	</div>
-	{{if .IsCollaboratorsAvailable}}
+	<div class="main-section">
+		<div class="heading">
+			<span>Collaborators</span>
+			<span>Push access to the repository</span>
+		</div>
+		{{if .IsCollaboratorsAvailable}}
 		{{range .Collaborators}}
 		<div class="collaborator">
 			<div class="user-photo"><img class="user-photo" src="{{.UserImage}}"></div>
-			<div class="username"><a href="#">{{.Username}}</a></div>
-		</div>	
-	{{end}}
-	{{else}}
-	<div class="collaborator-info">
-		This repository doesn’t have any collaborators yet. Use the form below to add a collaborator.
-	</div>
-	{{end}}
-	
-	<div>
-		<div class="search-text">Search by username, full name or email address</div>
-		<div class="space">You’ll only be able to find a GitHub user by their email address if they’ve chosen to list it publicly. Otherwise, use their username instead.</div>
-		<form method="post" action="/{{.Username}}/{{.RepoName}}/collaboration">
-			<input name="repo_id" value="{{.CurrentRepo.RepoId}}" hidden></input>
-			<div class="collaborator-section">
-				<input class="input" name="user_name" type="username" name="username">
-				<button class="button" type="submit">Add Collaborator</button>
+			<div class="username">
+				<a  href="#">{{.Username}}</a>
+				<div >{{.Name}}</div>
 			</div>
-		</form>
+		</div>
+		{{end}}
+		{{else}}
+		<div class="collaborator-info">
+			This repository doesn’t have any collaborators yet. Use the form below to add a collaborator.
+		</div>
+		{{end}}
+		
+		<div class="search">
+			<div class="search-text">Search by username, full name or email address</div>
+			<div class="space">You’ll only be able to find a GitHub user by their email address if they’ve chosen to list it publicly. Otherwise, use their username instead.</div>
+			<form method="post" action="/{{.Username}}/{{.RepoName}}/collaboration">
+				<input name="repo_id" value="{{.CurrentRepo.RepoId}}" hidden></input>
+				<div class="collaborator-section">
+					<input class="input" name="user_name" type="username" name="username">
+					<button class="button" type="submit">Add Collaborator</button>
+				</div>
+			</form>
+		</div>
 	</div>
 </div>
 {{end}}

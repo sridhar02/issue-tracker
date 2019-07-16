@@ -712,6 +712,7 @@ func postUnlockPageHandler(c *gin.Context, db *sql.DB) {
 type Collaborator struct {
 	Username  string
 	UserImage string
+	Name      string
 }
 
 func getCollaboratorPageHandler(c *gin.Context, db *sql.DB) {
@@ -732,7 +733,7 @@ func getCollaboratorPageHandler(c *gin.Context, db *sql.DB) {
 		return
 	}
 
-	rows, err := db.Query(`SELECT users.username,users.image FROM users JOIN collaborators ON users.id = collaborators.user_id 
+	rows, err := db.Query(`SELECT users.username,users.image,users.name FROM users JOIN collaborators ON users.id = collaborators.user_id 
 								WHERE collaborators.repo_id = $1;`, currentRepo.RepoId)
 	if err != nil {
 		fmt.Println(err)
@@ -742,10 +743,10 @@ func getCollaboratorPageHandler(c *gin.Context, db *sql.DB) {
 
 	collaborators := []Collaborator{}
 
-	var UserName, image string
+	var UserName, image, name string
 
 	for rows.Next() {
-		err = rows.Scan(&UserName, &image)
+		err = rows.Scan(&UserName, &image, &name)
 		if err != nil {
 			fmt.Println(err)
 			c.AbortWithStatus(http.StatusInternalServerError)
@@ -754,19 +755,12 @@ func getCollaboratorPageHandler(c *gin.Context, db *sql.DB) {
 		collaborator := Collaborator{
 			Username:  UserName,
 			UserImage: image,
+			Name:      name,
 		}
 		collaborators = append(collaborators, collaborator)
 	}
 
-	IsCollaboratorsAvailable := false
-
-	if len(collaborators) >= 1 {
-		IsCollaboratorsAvailable = true
-	} else {
-		IsCollaboratorsAvailable = false
-	}
-
-	fmt.Println(image)
+	IsCollaboratorsAvailable := len(collaborators) >= 1
 
 	c.HTML(http.StatusOK, "collaboration.html",
 		gin.H{"Username": username,
@@ -802,6 +796,13 @@ func postCollaboratorPageHandler(c *gin.Context, db *sql.DB) {
 
 	var userId string
 
+	// user, err := GetUserByUserName(db, username)
+	// if err != nil {
+	// 	fmt.Println(err)
+	// 	c.AbortWithStatus(http.StatusInternalServerError)
+	// 	return
+	// }
+
 	row := db.QueryRow(`SELECT id from users WHERE username = $1`, userName)
 	err = row.Scan(&userId)
 	if err != nil {
@@ -811,6 +812,51 @@ func postCollaboratorPageHandler(c *gin.Context, db *sql.DB) {
 	}
 
 	_, err = db.Exec(`INSERT INTO collaborators(repo_id,user_id)VALUES($1,$2)`, repoId, userId)
+	if err != nil {
+		fmt.Println(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	c.Redirect(http.StatusFound, "http://localhost:8000/"+username+"/"+repoName+"/collaboration")
+}
+
+func postRemoveCollaboratorPageHandler(c *gin.Context, db *sql.DB) {
+
+	currentUser, err := authorize(c, db)
+	if err != nil {
+		c.Redirect(http.StatusFound, "http://localhost:8000/"+currentUser.Username)
+		return
+	}
+
+	username := c.Param("user_name")
+	repoName := c.Param("repo_name")
+
+	IsRepoOwner := currentUser.Username == username
+	if !IsRepoOwner {
+		c.Redirect(http.StatusFound, "http://localhost:8000/"+currentUser.Username)
+		return
+	}
+
+	userName := c.PostForm("user_name")
+
+	// user, err := GetUserByUserName(db, userName)
+	// if err != nil {
+	// 	fmt.Println(err)
+	// 	c.AbortWithStatus(http.StatusInternalServerError)
+	// 	return
+	// }
+	var userId string
+
+	row := db.QueryRow(`SELECT id from users WHERE username = $1`, userName)
+	err = row.Scan(&userId)
+	if err != nil {
+		fmt.Println(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	_, err = db.Exec("DELETE FROM collaborators WHERE user_id = $1", userId)
 	if err != nil {
 		fmt.Println(err)
 		c.AbortWithStatus(http.StatusInternalServerError)
@@ -870,6 +916,7 @@ func main() {
 
 	pages.GET("/collaboration", func(c *gin.Context) { getCollaboratorPageHandler(c, db) })
 	pages.POST("/collaboration", func(c *gin.Context) { postCollaboratorPageHandler(c, db) })
+	pages.POST("/removecollaborator", func(c *gin.Context) { postRemoveCollaboratorPageHandler(c, db) })
 
 	pages.POST("/comments", func(c *gin.Context) { createIssueComment(c, db) })
 	userGroup.GET("", func(c *gin.Context) {
