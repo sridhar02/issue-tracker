@@ -716,10 +716,10 @@ type Collaborator struct {
 
 func getCollaboratorPageHandler(c *gin.Context, db *sql.DB) {
 
-	currentUser, err := authorize(c, db)
-	if err == nil {
-		c.Redirect(http.StatusFound, "http://localhost:8000/"+currentUser.Username)
-		return
+	_, err := authorize(c, db)
+	authorized := true
+	if err != nil {
+		authorized = false
 	}
 
 	username := c.Param("user_name")
@@ -740,7 +740,7 @@ func getCollaboratorPageHandler(c *gin.Context, db *sql.DB) {
 		return
 	}
 
-	collaborator := Collaborator{}
+	collaborators := []Collaborator{}
 
 	var UserName, image string
 
@@ -751,17 +751,30 @@ func getCollaboratorPageHandler(c *gin.Context, db *sql.DB) {
 			c.AbortWithStatus(http.StatusInternalServerError)
 			return
 		}
-		collaborator = Collaborator{
+		collaborator := Collaborator{
 			Username:  UserName,
 			UserImage: image,
 		}
+		collaborators = append(collaborators, collaborator)
 	}
+
+	IsCollaboratorsAvailable := false
+
+	if len(collaborators) >= 1 {
+		IsCollaboratorsAvailable = true
+	} else {
+		IsCollaboratorsAvailable = false
+	}
+
+	fmt.Println(image)
 
 	c.HTML(http.StatusOK, "collaboration.html",
 		gin.H{"Username": username,
-			"RepoName":      repoName,
-			"CurrentRepo":   currentRepo,
-			"Collaborators": collaborator,
+			"RepoName":                 repoName,
+			"CurrentRepo":              currentRepo,
+			"Collaborators":            collaborators,
+			"Authorized":               authorized,
+			"IsCollaboratorsAvailable": IsCollaboratorsAvailable,
 		})
 
 }
@@ -769,7 +782,7 @@ func getCollaboratorPageHandler(c *gin.Context, db *sql.DB) {
 func postCollaboratorPageHandler(c *gin.Context, db *sql.DB) {
 
 	currentUser, err := authorize(c, db)
-	if err == nil {
+	if err != nil {
 		c.Redirect(http.StatusFound, "http://localhost:8000/"+currentUser.Username)
 		return
 	}
@@ -784,9 +797,20 @@ func postCollaboratorPageHandler(c *gin.Context, db *sql.DB) {
 	}
 
 	repoId := c.PostForm("repo_id")
-	userId := c.PostForm("user_id")
 
-	_, err = db.Exec(`INSERT INTO collaborators(repo_id,user_id)VALUES($1,$2,)`, repoId, userId)
+	userName := c.PostForm("user_name")
+
+	var userId string
+
+	row := db.QueryRow(`SELECT id from users WHERE username = $1`, userName)
+	err = row.Scan(&userId)
+	if err != nil {
+		fmt.Println(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	_, err = db.Exec(`INSERT INTO collaborators(repo_id,user_id)VALUES($1,$2)`, repoId, userId)
 	if err != nil {
 		fmt.Println(err)
 		c.AbortWithStatus(http.StatusInternalServerError)
