@@ -573,11 +573,11 @@ func postPinPageHandler(c *gin.Context, db *sql.DB) {
 
 	repoName := c.Param("repo_name")
 
+	IssueNumber := c.Param("issue_number")
+
 	_issueId := c.PostForm("issue_id")
 
 	repoId := c.PostForm("repo_id")
-
-	IssueNumber := c.PostForm("issue_number")
 
 	IsRepoOwner := currentUser.Username == c.Param("user_name")
 	if !IsRepoOwner {
