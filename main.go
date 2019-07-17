@@ -736,8 +736,11 @@ func getCollaboratorPageHandler(c *gin.Context, db *sql.DB) {
 		return
 	}
 
-	rows, err := db.Query(`SELECT users.username,users.image,users.name FROM users JOIN collaborators ON users.id = collaborators.user_id 
-								WHERE collaborators.repo_id = $1;`, currentRepo.RepoId)
+	rows, err := db.Query(
+		`SELECT users.username,users.image,users.name 
+		 FROM users JOIN collaborators ON users.id = collaborators.user_id 
+		 WHERE collaborators.repo_id = $1;`,
+		currentRepo.RepoId)
 	if err != nil {
 		fmt.Println(err)
 		c.AbortWithStatus(http.StatusInternalServerError)
