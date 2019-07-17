@@ -821,13 +821,15 @@ func postCollaboratorPageHandler(c *gin.Context, db *sql.DB) {
 	c.Redirect(http.StatusFound, "http://localhost:8000/"+username+"/"+repoName+"/collaboration")
 }
 
-func postRemoveCollaboratorPageHandler(c *gin.Context, db *sql.DB) {
+func postRemoveCollaboratorHandler(c *gin.Context, db *sql.DB) {
 
 	currentUser, err := authorize(c, db)
 	if err != nil {
 		c.Redirect(http.StatusFound, "http://localhost:8000/"+currentUser.Username)
 		return
 	}
+
+	fmt.Println("error")
 
 	username := c.Param("user_name")
 	repoName := c.Param("repo_name")
@@ -838,14 +840,15 @@ func postRemoveCollaboratorPageHandler(c *gin.Context, db *sql.DB) {
 		return
 	}
 
+	currentRepo, err := getCurrentRepo(db, username, repoName)
+	if err != nil {
+		fmt.Println(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
 	userName := c.PostForm("user_name")
 
-	// user, err := GetUserByUserName(db, userName)
-	// if err != nil {
-	// 	fmt.Println(err)
-	// 	c.AbortWithStatus(http.StatusInternalServerError)
-	// 	return
-	// }
 	var userId string
 
 	row := db.QueryRow(`SELECT id from users WHERE username = $1`, userName)
@@ -856,7 +859,8 @@ func postRemoveCollaboratorPageHandler(c *gin.Context, db *sql.DB) {
 		return
 	}
 
-	_, err = db.Exec("DELETE FROM collaborators WHERE user_id = $1", userId)
+	fmt.Println("userId")
+	_, err = db.Exec("DELETE FROM collaborators WHERE user_id = $1 AND repo_id = $2", userId, currentRepo.RepoId)
 	if err != nil {
 		fmt.Println(err)
 		c.AbortWithStatus(http.StatusInternalServerError)
@@ -945,7 +949,7 @@ func main() {
 
 	pages.GET("/collaboration", func(c *gin.Context) { getCollaboratorPageHandler(c, db) })
 	pages.POST("/collaboration", func(c *gin.Context) { postCollaboratorPageHandler(c, db) })
-	pages.POST("/removecollaborator", func(c *gin.Context) { postRemoveCollaboratorPageHandler(c, db) })
+	pages.POST("/removecollaborator", func(c *gin.Context) { postRemoveCollaboratorHandler(c, db) })
 
 	pages.POST("/comments", func(c *gin.Context) { createIssueComment(c, db) })
 
