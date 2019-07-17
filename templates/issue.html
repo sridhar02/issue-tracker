@@ -91,12 +91,19 @@
 	margin-top: 20px;
 }
 .user-photo{
-	padding-right: 10px;
+	margin-right: 10px;
 	width: 50px;
 	height: 50px;
 }
 .user-photo img {
 	border-radius: 3px;
+}
+.participants-user-photo{
+	margin-right: 10px;
+	width: 50px;
+	height: 50px;
+	border-radius: 3px;
+	border-top-right-radius: 3px;
 }
 .issue-section .content,
 .comment-section .content,
@@ -291,7 +298,7 @@
 				{{end}}
 				<div class="participants-photo">
 				{{range $.CommentedUsers}}
-					<div class="user-photo"><img class="user-photo" src="{{.}}"></div>
+					<div ><img class="participants-user-photo" src="{{.}}"></div>
 				{{end}}
 				</div>
 			</div>
@@ -301,7 +308,6 @@
 				{{if eq .Pinned "Unpinned"}}
 				<form method="post" action="/{{$.UserName}}/{{$.RepoName}}/issues/{{.IssueNumber}}/pin">
 					<input name="issue_id" value="{{.ID}}" hidden></input>
-					<input name="repo_id" value="{{.RepoId}}" hidden></input>
 					{{if lt $.PinnedIssuesCount 3}}
 					<button type="submit" ><i class="fas fa-thumbtack"></i> Pin Issue </button>
 					{{end}}
