@@ -128,6 +128,7 @@
 </style>
 {{template "nav.html" .}}
 {{if .Authorized}}
+{{if .IsRepoOwner}}
 <div class="section">
 	
 	<div class="side-bar">
@@ -167,7 +168,6 @@
 			<div class="search-text">Search by username, full name or email address</div>
 			<div class="space">You’ll only be able to find a GitHub user by their email address if they’ve chosen to list it publicly. Otherwise, use their username instead.</div>
 			<form method="post" action="/{{.Username}}/{{.RepoName}}/collaboration">
-				<input name="repo_id" value="{{.CurrentRepo.RepoId}}" hidden></input>
 				<div class="collaborator-section">
 					<input class="input" name="user_name">
 					<button class="button" type="submit">Add Collaborator</button>
@@ -176,4 +176,5 @@
 		</div>
 	</div>
 </div>
+{{end}}
 {{end}}
