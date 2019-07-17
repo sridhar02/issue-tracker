@@ -621,9 +621,9 @@ func postUnPinPageHandler(c *gin.Context, db *sql.DB) {
 
 	repoName := c.Param("repo_name")
 
-	_issueId := c.PostForm("issue_id")
+	IssueNumber := c.Param("issue_number")
 
-	IssueNumber := c.PostForm("issue_number")
+	_issueId := c.PostForm("issue_id")
 
 	IsRepoOwner := currentUser.Username == c.Param("user_name")
 	if !IsRepoOwner {
