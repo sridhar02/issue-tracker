@@ -310,7 +310,6 @@
 				{{if eq .Pinned "Pinned"}}
 				<form method="post" action="/{{$.UserName}}/{{$.RepoName}}/issues/{{.IssueNumber}}/unpin">
 					<input name="issue_id" value="{{.ID}}" hidden></input>
-					<input name="issue_number" value="{{.IssueNumber}}" hidden></input>
 					<button type="submit"><i class="fas fa-thumbtack"></i> Unpin Issue </button>
 				</form>
 				{{end}}
