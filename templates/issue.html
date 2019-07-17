@@ -1,3 +1,4 @@
+<link href="/styles/fontawesome/css/all.css" rel="stylesheet">
 <style type="text/css">
 	
 *{
@@ -195,6 +196,8 @@
 	padding-left: 40px;
 }
 .pinned-button button{
+	border: 0;
+	background-color: white;
 	padding: 5px;
 	font-weight: bold;
 }
@@ -240,6 +243,8 @@
 	margin: 10px;	
 	margin-left: 40px;
 	font-weight: bold;
+	border: 0;
+	background-color: white;
 }
 
 </style>
@@ -292,7 +297,7 @@
 					<input name="issue_number" value="{{.IssueNumber}}" hidden></input>
 					<input name="repo_id" value="{{.RepoId}}" hidden></input>
 					{{if lt $.PinnedIssuesCount 3}}
-					<button type="submit" > Pin Issue </button>
+					<button type="submit" ><i class="fas fa-thumbtack"></i> Pin Issue </button>
 					{{end}}
 				</form>
 				{{end}}
@@ -320,13 +325,13 @@
 				{{if eq .Lock "Unlocked"}}
 				<form method="post" action="/{{$.UserName}}/{{$.RepoName}}/issues/{{.IssueNumber}}/lock">
 					<input name="issue_id" value="{{.ID}}" hidden></input>
-					<button  class="lock-button" type="submit">Lock conversion</button>
+					<button  class="lock-button" type="submit"><i class="fas fa-lock"></i> Lock conversion</button>
 				</form>
 				{{end}}
 				{{if eq .Lock "Locked"}}
 				<form method="post" action="/{{$.UserName}}/{{$.RepoName}}/issues/{{.IssueNumber}}/unlock">
 					<input name="issue_id" value="{{.ID}}" hidden></input>
-					<button  class="lock-button" type="submit">Unlock conversion</button>
+					<button  class="lock-button" type="submit"><i class="fas fa-unlock-alt"></i> Unlock conversion</button>
 				</form>
 				{{end}}
 			</div>
