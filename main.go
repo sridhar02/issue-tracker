@@ -717,7 +717,7 @@ type Collaborator struct {
 
 func getCollaboratorPageHandler(c *gin.Context, db *sql.DB) {
 
-	_, err := authorize(c, db)
+	currentUser, err := authorize(c, db)
 	authorized := true
 	if err != nil {
 		authorized = false
@@ -725,6 +725,12 @@ func getCollaboratorPageHandler(c *gin.Context, db *sql.DB) {
 
 	username := c.Param("user_name")
 	repoName := c.Param("repo_name")
+
+	IsRepoOwner := currentUser.Username == username
+	if !IsRepoOwner {
+		c.Redirect(http.StatusFound, "http://localhost:8000/"+currentUser.Username)
+		return
+	}
 
 	currentRepo, err := getCurrentRepo(db, username, repoName)
 	if err != nil {
@@ -768,6 +774,7 @@ func getCollaboratorPageHandler(c *gin.Context, db *sql.DB) {
 			"CurrentRepo":              currentRepo,
 			"Collaborators":            collaborators,
 			"Authorized":               authorized,
+			"IsRepoOwner":              IsRepoOwner,
 			"IsCollaboratorsAvailable": IsCollaboratorsAvailable,
 		})
 
@@ -790,7 +797,12 @@ func postCollaboratorPageHandler(c *gin.Context, db *sql.DB) {
 		return
 	}
 
-	repoId := c.PostForm("repo_id")
+	currentRepo, err := getCurrentRepo(db, username, repoName)
+	if err != nil {
+		fmt.Println(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
 
 	userName := c.PostForm("user_name")
 
@@ -801,7 +813,7 @@ func postCollaboratorPageHandler(c *gin.Context, db *sql.DB) {
 		return
 	}
 
-	_, err = db.Exec(`INSERT INTO collaborators(repo_id,user_id)VALUES($1,$2)`, repoId, user.ID)
+	_, err = db.Exec(`INSERT INTO collaborators(repo_id,user_id)VALUES($1,$2)`, currentRepo.RepoId, user.ID)
 	if err != nil {
 		fmt.Println(err)
 		c.AbortWithStatus(http.StatusInternalServerError)
