@@ -198,11 +198,8 @@
 	border: 0;
 	background-color: white;
 	padding: 5px;
+	padding-left: 0;
 	font-weight: bold;
-}
-.pinned-button button:focus{
-	outline: 0;
-	color: black;
 }
 .participants{
 	margin-left: 40px;
@@ -315,7 +312,7 @@
 				</form>
 				{{end}}
 			</div>
-			<div>
+			<div class="lock-section">
 				{{if eq .Lock "Unlocked"}}
 				<form method="post" action="/{{$.UserName}}/{{$.RepoName}}/issues/{{.IssueNumber}}/lock">
 					<input name="issue_id" value="{{.ID}}" hidden></input>
