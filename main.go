@@ -718,10 +718,7 @@ type Collaborator struct {
 func getCollaboratorPageHandler(c *gin.Context, db *sql.DB) {
 
 	currentUser, err := authorize(c, db)
-	authorized := true
-	if err != nil {
-		authorized = false
-	}
+	authorized := err == nil
 
 	username := c.Param("user_name")
 	repoName := c.Param("repo_name")
