@@ -502,7 +502,7 @@ func PostUserSigninPageHandler(c *gin.Context, db *sql.DB) {
 		return
 	}
 	if Password != password {
-		c.AbortWithStatus(http.StatusInternalServerError)
+		c.Redirect(http.StatusFound, "http://localhost:8000/login")
 		return
 	}
 	cookie, err := CreateCookie(db, Id)
@@ -831,8 +831,6 @@ func postRemoveCollaboratorHandler(c *gin.Context, db *sql.DB) {
 		return
 	}
 
-	fmt.Println("error")
-
 	username := c.Param("user_name")
 	repoName := c.Param("repo_name")
 
@@ -858,7 +856,6 @@ func postRemoveCollaboratorHandler(c *gin.Context, db *sql.DB) {
 		return
 	}
 
-	fmt.Println("userId")
 	_, err = db.Exec("DELETE FROM collaborators WHERE user_id = $1 AND repo_id = $2", user.ID, currentRepo.RepoId)
 	if err != nil {
 		fmt.Println(err)
