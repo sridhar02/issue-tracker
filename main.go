@@ -794,24 +794,14 @@ func postCollaboratorPageHandler(c *gin.Context, db *sql.DB) {
 
 	userName := c.PostForm("user_name")
 
-	var userId string
-
-	// user, err := GetUserByUserName(db, username)
-	// if err != nil {
-	// 	fmt.Println(err)
-	// 	c.AbortWithStatus(http.StatusInternalServerError)
-	// 	return
-	// }
-
-	row := db.QueryRow(`SELECT id from users WHERE username = $1`, userName)
-	err = row.Scan(&userId)
+	user, err := GetUserByUserName(db, userName)
 	if err != nil {
 		fmt.Println(err)
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
 
-	_, err = db.Exec(`INSERT INTO collaborators(repo_id,user_id)VALUES($1,$2)`, repoId, userId)
+	_, err = db.Exec(`INSERT INTO collaborators(repo_id,user_id)VALUES($1,$2)`, repoId, user.ID)
 	if err != nil {
 		fmt.Println(err)
 		c.AbortWithStatus(http.StatusInternalServerError)
@@ -849,10 +839,7 @@ func postRemoveCollaboratorHandler(c *gin.Context, db *sql.DB) {
 
 	userName := c.PostForm("user_name")
 
-	var userId string
-
-	row := db.QueryRow(`SELECT id from users WHERE username = $1`, userName)
-	err = row.Scan(&userId)
+	user, err := GetUserByUserName(db, userName)
 	if err != nil {
 		fmt.Println(err)
 		c.AbortWithStatus(http.StatusInternalServerError)
@@ -860,7 +847,7 @@ func postRemoveCollaboratorHandler(c *gin.Context, db *sql.DB) {
 	}
 
 	fmt.Println("userId")
-	_, err = db.Exec("DELETE FROM collaborators WHERE user_id = $1 AND repo_id = $2", userId, currentRepo.RepoId)
+	_, err = db.Exec("DELETE FROM collaborators WHERE user_id = $1 AND repo_id = $2", user.ID, currentRepo.RepoId)
 	if err != nil {
 		fmt.Println(err)
 		c.AbortWithStatus(http.StatusInternalServerError)
