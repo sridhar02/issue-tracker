@@ -577,7 +577,12 @@ func postPinPageHandler(c *gin.Context, db *sql.DB) {
 
 	_issueId := c.PostForm("issue_id")
 
-	repoId := c.PostForm("repo_id")
+	currentRepo, err := getCurrentRepo(db, username, repoName)
+	if err != nil {
+		fmt.Println(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
 
 	IsRepoOwner := currentUser.Username == c.Param("user_name")
 	if !IsRepoOwner {
@@ -587,7 +592,7 @@ func postPinPageHandler(c *gin.Context, db *sql.DB) {
 
 	var count int
 
-	row := db.QueryRow(`SELECT count(*) FROM issues WHERE pinned = 'Pinned' AND repo_id = $1`, repoId)
+	row := db.QueryRow(`SELECT count(*) FROM issues WHERE pinned = 'Pinned' AND repo_id = $1`, currentRepo.RepoId)
 	err = row.Scan(&count)
 	if err != nil {
 		fmt.Println(err)
