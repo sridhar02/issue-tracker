@@ -192,7 +192,6 @@
 	display: flex;
 }
 .pinned-button{
-	padding: 20px;
 	padding-left: 40px;
 }
 .pinned-button button{
@@ -207,13 +206,12 @@
 }
 .participants{
 	margin-left: 40px;
-	padding-left: 40px;
 	border-bottom: 1px solid #ddd;
-	border-top: 1px solid #ddd;
 	padding-bottom: 10px;
 }
 .number-participants{
 	padding: 10px;
+	padding-left: 0;
 }
 .participants-photo{
 	display: flex;
@@ -240,7 +238,7 @@
 
 .lock-button{
 	padding: 10px;
-	margin: 10px;	
+	padding-left: 0;
 	margin-left: 40px;
 	font-weight: bold;
 	border: 0;
@@ -288,6 +286,14 @@
 			</div>
 		</div>
 		<div>
+			<div class="participants"> 
+				<div class="number-participants">{{$.NumberOfCommented}} participant</div>
+				<div class="participants-photo">
+				{{range $.CommentedUsers}}
+					<div class="user-photo"><img class="user-photo" src="{{.}}"></div>
+				{{end}}
+				</div>
+			</div>
 			{{if $.Authorized}}
 			{{if $.RepoOwner}}
 			<div class="pinned-button">
@@ -305,22 +311,10 @@
 				<form method="post" action="/{{$.UserName}}/{{$.RepoName}}/issues/{{.IssueNumber}}/unpin">
 					<input name="issue_id" value="{{.ID}}" hidden></input>
 					<input name="issue_number" value="{{.IssueNumber}}" hidden></input>
-					<button type="submit"> Unpin Issue </button>
+					<button type="submit"><i class="fas fa-thumbtack"></i> Unpin Issue </button>
 				</form>
 				{{end}}
 			</div>
-			{{end}}
-			{{end}}
-			<div class="participants"> 
-				<div class="number-participants">{{$.NumberOfCommented}} participant</div>
-				<div class="participants-photo">
-				{{range $.CommentedUsers}}
-					<div class="user-photo"><img class="user-photo" src="{{.}}"></div>
-				{{end}}
-				</div>
-			</div>
-			{{if $.Authorized}}
-			{{if $.RepoOwner}}
 			<div>
 				{{if eq .Lock "Unlocked"}}
 				<form method="post" action="/{{$.UserName}}/{{$.RepoName}}/issues/{{.IssueNumber}}/lock">
