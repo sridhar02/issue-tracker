@@ -254,11 +254,8 @@ func getIssuePageHandler(c *gin.Context, db *sql.DB) {
 			c.AbortWithStatus(http.StatusInternalServerError)
 			return
 		}
-		// fmt.Println(UsersImages)
 		CommentedUsersImages = append(CommentedUsersImages, UsersImages)
 	}
-
-	fmt.Println(CommentedUsersImages)
 
 	contains := false
 	for _, item := range CommentedUsersImages {

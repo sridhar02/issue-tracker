@@ -5,12 +5,14 @@
 	margin: 0;
 	padding: 0;
 }
-
 .main-section{
 	padding-left: 250px;
 	padding-right: 200px;
-	min-width: 500px
-	margin: 0 auto;
+	min-width: 800px
+}
+.main-header{
+	display: flex;
+	flex-direction: column;
 }
 .title-page{
 	display: flex;
@@ -67,9 +69,7 @@
 .status-closed{
 	background-color:red;
 	padding: 5px 10px;
-	/*padding-right: 0px;*/
-			/*	width: 50px;
-			*/	font-weight: bold;
+	font-weight: bold;
 	border-radius: 3px;
 	color: white;
 }
@@ -114,7 +114,6 @@
 	/*margin: 0 auto;*/
 	border-radius: 3px;
 }
-
 .issue-section .header,
 .comment-section .header,
 .write-section .header {
@@ -178,6 +177,12 @@
 .preview{
 	margin-left: 10px;
 }
+
+.comment-display{
+	display: flex;
+	flex-direction: column;
+	justify-content: flex-start;
+}
 .comment-buttons .comment{
 	background-color: #28a745;
 	padding: 10px;
@@ -215,31 +220,26 @@
 }
 .number-participants{
 	padding: 10px;
+	padding-top: 20px;
 	padding-left: 0;
 }
 .participants-photo{
 	display: flex;
 	flex-wrap: wrap;
 }
-
 .write-section .content {
 	position: relative;
 }
-
-
 .write-section .locked {
 	position: absolute;
 	width: 100%;
 	top: 0;
 	height: 200px;
 	background: rgba(0,0,0, 0.1);
-
 	display: flex;
 	justify-content: center;
 	align-content: center;
-
 }
-
 .lock-button{
 	padding: 10px;
 	padding-left: 0;
@@ -248,141 +248,148 @@
 	border: 0;
 	background-color: white;
 }
+.issue-section-side-bar{
+	display: flex;
+}
+
+
 
 </style>
-
 {{template "nav.html" .}}
-
 <div class="main-section">
-	{{with .Issue }}
-	<div class="title-page">
-		<div class="title-divison">
-			<div class="title">{{.Title }}</div>
-			<div class="issue-number">#{{.IssueNumber}}</div>
+	<div class="main-header">
+		{{with .Issue }}
+		<div class="title-page">
+			<div class="title-divison">
+				<div class="title">{{.Title }}</div>
+				<div class="issue-number">#{{.IssueNumber}}</div>
+			</div>
+			{{if $.Authorized}}
+			<div class="edit-button-divison">
+				<button class="edit-button">Edit</button>
+				<a href="/{{$.UserName}}/{{$.RepoName}}/issues/new"><button class="new-issue-button">New issue</button></a>
+			</div>
+			{{end}}
 		</div>
-		{{if $.Authorized}}
-		<div class="edit-button-divison">
-			<button class="edit-button">Edit</button>
-			<a href="/{{$.UserName}}/{{$.RepoName}}/issues/new"><button class="new-issue-button">New issue</button></a>
+		<div class="subsection-title">
+			{{if eq .Status "Open"}}
+			<span class="status-open">{{.Status}}</span>
+			{{else}}
+			<span class="status-closed">{{.Status}}</span>
+			{{end}}
+			<span class="issue-info"><a href="" class="user-name">{{.Username}}</a> opened this issue on 15 Dec 2018 · 1 comment</span>
 		</div>
-		{{end}}
 	</div>
-	<div class="subsection-title">
-		{{if eq .Status "Open"}}
-		<span class="status-open">{{.Status}}</span>
-		{{else}}
-		<span class="status-closed">{{.Status}}</span>
-		{{end}}
-		<span class="issue-info"><a href="" class="user-name">{{.Username}}</a> opened this issue on 15 Dec 2018 · 1 comment</span>
-	</div>
-	<div class="pinned-section">
+	<div class="issue-section-side-bar">
 		<div class="issue-section">
+				<div class="user-photo"><img class="user-photo" src="{{.Image}}"></div>
+				<div class="content">
+					<div class="header">
+						<span class="info"><a href="" >{{.Username}}</a> commented on 15 Dec 2018</span>
+					</div>
+					{{ if .Body}}
+					<div class="body">{{ .Body }}</div>
+					{{else}}
+					<div class="body empty-body">No description provided</div>
+					{{end}}
+				</div>
+		</div>
+		<div class="pinned-section">
+			<div>
+				<div class="participants">
+					{{if eq $.NumberOfCommented 1}}
+					<div class="number-participants">{{$.NumberOfCommented}} participant</div>
+					{{else}}
+					<div class="number-participants">{{$.NumberOfCommented}} participants</div>
+					{{end}}
+					<div class="participants-photo">
+						{{range $.CommentedUsers}}
+						<div ><img class="participants-user-photo" src="{{.}}"></div>
+						{{end}}
+					</div>
+				</div>
+				{{if and $.Authorized $.RepoOwner}}
+				<div class="pinned-button">
+					{{if eq .Pinned "Unpinned"}}
+					<form method="post" action="/{{$.UserName}}/{{$.RepoName}}/issues/{{.IssueNumber}}/pin">
+						<input name="issue_id" value="{{.ID}}" hidden></input>
+						{{if lt $.PinnedIssuesCount 3}}
+						<button type="submit" ><i class="fas fa-thumbtack"></i> Pin Issue </button>
+						{{end}}
+					</form>
+					{{end}}
+					{{if eq .Pinned "Pinned"}}
+					<form method="post" action="/{{$.UserName}}/{{$.RepoName}}/issues/{{.IssueNumber}}/unpin">
+						<input name="issue_id" value="{{.ID}}" hidden></input>
+						<button type="submit"><i class="fas fa-thumbtack"></i> Unpin Issue </button>
+					</form>
+					{{end}}
+				</div>
+				<div>
+					{{if eq .Lock "Unlocked"}}
+					<form method="post" action="/{{$.UserName}}/{{$.RepoName}}/issues/{{.IssueNumber}}/lock">
+						<input name="issue_id" value="{{.ID}}" hidden></input>
+						<button  class="lock-button" type="submit"><i class="fas fa-lock"></i> Lock conversion</button>
+					</form>
+					{{end}}
+					{{if eq .Lock "Locked"}}
+					<form method="post" action="/{{$.UserName}}/{{$.RepoName}}/issues/{{.IssueNumber}}/unlock">
+						<input name="issue_id" value="{{.ID}}" hidden></input>
+						<button  class="lock-button" type="submit"><i class="fas fa-unlock-alt"></i> Unlock conversion</button>
+					</form>
+					{{end}}
+				</div>
+				{{end}}
+			</div>
+			{{end}}
+		</div>
+	</div>	
+	<div class="comment-display">
+		{{range .Comments}}
+		<div class="comment-section">
 			<div class="user-photo"><img class="user-photo" src="{{.Image}}"></div>
 			<div class="content">
 				<div class="header">
 					<span class="info"><a href="" >{{.Username}}</a> commented on 15 Dec 2018</span>
 				</div>
-				{{ if .Body}}
-				<div class="body">{{ .Body }}</div>
-				{{else}}
-				<div class="body empty-body">No description provided</div>
-				{{end}}
+				<div class="body">{{.Body}}</div>
 			</div>
 		</div>
-		<div>
-			<div class="participants"> 
-				{{if eq $.NumberOfCommented 1}}
-				<div class="number-participants">{{$.NumberOfCommented}} participant</div>
-				{{else}}
-				<div class="number-participants">{{$.NumberOfCommented}} participants</div>
-				{{end}}
-				<div class="participants-photo">
-				{{range $.CommentedUsers}}
-					<div ><img class="participants-user-photo" src="{{.}}"></div>
-				{{end}}
-				</div>
-			</div>
-			{{if $.Authorized}}
-			{{if $.RepoOwner}}
-			<div class="pinned-button">
-				{{if eq .Pinned "Unpinned"}}
-				<form method="post" action="/{{$.UserName}}/{{$.RepoName}}/issues/{{.IssueNumber}}/pin">
-					<input name="issue_id" value="{{.ID}}" hidden></input>
-					{{if lt $.PinnedIssuesCount 3}}
-					<button type="submit" ><i class="fas fa-thumbtack"></i> Pin Issue </button>
-					{{end}}
+		{{end}}
+		{{if .Authorized }}
+		<div class="write-section">
+			<div class="user-photo"><img class="user-photo" src="{{.CurrentUser.Image}}"></div>
+			<div class="content">
+				<form method="POST" action="/{{.UserName}}/{{.RepoName}}/comments">
+					<input name="issue_id" value="{{.Issue.ID}}" hidden></input>
+					<input name="repo_id" value="{{.Issue.RepoId}}" hidden></input>
+					<input name="user_id" value="{{.CurrentUser.ID}}" hidden></input>
+					<input name="issue_number" value="{{.Issue.IssueNumber}}" hidden></input>
+					<div class="header">
+						<button type="button">Write</button>
+						<button class="preview" type="button">Preview</button>
+					</div>
+					<textarea name="body" class="write-comment" placeholder="Leave a comment"></textarea>
+					<div class="comment-buttons">
+						{{if .IsRepoOwnerOrIssueUser}}
+						{{if eq .Issue.Status "Open"}}
+						<button class="close" name="comment_and_close" value="1" type="submit">Close issue</button>
+						{{else}}
+						<button class="close" name="comment_and_open" value="1" type="submit">Reopen issue</button>
+						{{end}}
+						{{end}}
+						<button class="comment" type="submit">Comment</button>
+					</div>
 				</form>
-				{{end}}
-				{{if eq .Pinned "Pinned"}}
-				<form method="post" action="/{{$.UserName}}/{{$.RepoName}}/issues/{{.IssueNumber}}/unpin">
-					<input name="issue_id" value="{{.ID}}" hidden></input>
-					<button type="submit"><i class="fas fa-thumbtack"></i> Unpin Issue </button>
-				</form>
-				{{end}}
-			</div>
-			<div>
-				{{if eq .Lock "Unlocked"}}
-				<form method="post" action="/{{$.UserName}}/{{$.RepoName}}/issues/{{.IssueNumber}}/lock">
-					<input name="issue_id" value="{{.ID}}" hidden></input>
-					<button  class="lock-button" type="submit"><i class="fas fa-lock"></i> Lock conversion</button>
-				</form>
-				{{end}}
-				{{if eq .Lock "Locked"}}
-				<form method="post" action="/{{$.UserName}}/{{$.RepoName}}/issues/{{.IssueNumber}}/unlock">
-					<input name="issue_id" value="{{.ID}}" hidden></input>
-					<button  class="lock-button" type="submit"><i class="fas fa-unlock-alt"></i> Unlock conversion</button>
-				</form>
-				{{end}}
-			</div>
-			{{end}}
-			{{end}}
-		</div>
-	{{end}}
-	</div>
-	{{range .Comments}}
-	<div class="comment-section">
-		<div class="user-photo"><img class="user-photo" src="{{.Image}}"></div>
-		<div class="content">
-			<div class="header">
-				<span class="info"><a href="" >{{.Username}}</a> commented on 15 Dec 2018</span>
-			</div>
-			<div class="body">{{.Body}}</div>
-		</div>
-	</div>
-	{{end}}
-	{{if .Authorized }}
-	<div class="write-section">
-		<div class="user-photo"><img class="user-photo" src="{{.CurrentUser.Image}}"></div>
-		<div class="content">
-			<form method="POST" action="/{{.UserName}}/{{.RepoName}}/comments">
-				<input name="issue_id" value="{{.Issue.ID}}" hidden></input>
-				<input name="repo_id" value="{{.Issue.RepoId}}" hidden></input>
-				<input name="user_id" value="{{.CurrentUser.ID}}" hidden></input>
-				<input name="issue_number" value="{{.Issue.IssueNumber}}" hidden></input>
-				<div class="header">
-					<button type="button">Write</button>
-					<button class="preview" type="button">Preview</button>
-				</div>
-				<textarea name="body" class="write-comment" placeholder="Leave a comment"></textarea>
-				<div class="comment-buttons">
-				{{if .IsRepoOwnerOrIssueUser}}
-					{{if eq .Issue.Status "Open"}}
-					<button class="close" name="comment_and_close" value="1" type="submit">Close issue</button>
-					{{else}}
-					<button class="close" name="comment_and_open" value="1" type="submit">Reopen issue</button>
-					{{end}}
-				{{end}}
-					<button class="comment" type="submit">Comment</button>
-				</div>
-			</form>
-			{{if .Locked}} 
+				{{if .Locked}}
 				<div class="locked">
 					<div>
-					Locked
+						Locked
 					</div>
-				</div> 	
-			{{end}}
+				</div>
+				{{end}}
+			</div>
 		</div>
+		{{end}}
 	</div>
-	{{end}}
 </div>
