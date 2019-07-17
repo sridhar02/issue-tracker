@@ -284,7 +284,11 @@
 		</div>
 		<div>
 			<div class="participants"> 
+				{{if eq $.NumberOfCommented 1}}
 				<div class="number-participants">{{$.NumberOfCommented}} participant</div>
+				{{else}}
+				<div class="number-participants">{{$.NumberOfCommented}} participants</div>
+				{{end}}
 				<div class="participants-photo">
 				{{range $.CommentedUsers}}
 					<div class="user-photo"><img class="user-photo" src="{{.}}"></div>
@@ -297,7 +301,6 @@
 				{{if eq .Pinned "Unpinned"}}
 				<form method="post" action="/{{$.UserName}}/{{$.RepoName}}/issues/{{.IssueNumber}}/pin">
 					<input name="issue_id" value="{{.ID}}" hidden></input>
-					<input name="issue_number" value="{{.IssueNumber}}" hidden></input>
 					<input name="repo_id" value="{{.RepoId}}" hidden></input>
 					{{if lt $.PinnedIssuesCount 3}}
 					<button type="submit" ><i class="fas fa-thumbtack"></i> Pin Issue </button>
@@ -312,7 +315,7 @@
 				</form>
 				{{end}}
 			</div>
-			<div class="lock-section">
+			<div>
 				{{if eq .Lock "Unlocked"}}
 				<form method="post" action="/{{$.UserName}}/{{$.RepoName}}/issues/{{.IssueNumber}}/lock">
 					<input name="issue_id" value="{{.ID}}" hidden></input>
