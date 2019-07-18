@@ -327,6 +327,18 @@ func createIssueComment(c *gin.Context, db *sql.DB) {
 		c.Redirect(http.StatusFound, "http://localhost:8000/"+username+"/"+repoName+"/issues/"+IssueNumber)
 		return
 	}
+
+	if c.PostForm("comment_and_close") == "1" {
+		_, err := db.Exec(`UPDATE issues SET status = 'Closed' WHERE id = $1`, _issueId)
+		if err != nil {
+			fmt.Println(err)
+			c.AbortWithStatus(http.StatusInternalServerError)
+			return
+		}
+		c.Redirect(http.StatusFound, "http://localhost:8000/"+username+"/"+repoName+"/issues/"+IssueNumber)
+		return
+	}
+
 	issueId, err := strconv.Atoi(_issueId)
 	if err != nil {
 		c.AbortWithStatus(http.StatusBadRequest)
@@ -348,11 +360,15 @@ func createIssueComment(c *gin.Context, db *sql.DB) {
 }
 
 func getNewIssuePageHandler(c *gin.Context, db *sql.DB) {
+
 	currentUser, err := authorize(c, db)
 	if err != nil {
 		c.Redirect(http.StatusFound, "http://localhost:8000/login")
 		return
 	}
+
+	authorized := err == nil
+
 	username := c.Param("user_name")
 	repoName := c.Param("repo_name")
 	currentRepo, err := getCurrentRepo(db, username, repoName)
@@ -366,6 +382,7 @@ func getNewIssuePageHandler(c *gin.Context, db *sql.DB) {
 			"RepoId":      currentRepo.RepoId,
 			"UserName":    username,
 			"CurrentUser": currentUser,
+			"Authorized":  authorized,
 			"RepoName":    repoName})
 }
 func postNewIssuePageHandler(c *gin.Context, db *sql.DB) {
