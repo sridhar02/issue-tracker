@@ -324,7 +324,7 @@
 							</div>
 							<textarea name="body" class="write-comment" placeholder="Leave a comment"></textarea>
 							<div class="comment-buttons">
-								{{if .IsRepoOwnerOrIssueUser}}
+								{{if .ChangeStatusAccess}}
 								{{if eq .Issue.Status "Open"}}
 								<button class="close" name="comment_and_close" value="1" type="submit">Close issue</button>
 								{{else}}
