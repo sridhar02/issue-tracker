@@ -749,9 +749,8 @@ func getCollaboratorPageHandler(c *gin.Context, db *sql.DB) {
 
 	collaborators := []Collaborator{}
 
-	var UserName, image, name string
-
 	for rows.Next() {
+		var UserName, image, name string
 		err = rows.Scan(&UserName, &image, &name)
 		if err != nil {
 			fmt.Println(err)
