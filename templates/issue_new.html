@@ -4,15 +4,14 @@
 	margin: 0;
 	padding: 0;
 }
-body{
-	padding-top: 20px;
-	font-family: sans-serif;
-	width:900px;
-	margin: 0 auto;
-}
+
 	
 .new-section{
+	padding-top: 20px;
 	display: flex;
+	max-width:700px;
+	margin: 0 auto;
+	font-family: sans-serif;
 }
 
 .user-photo{
@@ -97,6 +96,7 @@ body{
 
 </style>
 
+{{template "nav.html" .}}
 <div class="new-section">
 	<div class="user-photo"><img  class="user-photo" src="{{.CurrentUser.Image}}"></div>
 	<form method="POST" action="/{{.UserName}}/{{.RepoName}}/issues/new">

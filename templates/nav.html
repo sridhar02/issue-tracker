@@ -19,10 +19,34 @@
 		color:white;
 					text-decoration: none;
 	}
+	.user-image{
+		width: 20px;
+		height: 20px;
+	}
+	.user-name{
+		padding: 5px;
+		/*padding-bottom: 0;*/
+		padding-top: 10px;
+		height: 30px;
+		border: 1px solid #ddd;
+		background-color: #ddd;
+		color: black;
+		font-weight: bold;
+		border-radius: 3px;
+		font-size: 18px;
+	}
+	.user{
+		margin-top: 20px;		
+	}
+
 </style>
 
 <nav class="navigation">
 	{{if .Authorized}}
+	<span class="user">
+		<span class="user-image"><img class="user-image" src="{{.CurrentUser.Image}}"></span>
+		<span class="user-name">{{.CurrentUser.Username}}</span>
+	</span>	
 	<form action="/Signout" method="post">
 		<div class="signin">
 			<button class="signout-buttton" type="submit">Signout</button>

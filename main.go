@@ -15,7 +15,7 @@ import (
 
 func getUserPageHandler(c *gin.Context, db *sql.DB) {
 
-	_, err := authorize(c, db)
+	currentUser, err := authorize(c, db)
 	authorized := true
 	if err != nil {
 		authorized = false
@@ -53,7 +53,11 @@ func getUserPageHandler(c *gin.Context, db *sql.DB) {
 		repoNames = append(repoNames, repoName)
 	}
 
-	c.HTML(http.StatusOK, "user.html", gin.H{"User": user, "RepoNames": repoNames, "Authorized": authorized})
+	c.HTML(http.StatusOK, "user.html",
+		gin.H{"User": user,
+			"RepoNames":   repoNames,
+			"CurrentUser": currentUser,
+			"Authorized":  authorized})
 }
 
 type IssueName struct {
@@ -91,7 +95,7 @@ func getCurrentRepo(db *sql.DB, username string, repoName string) (CurrentRepo, 
 }
 
 func getIssuesPageHandler(c *gin.Context, db *sql.DB) {
-	_, err := authorize(c, db)
+	currentUser, err := authorize(c, db)
 	authorized := true
 	if err != nil {
 		authorized = false
@@ -135,9 +139,10 @@ func getIssuesPageHandler(c *gin.Context, db *sql.DB) {
 	}
 	c.HTML(http.StatusOK, "issues.html",
 		gin.H{"UserName": userName,
-			"RepoName":   repoName,
-			"Issues":     issues,
-			"Authorized": authorized})
+			"RepoName":    repoName,
+			"Issues":      issues,
+			"CurrentUser": currentUser,
+			"Authorized":  authorized})
 }
 
 type CommentsIssue struct {
