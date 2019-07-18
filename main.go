@@ -272,9 +272,6 @@ func getIssuePageHandler(c *gin.Context, db *sql.DB) {
 
 	locked := lock == "Locked" && IsRepoOwner == false
 
-	// IsRepoOwnerOrIssueUser := currentUser.Username == c.Param("user_name") ||
-	// 	currentUser.Username == issue.Username
-
 	writeAccess, err := hasWriteAccess(db, currentRepo, currentUser)
 	if err != nil {
 		fmt.Println(err)
