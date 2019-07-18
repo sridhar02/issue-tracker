@@ -127,8 +127,7 @@
 
 </style>
 {{template "nav.html" .}}
-{{if .Authorized}}
-{{if .IsRepoOwner}}
+{{if and .Authorized .IsRepoOwner}}
 <div class="section">
 	
 	<div class="side-bar">
@@ -176,5 +175,4 @@
 		</div>
 	</div>
 </div>
-{{end}}
 {{end}}
