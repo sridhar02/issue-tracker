@@ -272,8 +272,8 @@ func getIssuePageHandler(c *gin.Context, db *sql.DB) {
 
 	locked := lock == "Locked" && IsRepoOwner == false
 
-	IsRepoOwnerOrIssueUser := currentUser.Username == c.Param("user_name") ||
-		currentUser.Username == issue.Username
+	// IsRepoOwnerOrIssueUser := currentUser.Username == c.Param("user_name") ||
+	// 	currentUser.Username == issue.Username
 
 	writeAccess, err := hasWriteAccess(db, currentRepo, currentUser)
 	if err != nil {
@@ -282,24 +282,26 @@ func getIssuePageHandler(c *gin.Context, db *sql.DB) {
 		return
 	}
 
+	changeStatusAccess := writeAccess || currentUser.Username == issue.Username
+
 	c.HTML(http.StatusOK, "issue.html", gin.H{
-		"CurrentUser":            currentUser,
-		"Authorized":             authorized,
-		"Issue":                  issue,
-		"Comments":               comments,
-		"UserName":               c.Param("user_name"),
-		"PinnedIssuesCount":      PinnedIssuesCount,
-		"CommentedUsers":         CommentedUsersImages,
-		"RepoOwner":              IsRepoOwner,
-		"NumberOfCommented":      NumberOfCommented,
-		"Locked":                 locked,
-		"IsRepoOwnerOrIssueUser": IsRepoOwnerOrIssueUser,
-		"WriteAccess":            writeAccess,
-		"RepoName":               repoName})
+		"CurrentUser":       currentUser,
+		"Authorized":        authorized,
+		"Issue":             issue,
+		"Comments":          comments,
+		"UserName":          c.Param("user_name"),
+		"PinnedIssuesCount": PinnedIssuesCount,
+		"CommentedUsers":    CommentedUsersImages,
+		"RepoOwner":         IsRepoOwner,
+		"NumberOfCommented": NumberOfCommented,
+		"Locked":            locked,
+		// "IsRepoOwnerOrIssueUser": IsRepoOwnerOrIssueUser,
+		"ChangeStatusAccess": changeStatusAccess,
+		"RepoName":           repoName})
 }
 
 func createIssueComment(c *gin.Context, db *sql.DB) {
-	_, err := authorize(c, db)
+	currentUser, err := authorize(c, db)
 	if err != nil {
 		c.Redirect(http.StatusFound, "http://localhost:8000/login")
 		return
@@ -313,6 +315,24 @@ func createIssueComment(c *gin.Context, db *sql.DB) {
 	userId := c.PostForm("user_id")
 	IssueNumber := c.PostForm("issue_number")
 	fmt.Println(c.PostForm("comment_and_close"))
+
+	currentRepo, err := getCurrentRepo(db, username, repoName)
+	if err != nil {
+		fmt.Println(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	writeAccess, err := hasWriteAccess(db, currentRepo, currentUser)
+	if err != nil {
+		fmt.Println(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	if !writeAccess {
+		c.Redirect(http.StatusFound, "http://localhost:8000/"+username+"/"+repoName+"/issues/"+IssueNumber)
+		return
+	}
 
 	if c.PostForm("comment_and_close") == "1" {
 		_, err := db.Exec(`UPDATE issues SET status = 'Closed' WHERE id = $1`, _issueId)
