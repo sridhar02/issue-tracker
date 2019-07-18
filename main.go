@@ -282,17 +282,16 @@ func getIssuePageHandler(c *gin.Context, db *sql.DB) {
 	changeStatusAccess := writeAccess || currentUser.Username == issue.Username
 
 	c.HTML(http.StatusOK, "issue.html", gin.H{
-		"CurrentUser":       currentUser,
-		"Authorized":        authorized,
-		"Issue":             issue,
-		"Comments":          comments,
-		"UserName":          c.Param("user_name"),
-		"PinnedIssuesCount": PinnedIssuesCount,
-		"CommentedUsers":    CommentedUsersImages,
-		"RepoOwner":         IsRepoOwner,
-		"NumberOfCommented": NumberOfCommented,
-		"Locked":            locked,
-		// "IsRepoOwnerOrIssueUser": IsRepoOwnerOrIssueUser,
+		"CurrentUser":        currentUser,
+		"Authorized":         authorized,
+		"Issue":              issue,
+		"Comments":           comments,
+		"UserName":           c.Param("user_name"),
+		"PinnedIssuesCount":  PinnedIssuesCount,
+		"CommentedUsers":     CommentedUsersImages,
+		"RepoOwner":          IsRepoOwner,
+		"NumberOfCommented":  NumberOfCommented,
+		"Locked":             locked,
 		"ChangeStatusAccess": changeStatusAccess,
 		"RepoName":           repoName})
 }
