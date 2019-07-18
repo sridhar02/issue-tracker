@@ -275,6 +275,13 @@ func getIssuePageHandler(c *gin.Context, db *sql.DB) {
 	IsRepoOwnerOrIssueUser := currentUser.Username == c.Param("user_name") ||
 		currentUser.Username == issue.Username
 
+	writeAccess, err := hasWriteAccess(db, currentRepo, currentUser)
+	if err != nil {
+		fmt.Println(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
 	c.HTML(http.StatusOK, "issue.html", gin.H{
 		"CurrentUser":            currentUser,
 		"Authorized":             authorized,
@@ -287,6 +294,7 @@ func getIssuePageHandler(c *gin.Context, db *sql.DB) {
 		"NumberOfCommented":      NumberOfCommented,
 		"Locked":                 locked,
 		"IsRepoOwnerOrIssueUser": IsRepoOwnerOrIssueUser,
+		"WriteAccess":            writeAccess,
 		"RepoName":               repoName})
 }
 
@@ -534,10 +542,38 @@ func authorize(c *gin.Context, db *sql.DB) (User, error) {
 	return currentUser, nil
 }
 
+func IsCollaborator(db *sql.DB, userId string, repoId string) (bool, error) {
+
+	var a, b string
+	row := db.QueryRow(`SELECT * FROM collaborators WHERE repo_id = $1 AND user_id = $2`, repoId, userId)
+	err := row.Scan(&a, &b)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return false, nil
+		}
+		return false, err
+	}
+	return true, nil
+}
+
+func hasWriteAccess(db *sql.DB, currentRepo CurrentRepo, currentUser User) (bool, error) {
+	//there is no cookie for user
+	if currentUser.ID == "" {
+		return false, nil
+	}
+
+	if currentRepo.UserId == currentUser.ID {
+		return true, nil
+	}
+
+	return IsCollaborator(db, currentUser.ID, currentRepo.RepoId)
+}
+
 func PostUserSignOutHandler(c *gin.Context, db *sql.DB) {
 
 	_, err := authorize(c, db)
 	if err != nil {
+		fmt.Println("error")
 		c.Redirect(http.StatusFound, "http://localhost:8000/login")
 		return
 	}
@@ -567,11 +603,8 @@ func postPinPageHandler(c *gin.Context, db *sql.DB) {
 	}
 
 	username := c.Param("user_name")
-
 	repoName := c.Param("repo_name")
-
 	IssueNumber := c.Param("issue_number")
-
 	_issueId := c.PostForm("issue_id")
 
 	currentRepo, err := getCurrentRepo(db, username, repoName)
@@ -581,8 +614,13 @@ func postPinPageHandler(c *gin.Context, db *sql.DB) {
 		return
 	}
 
-	IsRepoOwner := currentUser.Username == c.Param("user_name")
-	if !IsRepoOwner {
+	writeAccess, err := hasWriteAccess(db, currentRepo, currentUser)
+	if err != nil {
+		fmt.Println(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	if !writeAccess {
 		c.Redirect(http.StatusFound, "http://localhost:8000/"+username+"/"+repoName+"/issues/"+IssueNumber)
 		return
 	}
@@ -620,15 +658,24 @@ func postUnPinPageHandler(c *gin.Context, db *sql.DB) {
 	}
 
 	username := c.Param("user_name")
-
 	repoName := c.Param("repo_name")
-
 	IssueNumber := c.Param("issue_number")
-
 	_issueId := c.PostForm("issue_id")
 
-	IsRepoOwner := currentUser.Username == c.Param("user_name")
-	if !IsRepoOwner {
+	currentRepo, err := getCurrentRepo(db, username, repoName)
+	if err != nil {
+		fmt.Println(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	writeAccess, err := hasWriteAccess(db, currentRepo, currentUser)
+	if err != nil {
+		fmt.Println(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	if !writeAccess {
 		c.Redirect(http.StatusFound, "http://localhost:8000/"+username+"/"+repoName+"/issues/"+IssueNumber)
 		return
 	}
