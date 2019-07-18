@@ -707,9 +707,28 @@ func postLockPageHandler(c *gin.Context, db *sql.DB) {
 
 	_issueId := c.PostForm("issue_id")
 
-	IsRepoOwner := currentUser.Username == c.Param("user_name")
-	if !IsRepoOwner {
+	currentRepo, err := getCurrentRepo(db, username, repoName)
+	if err != nil {
+		fmt.Println(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	writeAccess, err := hasWriteAccess(db, currentRepo, currentUser)
+	if err != nil {
+		fmt.Println(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	if !writeAccess {
 		c.Redirect(http.StatusFound, "http://localhost:8000/"+username+"/"+repoName+"/issues/"+IssueNumber)
+		return
+	}
+
+	_, err = db.Exec(`UPDATE issues SET pinned = 'Unpinned' WHERE id = $1`, _issueId)
+	if err != nil {
+		fmt.Println(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
 
@@ -740,9 +759,28 @@ func postUnlockPageHandler(c *gin.Context, db *sql.DB) {
 
 	IssueNumber := c.Param("issue_number")
 
-	IsRepoOwner := currentUser.Username == c.Param("user_name")
-	if !IsRepoOwner {
+	currentRepo, err := getCurrentRepo(db, username, repoName)
+	if err != nil {
+		fmt.Println(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	writeAccess, err := hasWriteAccess(db, currentRepo, currentUser)
+	if err != nil {
+		fmt.Println(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	if !writeAccess {
 		c.Redirect(http.StatusFound, "http://localhost:8000/"+username+"/"+repoName+"/issues/"+IssueNumber)
+		return
+	}
+
+	_, err = db.Exec(`UPDATE issues SET pinned = 'Unpinned' WHERE id = $1`, _issueId)
+	if err != nil {
+		fmt.Println(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
 
