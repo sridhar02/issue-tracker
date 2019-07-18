@@ -1,57 +1,56 @@
 <style type="text/css">
+	body{
+		font-family: sans-serif;
+	}
 	.navigation{
-		padding: 10px;
 		display: flex;
 		justify-content: flex-end;
 		background-color: black;
+		height: 64px;
 	}
 
 	.signin{
-		padding: 10px;
+		padding: 5px;
 	}
 	.signout-buttton{
-		padding: 10px;
+		padding: 5px;
 		border-radius: 3px;
-		border: 1px solid #ddd;
+		border: none;
 	}
 	.navigation a{
 		padding-top: 10px;
 		color:white;
-					text-decoration: none;
+		text-decoration: none;
 	}
 	.user-image{
 		width: 20px;
 		height: 20px;
+		border-radius: 3px;
 	}
 	.user-name{
 		padding: 5px;
-		/*padding-bottom: 0;*/
-		padding-top: 10px;
-		height: 30px;
-		border: 1px solid #ddd;
-		background-color: #ddd;
-		color: black;
+		color: white;
 		font-weight: bold;
 		border-radius: 3px;
-		font-size: 18px;
 	}
 	.user{
-		margin-top: 20px;		
+		display: flex;
+		align-items: center;
 	}
 
 </style>
 
 <nav class="navigation">
 	{{if .Authorized}}
-	<span class="user">
-		<span class="user-image"><img class="user-image" src="{{.CurrentUser.Image}}"></span>
-		<span class="user-name">{{.CurrentUser.Username}}</span>
-	</span>	
-	<form action="/Signout" method="post">
-		<div class="signin">
-			<button class="signout-buttton" type="submit">Signout</button>
-		</div>
-	</form>
+		<span class="user">
+			<img class="user-image" src="{{.CurrentUser.Image}}">
+			<span class="user-name">{{.CurrentUser.Username}}</span>
+			<form action="/Signout" method="post">
+				<div class="signin">
+					<button class="signout-buttton" type="submit">Signout</button>
+				</div>
+			</form>
+		</span>	
 	{{else}}
 	<div class="signin">
 		<a  href="/login" >Signin</a>
