@@ -783,7 +783,7 @@ func postCollaboratorPageHandler(c *gin.Context, db *sql.DB) {
 
 	currentUser, err := authorize(c, db)
 	if err != nil {
-		c.Redirect(http.StatusFound, "http://localhost:8000/"+currentUser.Username)
+		c.Redirect(http.StatusFound, "http://localhost:8000/login")
 		return
 	}
 
@@ -812,7 +812,8 @@ func postCollaboratorPageHandler(c *gin.Context, db *sql.DB) {
 		return
 	}
 
-	_, err = db.Exec(`INSERT INTO collaborators(repo_id,user_id)VALUES($1,$2)`, currentRepo.RepoId, user.ID)
+	_, err = db.Exec(`INSERT INTO collaborators (repo_id,user_id)VALUES($1,$2)`,
+		currentRepo.RepoId, user.ID)
 	if err != nil {
 		fmt.Println(err)
 		c.AbortWithStatus(http.StatusInternalServerError)
@@ -855,7 +856,8 @@ func postRemoveCollaboratorHandler(c *gin.Context, db *sql.DB) {
 		return
 	}
 
-	_, err = db.Exec("DELETE FROM collaborators WHERE user_id = $1 AND repo_id = $2", user.ID, currentRepo.RepoId)
+	_, err = db.Exec("DELETE FROM collaborators WHERE user_id = $1 AND repo_id = $2",
+		user.ID, currentRepo.RepoId)
 	if err != nil {
 		fmt.Println(err)
 		c.AbortWithStatus(http.StatusInternalServerError)
