@@ -360,7 +360,7 @@
 						{{end}}
 					</div>
 				</div>
-				{{if and .Authorized .RepoOwner}}
+				{{if .WriteAccess}}
 					<div class="pinned-button">
 						{{if eq .Issue.Pinned "Unpinned"}}
 						<form method="post" action="/{{.UserName}}/{{.RepoName}}/issues/{{.Issue.IssueNumber}}/pin">
