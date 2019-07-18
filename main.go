@@ -909,6 +909,10 @@ func postCollaboratorPageHandler(c *gin.Context, db *sql.DB) {
 	}
 
 	userName := c.PostForm("user_name")
+	if userName == currentUser.Username {
+		c.Redirect(http.StatusFound, "http://localhost:8000/"+username+"/"+repoName+"/collaboration")
+		return
+	}
 
 	user, err := GetUserByUserName(db, userName)
 	if err != nil {
