@@ -290,7 +290,6 @@ func getIssuePageHandler(c *gin.Context, db *sql.DB) {
 		"UserName":           c.Param("user_name"),
 		"PinnedIssuesCount":  PinnedIssuesCount,
 		"CommentedUsers":     CommentedUsersImages,
-		"RepoOwner":          IsRepoOwner,
 		"NumberOfCommented":  NumberOfCommented,
 		"Locked":             locked,
 		"ChangeStatusAccess": changeStatusAccess,
@@ -311,7 +310,6 @@ func createIssueComment(c *gin.Context, db *sql.DB) {
 	_issueId := c.PostForm("issue_id")
 	userId := c.PostForm("user_id")
 	IssueNumber := c.PostForm("issue_number")
-	fmt.Println(c.PostForm("comment_and_close"))
 
 	if c.PostForm("comment_and_open") == "1" {
 		_, err := db.Exec(`UPDATE issues SET status = 'Open' WHERE id = $1`, _issueId)
@@ -396,11 +394,9 @@ func postNewIssuePageHandler(c *gin.Context, db *sql.DB) {
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
-	fmt.Println(username)
+
 	title := c.PostForm("title")
-	// repoId := c.PostForm("repo_id")
 	body := c.PostForm("body")
-	// userId := c.PostForm("user_id")
 	issue := Issue{
 		Title:  title,
 		RepoId: currentRepo.RepoId,
