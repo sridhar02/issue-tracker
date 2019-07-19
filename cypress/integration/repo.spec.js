@@ -12,7 +12,7 @@ describe("Repo Tests", () => {
 	})
 
 	it("Add and Remove Collaborator", () => {
-		cy.visit('http://localhost:8000/Sridhar1997/funny/collaboration')
+		cy.visit('/Sridhar1997/funny/collaboration')
 
 		cy.get('.search [name="user_name"]').type("DONE456")
 
@@ -28,7 +28,7 @@ describe("Repo Tests", () => {
 
 	it("Non repo owner can not see collaboration page", () => {
 		
-		cy.visit('http://localhost:8000/DONE/test123/collaboration')
+		cy.visit('/DONE/test123/collaboration')
 
 		cy.url().should('eq', 'http://localhost:8000/Sridhar1997')
 
