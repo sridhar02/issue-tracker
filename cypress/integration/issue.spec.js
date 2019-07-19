@@ -95,3 +95,32 @@ describe("issue-tests collaborators",() =>{
 		cy.get('[name="unlock-button"]').click()
 	})
 })
+
+
+describe("issue test of random",() =>{
+
+	beforeEach(() => {
+		cy.visit("/login")
+		cy.get('[name="username"]').type("dp")
+		cy.get('[name="password"]').type("func2811")
+		cy.get('button').click()
+	})
+
+	it.only("new-issue",() =>{
+		cy.visit("/Sridhar1997/funny/issues/1")
+		cy.get('[href="/Sridhar1997/funny/issues/new"]').click()
+		cy.get('[name="title"]').type("elen & mike")
+		cy.get('[name="body"]').type("elven loves mike in stranger things")
+		cy.get('.issue [type="submit"]').click()
+
+		cy.visit("/Sridhar1997/funny/issues/5")
+		cy.get('[name="body"]').type("elven loves mike")
+		cy.get('.comment').click()
+
+		cy.get('[name="comment_and_close"]').click()
+		cy.get('.signout-button').click()
+
+
+	})
+
+})
