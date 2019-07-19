@@ -14,12 +14,8 @@ import (
 )
 
 func getUserPageHandler(c *gin.Context, db *sql.DB) {
-
 	currentUser, err := authorize(c, db)
-	authorized := true
-	if err != nil {
-		authorized = false
-	}
+	authorized := err == nil
 
 	username := c.Param("user_name")
 	user, err := GetUserByUserName(db, username)

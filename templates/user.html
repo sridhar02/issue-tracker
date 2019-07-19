@@ -85,7 +85,9 @@
 		<div>{{.User.Username}}</div>
 	</div>
 	<div class="repos">
-		<div class="new"><a class="newRepo-link" href="/new">New</a></div>
+		{{if .Authorized}}
+			<div class="new"><a class="newRepo-link" href="/new">New</a></div>
+		{{end}}
 		{{range .RepoNames}}
 		<div class="repo-section">
 			<div class="repo-section1">
