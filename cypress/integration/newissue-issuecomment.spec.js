@@ -25,9 +25,9 @@ describe("new issue and issue comment", () =>{
 
 	cy.get('[name="body"]').type("elven loves mike")
 
-	cy.get('[name="comment_and_close"]').click()
+	cy.get('.comment').click()
 
-
+	
 
 	})
 
