@@ -360,20 +360,20 @@
 						{{end}}
 					</div>
 				</div>
-				{{if .WriteAccess}}
+				{{if .ChangeStatusAccess}}
 					<div class="pinned-button">
 						{{if eq .Issue.Pinned "Unpinned"}}
 						<form method="post" action="/{{.UserName}}/{{.RepoName}}/issues/{{.Issue.IssueNumber}}/pin">
 							<input name="issue_id" value="{{.Issue.ID}}" hidden></input>
 							{{if lt $.PinnedIssuesCount 3}}
-							<button type="submit" ><i class="fas fa-thumbtack"></i> Pin Issue </button>
+							<button type="submit" name="pin-issue" ><i class="fas fa-thumbtack"></i> Pin Issue </button>
 							{{end}}
 						</form>
 						{{end}}
 						{{if eq .Issue.Pinned "Pinned"}}
 						<form method="post" action="/{{.UserName}}/{{.RepoName}}/issues/{{.Issue.IssueNumber}}/unpin">
 							<input name="issue_id" value="{{.Issue.ID}}" hidden></input>
-							<button type="submit"><i class="fas fa-thumbtack"></i> Unpin Issue </button>
+							<button type="submit" name="unpin-issue"><i class="fas fa-thumbtack"></i> Unpin Issue </button>
 						</form>
 						{{end}}
 					</div>
@@ -381,13 +381,13 @@
 						{{if eq .Issue.Lock "Unlocked"}}
 						<form method="post" action="/{{.UserName}}/{{.RepoName}}/issues/{{.Issue.IssueNumber}}/lock">
 							<input name="issue_id" value="{{.Issue.ID}}" hidden></input>
-							<button  class="lock-button" type="submit"><i class="fas fa-lock"></i> Lock conversion</button>
+							<button  class="lock-button" name="lock-button" type="submit"><i class="fas fa-lock"></i> Lock conversion</button>
 						</form>
 						{{end}}
 						{{if eq .Issue.Lock "Locked"}}
 						<form method="post" action="/{{.UserName}}/{{.RepoName}}/issues/{{.Issue.IssueNumber}}/unlock">
 							<input name="issue_id" value="{{.Issue.ID}}" hidden></input>
-							<button  class="lock-button" type="submit"><i class="fas fa-unlock-alt"></i> Unlock conversion</button>
+							<button  class="lock-button" name="unlock-button" type="submit"><i class="fas fa-unlock-alt"></i> Unlock conversion</button>
 						</form>
 						{{end}}
 					</div>
