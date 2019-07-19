@@ -292,6 +292,7 @@ func getIssuePageHandler(c *gin.Context, db *sql.DB) {
 		"CommentedUsers":     CommentedUsersImages,
 		"NumberOfCommented":  NumberOfCommented,
 		"Locked":             locked,
+		"WriteAccess":        writeAccess,
 		"ChangeStatusAccess": changeStatusAccess,
 		"RepoName":           repoName})
 }
