@@ -105,7 +105,7 @@ func CreateUser(db *sql.DB, user User) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println(UserImage)
+	// fmt.Println(UserImage)
 
 	_, err = db.Exec(`INSERT INTO users(id,name, username, email, created_at, updated_at,password,image)
 						VALUES($1,$2,$3,$4,$5,$6,$7,$8)`,
