@@ -37,6 +37,9 @@
 		display: flex;
 		align-items: center;
 	}
+	.notifications{
+		broder:1px solid #ddd;
+	}
 
 </style>
 
@@ -45,6 +48,7 @@
 		<span class="user">
 			<img class="user-image" src="{{.CurrentUser.Image}}">
 			<span class="user-name">{{.CurrentUser.Username}}</span>
+			<span class="notifications"><a href="/notifications">Notifications</a></span>
 			<form action="/Signout" method="post">
 				<div class="signin">
 					<button class="signout-button"  type="submit">Signout</button>
