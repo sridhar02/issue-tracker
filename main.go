@@ -298,7 +298,7 @@ func getIssuePageHandler(c *gin.Context, db *sql.DB) {
 }
 
 func createIssueComment(c *gin.Context, db *sql.DB) {
-	_, err := authorize(c, db)
+	currentUser, err := authorize(c, db)
 	if err != nil {
 		c.Redirect(http.StatusFound, "http://localhost:8000/login")
 		return
@@ -351,6 +351,20 @@ func createIssueComment(c *gin.Context, db *sql.DB) {
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
+
+	notification := Notification{
+		IssueId: issueId,
+		UserId:  currentUser.ID,
+		RepoId:  repoId,
+	}
+
+	err = CreateNotification(db, notification)
+	if err != nil {
+		fmt.Println(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
 	c.Redirect(http.StatusFound, "http://localhost:8000/"+username+"/"+repoName+"/issues/"+IssueNumber)
 }
 
@@ -649,7 +663,9 @@ func postPinPageHandler(c *gin.Context, db *sql.DB) {
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
+
 	c.Redirect(http.StatusFound, "http://localhost:8000/"+username+"/"+repoName+"/issues/"+IssueNumber)
+
 }
 
 func postUnPinPageHandler(c *gin.Context, db *sql.DB) {
@@ -959,6 +975,39 @@ func postRemoveCollaboratorHandler(c *gin.Context, db *sql.DB) {
 	c.Redirect(http.StatusFound, "http://localhost:8000/"+username+"/"+repoName+"/collaboration")
 }
 
+func getNotificationsHandler(c *gin.Context, db *sql.DB) {
+
+	currentUser, err := authorize(c, db)
+	if err != nil {
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	rows, err := db.Query(`SELECT issues.title FROM issues JOIN notifications ON issues.id = notifications.issue_id 
+						WHERE notifications.user_id=$1`, currentUser.ID)
+
+	if err != nil {
+		fmt.Println(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	title := []string{}
+	var issueTitle string
+	for rows.Next() {
+		err = rows.Scan(&issueTitle)
+		if err != nil {
+			fmt.Println(err)
+			c.AbortWithStatus(http.StatusInternalServerError)
+			return
+		}
+		title = append(title, issueTitle)
+	}
+
+	c.HTML(http.StatusOK, "notifications.html", gin.H{"CurrentUser": currentUser, "Title": title})
+
+}
+
 func main() {
 	err := godotenv.Load()
 	if err != nil {
@@ -994,6 +1043,8 @@ func main() {
 			getUserSigninPageHandler(c, db)
 		case "favicon.ico":
 			c.Status(http.StatusOK)
+		case "notifications":
+			getNotificationsHandler(c, db)
 		default:
 			getUserPageHandler(c, db)
 		}

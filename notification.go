@@ -1,7 +1,9 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
+	"time"
 )
 
 type Notification struct {
@@ -17,7 +19,7 @@ func CreateNotification(db *sql.DB, notification Notification) error {
 
 	_, err := db.Exec(`INSERT INTO notifications(read,created_at,issue_id,user_id,repo_id)
 						VALUES($1,$2,$3,$4,$5)`,
-		notification.Read,
+		"read",
 		time.Now().Format(time.RFC3339),
 		notification.IssueId,
 		notification.UserId,
@@ -41,6 +43,8 @@ func ReadNotification(db *sql.DB, id int) (Notification, error) {
 	if err != nil {
 		return Notification{}, err
 	}
+
+	fmt.Println(id)
 
 	CreatedAt, err := time.Parse(time.RFC3339, createdAt)
 	if err != nil {
