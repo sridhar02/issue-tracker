@@ -1,0 +1,35 @@
+<style>
+	
+.body{
+	
+}
+
+.notifications{
+	border: 1px solid #ddd;
+	border-bottom: 0px;
+	max-width: 900px;
+	margin: 0 auto;
+}
+.title{
+	display: flex;
+	justify-content: space-between;
+	padding: 10px;
+	border-bottom: 1px solid #ddd;
+}
+</style>
+
+
+<div class="Body">
+	
+		<div>{{.CurrentUser.Username}}</div>
+	<div class="notifications">
+		{{range .Title}} 
+		<div class="title">
+			<div>{{.}}</div>
+			<form method="" action="">
+				<button type="submit">Read</button>
+			</form>
+		</div>
+		{{end}}
+	</div>
+</div>
