@@ -984,10 +984,7 @@ type NotificationRequired struct {
 func getNotificationsHandler(c *gin.Context, db *sql.DB) {
 
 	currentUser, err := authorize(c, db)
-	if err != nil {
-		c.AbortWithStatus(http.StatusInternalServerError)
-		return
-	}
+	authorized := err == nil
 
 	rows, err := db.Query(`SELECT issues.title,notifications.read,issues.id FROM issues JOIN notifications ON issues.id = notifications.issue_id 
 						WHERE notifications.user_id=$1`, currentUser.ID)
@@ -1018,8 +1015,11 @@ func getNotificationsHandler(c *gin.Context, db *sql.DB) {
 	}
 
 	c.HTML(http.StatusOK, "notifications.html",
-		gin.H{"CurrentUser": currentUser,
-			"NotificationRequired": notifications})
+		gin.H{
+			"CurrentUser":          currentUser,
+			"Authorized":           authorized,
+			"NotificationRequired": notifications,
+		})
 
 }
 
