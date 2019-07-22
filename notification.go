@@ -19,7 +19,7 @@ func CreateNotification(db *sql.DB, notification Notification) error {
 
 	_, err := db.Exec(`INSERT INTO notifications(read,created_at,issue_id,user_id,repo_id)
 						VALUES($1,$2,$3,$4,$5)`,
-		"read",
+		"unread",
 		time.Now().Format(time.RFC3339),
 		notification.IssueId,
 		notification.UserId,

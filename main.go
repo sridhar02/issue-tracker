@@ -975,6 +975,12 @@ func postRemoveCollaboratorHandler(c *gin.Context, db *sql.DB) {
 	c.Redirect(http.StatusFound, "http://localhost:8000/"+username+"/"+repoName+"/collaboration")
 }
 
+type NotificationRequired struct {
+	Title   string
+	Read    string
+	IssueId int
+}
+
 func getNotificationsHandler(c *gin.Context, db *sql.DB) {
 
 	currentUser, err := authorize(c, db)
@@ -983,7 +989,7 @@ func getNotificationsHandler(c *gin.Context, db *sql.DB) {
 		return
 	}
 
-	rows, err := db.Query(`SELECT issues.title FROM issues JOIN notifications ON issues.id = notifications.issue_id 
+	rows, err := db.Query(`SELECT issues.title,notifications.read,issues.id FROM issues JOIN notifications ON issues.id = notifications.issue_id 
 						WHERE notifications.user_id=$1`, currentUser.ID)
 
 	if err != nil {
@@ -992,20 +998,62 @@ func getNotificationsHandler(c *gin.Context, db *sql.DB) {
 		return
 	}
 
-	title := []string{}
-	var issueTitle string
+	notifications := []NotificationRequired{}
+
+	var issueId int
+	var issueTitle, read string
 	for rows.Next() {
-		err = rows.Scan(&issueTitle)
+		err = rows.Scan(&issueTitle, &read, &issueId)
 		if err != nil {
 			fmt.Println(err)
 			c.AbortWithStatus(http.StatusInternalServerError)
 			return
 		}
-		title = append(title, issueTitle)
+		Notifications := NotificationRequired{
+			Title:   issueTitle,
+			Read:    read,
+			IssueId: issueId,
+		}
+		notifications = append(notifications, Notifications)
 	}
 
-	c.HTML(http.StatusOK, "notifications.html", gin.H{"CurrentUser": currentUser, "Title": title})
+	c.HTML(http.StatusOK, "notifications.html",
+		gin.H{"CurrentUser": currentUser,
+			"NotificationRequired": notifications})
 
+}
+
+func PostNotificationsHandler(c *gin.Context, db *sql.DB) {
+
+	_, err := authorize(c, db)
+	if err != nil {
+		fmt.Println("error")
+		c.Redirect(http.StatusFound, "http://localhost:8000/login")
+		return
+	}
+
+	IssueId := c.PostForm("issue_id")
+	Read := c.PostForm("read")
+	// fmt.Println(IssueId)
+
+	if Read != "unread" {
+		_, err = db.Exec(`UPDATE notifications SET read = 'unread' WHERE issue_id = $1`, IssueId)
+		if err != nil {
+			fmt.Println(err)
+			c.AbortWithStatus(http.StatusInternalServerError)
+			return
+		}
+
+	} else {
+		_, err = db.Exec(`UPDATE notifications SET read = 'read' WHERE issue_id = $1`, IssueId)
+		if err != nil {
+			fmt.Println(err)
+			c.AbortWithStatus(http.StatusInternalServerError)
+			return
+		}
+	}
+
+	c.Redirect(http.StatusFound, "http://localhost:8000/notifications")
 }
 
 func main() {
@@ -1057,6 +1105,8 @@ func main() {
 			PostUserSigninPageHandler(c, db)
 		case "Signout":
 			PostUserSignOutHandler(c, db)
+		case "notifications":
+			PostNotificationsHandler(c, db)
 		default:
 			c.Status(500)
 		}
