@@ -298,7 +298,7 @@ func getIssuePageHandler(c *gin.Context, db *sql.DB) {
 }
 
 func createIssueComment(c *gin.Context, db *sql.DB) {
-	currentUser, err := authorize(c, db)
+	_, err := authorize(c, db)
 	if err != nil {
 		c.Redirect(http.StatusFound, "http://localhost:8000/login")
 		return
@@ -352,17 +352,33 @@ func createIssueComment(c *gin.Context, db *sql.DB) {
 		return
 	}
 
-	notification := Notification{
-		IssueId: issueId,
-		UserId:  currentUser.ID,
-		RepoId:  repoId,
-	}
-
-	err = CreateNotification(db, notification)
+	CommentedUsersIds := []string{}
+	var UsersId string
+	rows, err := db.Query(`SELECT DISTINCT users.id FROM USERS JOIN comments ON 
+						comments.user_id = users.id WHERE issue_id = $1`, issueId)
 	if err != nil {
 		fmt.Println(err)
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
+	}
+
+	for rows.Next() {
+		err = rows.Scan(&UsersId)
+		if err != nil {
+			fmt.Println(err)
+			c.AbortWithStatus(http.StatusInternalServerError)
+			return
+		}
+		CommentedUsersIds = append(CommentedUsersIds, UsersId)
+	}
+
+	for _, UserId := range CommentedUsersIds {
+		err = CreateNotification(db, issueId, UserId, repoId)
+		if err != nil {
+			fmt.Println(err)
+			c.AbortWithStatus(http.StatusInternalServerError)
+			return
+		}
 	}
 
 	c.Redirect(http.StatusFound, "http://localhost:8000/"+username+"/"+repoName+"/issues/"+IssueNumber)

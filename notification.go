@@ -15,15 +15,15 @@ type Notification struct {
 	RepoId    string    `json:"repo_id,omitempty"`
 }
 
-func CreateNotification(db *sql.DB, notification Notification) error {
+func CreateNotification(db *sql.DB, issueId int, userId string, repoId string) error {
 
 	_, err := db.Exec(`INSERT INTO notifications(read,created_at,issue_id,user_id,repo_id)
 						VALUES($1,$2,$3,$4,$5)`,
 		"unread",
 		time.Now().Format(time.RFC3339),
-		notification.IssueId,
-		notification.UserId,
-		notification.RepoId)
+		issueId,
+		userId,
+		repoId)
 
 	if err != nil {
 		return err
