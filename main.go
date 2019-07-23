@@ -298,7 +298,7 @@ func getIssuePageHandler(c *gin.Context, db *sql.DB) {
 }
 
 func createIssueComment(c *gin.Context, db *sql.DB) {
-	_, err := authorize(c, db)
+	currentUser, err := authorize(c, db)
 	if err != nil {
 		c.Redirect(http.StatusFound, "http://localhost:8000/login")
 		return
@@ -372,7 +372,21 @@ func createIssueComment(c *gin.Context, db *sql.DB) {
 		CommentedUsersIds = append(CommentedUsersIds, UsersId)
 	}
 
-	for _, UserId := range CommentedUsersIds {
+	notificationUsers := []string{}
+	contains := false
+	for _, item := range CommentedUsersIds {
+		if item == currentUser.ID {
+			contains = true
+		}
+		if contains == false {
+			notificationUsers = append(notificationUsers, item)
+		}
+		// else {
+		// // 	notificationUsers = append(notificationUsers, item)
+		// // }
+	}
+
+	for _, UserId := range notificationUsers {
 		err = CreateNotification(db, issueId, UserId, repoId)
 		if err != nil {
 			fmt.Println(err)
