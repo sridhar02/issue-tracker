@@ -379,6 +379,26 @@ func createIssueComment(c *gin.Context, db *sql.DB) {
 		}
 	}
 
+	collaboratorUserIds := []string{}
+
+	rows, err = db.Query(`SELECT User_id FROM collaborators WHERE repo_id = $1`, repoId)
+	if err != nil {
+		fmt.Println(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	for rows.Next() {
+		err = rows.Scan(&userId)
+		if err != nil {
+			fmt.Println(err)
+			c.AbortWithStatus(http.StatusInternalServerError)
+			return
+		}
+		collaboratorUserIds = append(collaboratorUserIds, userId)
+	}
+
+	notificationUsers = append(notificationUsers, collaboratorUserIds...)
 	for _, UserId := range notificationUsers {
 		err = CreateNotification(db, issueId, UserId, repoId)
 		if err != nil {
