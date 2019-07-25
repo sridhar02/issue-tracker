@@ -62,7 +62,7 @@ func GetIssue(db *sql.DB, id int) (Issue, error) {
 	return issue, nil
 }
 
-func CreateIssue(db *sql.DB, issue Issue) (int, error) {
+func CreateIssue(db *sql.DB, issue Issue) (int, int, error) {
 
 	var issueId int
 	var issueCount int
@@ -70,7 +70,7 @@ func CreateIssue(db *sql.DB, issue Issue) (int, error) {
 	row := db.QueryRow("SELECT issue_count FROM repos WHERE id=$1", issue.RepoId)
 	err := row.Scan(&issueCount)
 	if err != nil {
-		return 0, err
+		return 0, 0, err
 	}
 
 	// fmt.Println(issue)
@@ -88,17 +88,17 @@ func CreateIssue(db *sql.DB, issue Issue) (int, error) {
 		time.Now().Format(time.RFC3339),
 		time.Now().Format(time.RFC3339)).Scan(&issueId)
 	if err != nil {
-		return 0, err
+		return 0, 0, err
 	}
 
 	_, err = db.Exec(`UPDATE repos SET issue_count =$1, updated_at = $2 WHERE id = $3`,
 		issueCount+1, time.Now().Format(time.RFC3339), issue.RepoId)
 
 	if err != nil {
-		return 0, err
+		return 0, 0, err
 	}
 
-	return issueCount + 1, nil
+	return issueId, issueCount + 1, nil
 }
 
 func UpdateIssue(db *sql.DB, issue Issue) error {
@@ -155,7 +155,7 @@ func postIssueHandler(c *gin.Context, db *sql.DB) {
 		return
 	}
 
-	_, err = CreateIssue(db, issue)
+	_, _, err = CreateIssue(db, issue)
 	if err != nil {
 		fmt.Println(err)
 		c.AbortWithStatus(http.StatusInternalServerError)
