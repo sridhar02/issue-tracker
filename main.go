@@ -306,6 +306,13 @@ func createIssueComment(c *gin.Context, db *sql.DB) {
 	username := c.Param("user_name")
 	repoName := c.Param("repo_name")
 
+	currentRepo, err := getCurrentRepo(db, username, repoName)
+	if err != nil {
+		fmt.Println(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
 	body := c.PostForm("body")
 	repoId := c.PostForm("repo_id")
 	_issueId := c.PostForm("issue_id")
@@ -372,14 +379,12 @@ func createIssueComment(c *gin.Context, db *sql.DB) {
 		CommentedUsersIds = append(CommentedUsersIds, UsersId)
 	}
 
-	notificationUsers := []string{}
+	notificationUserIds := map[string]int{}
 	for _, item := range CommentedUsersIds {
 		if item != currentUser.ID {
-			notificationUsers = append(notificationUsers, item)
+			notificationUserIds[item] = 0
 		}
 	}
-
-	collaboratorUserIds := []string{}
 
 	rows, err = db.Query(`SELECT User_id FROM collaborators WHERE repo_id = $1`, repoId)
 	if err != nil {
@@ -395,11 +400,13 @@ func createIssueComment(c *gin.Context, db *sql.DB) {
 			c.AbortWithStatus(http.StatusInternalServerError)
 			return
 		}
-		collaboratorUserIds = append(collaboratorUserIds, userId)
+		notificationUserIds[userId] = 0
 	}
+	notificationUserIds[userId] = 0
+	notificationUserIds[currentRepo.UserId] = 0
+	delete(notificationUserIds, currentUser.ID)
 
-	notificationUsers = append(notificationUsers, collaboratorUserIds...)
-	for _, UserId := range notificationUsers {
+	for UserId, _ := range notificationUserIds {
 		err = CreateNotification(db, issueId, UserId, repoId)
 		if err != nil {
 			fmt.Println(err)
