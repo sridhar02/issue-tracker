@@ -373,17 +373,10 @@ func createIssueComment(c *gin.Context, db *sql.DB) {
 	}
 
 	notificationUsers := []string{}
-	contains := false
 	for _, item := range CommentedUsersIds {
-		if item == currentUser.ID {
-			contains = true
-		}
-		if contains == false {
+		if item != currentUser.ID {
 			notificationUsers = append(notificationUsers, item)
 		}
-		// else {
-		// // 	notificationUsers = append(notificationUsers, item)
-		// // }
 	}
 
 	for _, UserId := range notificationUsers {
@@ -442,18 +435,28 @@ func postNewIssuePageHandler(c *gin.Context, db *sql.DB) {
 
 	title := c.PostForm("title")
 	body := c.PostForm("body")
+
 	issue := Issue{
 		Title:  title,
 		RepoId: currentRepo.RepoId,
 		Body:   body,
 		UserId: currentUser.ID,
 	}
-	issueNumber, err := CreateIssue(db, issue)
+
+	IssueId, issueNumber, err := CreateIssue(db, issue)
 	if err != nil {
 		fmt.Println(err)
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
+
+	err = CreateNotification(db, IssueId, currentRepo.UserId, currentRepo.RepoId)
+	if err != nil {
+		fmt.Println(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
 	c.Redirect(http.StatusFound, "http://localhost:8000/"+username+"/"+repoName+"/issues/"+strconv.Itoa(issueNumber))
 }
 
