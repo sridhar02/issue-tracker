@@ -477,11 +477,32 @@ func postNewIssuePageHandler(c *gin.Context, db *sql.DB) {
 		return
 	}
 
-	err = CreateNotification(db, IssueId, currentRepo.UserId, currentRepo.RepoId)
+	notificationUserIds := map[string]int{}
+	rows, err := db.Query(`SELECT User_id FROM collaborators WHERE repo_id = $1`, currentRepo.RepoId)
 	if err != nil {
 		fmt.Println(err)
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
+	}
+	for rows.Next() {
+		var userId string
+		err = rows.Scan(&userId)
+		if err != nil {
+			fmt.Println(err)
+			c.AbortWithStatus(http.StatusInternalServerError)
+			return
+		}
+		notificationUserIds[userId] = 0
+	}
+	notificationUserIds[currentRepo.UserId] = 0
+
+	for UserId, _ := range notificationUserIds {
+		err = CreateNotification(db, IssueId, UserId, currentRepo.RepoId)
+		if err != nil {
+			fmt.Println(err)
+			c.AbortWithStatus(http.StatusInternalServerError)
+			return
+		}
 	}
 
 	c.Redirect(http.StatusFound, "http://localhost:8000/"+username+"/"+repoName+"/issues/"+strconv.Itoa(issueNumber))
