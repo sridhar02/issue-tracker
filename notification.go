@@ -61,3 +61,82 @@ func ReadNotification(db *sql.DB, id int) (Notification, error) {
 	}
 	return notification, nil
 }
+
+func CommentNotifications(db *sql.DB, issueId int, currentRepo CurrentRepo, currentUser User) error {
+
+	notificationUserIds := map[string]int{}
+	rows, err := db.Query(`SELECT DISTINCT users.id FROM USERS JOIN comments ON 
+						comments.user_id = users.id WHERE issue_id = $1`, issueId)
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+
+	for rows.Next() {
+		var UsersId string
+		err = rows.Scan(&UsersId)
+		if err != nil {
+			fmt.Println(err)
+			return err
+		}
+		notificationUserIds[UsersId] = 0
+	}
+
+	rows, err = db.Query(`SELECT user_id FROM collaborators WHERE repo_id = $1`, currentRepo.RepoId)
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+	var userId string
+	for rows.Next() {
+		err = rows.Scan(&userId)
+		if err != nil {
+			fmt.Println(err)
+			return err
+		}
+		notificationUserIds[userId] = 0
+	}
+	notificationUserIds[userId] = 0
+	notificationUserIds[currentRepo.UserId] = 0
+	delete(notificationUserIds, currentUser.ID)
+
+	for UserId, _ := range notificationUserIds {
+		err = CreateNotification(db, issueId, UserId, currentRepo.RepoId)
+		if err != nil {
+			fmt.Println(err)
+			return err
+		}
+	}
+
+	return nil
+}
+
+func CollaboratorNotifications(db *sql.DB, currentRepo CurrentRepo, IssueId int) error {
+
+	notificationUserIds := map[string]int{}
+	rows, err := db.Query(`SELECT user_id FROM collaborators WHERE repo_id = $1`, currentRepo.RepoId)
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+	for rows.Next() {
+		var userId string
+		err = rows.Scan(&userId)
+		if err != nil {
+			fmt.Println(err)
+			return err
+		}
+		notificationUserIds[userId] = 0
+	}
+	notificationUserIds[currentRepo.UserId] = 0
+
+	for UserId, _ := range notificationUserIds {
+		err = CreateNotification(db, IssueId, UserId, currentRepo.RepoId)
+		if err != nil {
+			fmt.Println(err)
+			return err
+		}
+	}
+
+	return nil
+}

@@ -319,6 +319,12 @@ func createIssueComment(c *gin.Context, db *sql.DB) {
 	userId := c.PostForm("user_id")
 	IssueNumber := c.PostForm("issue_number")
 
+	issueId, err := strconv.Atoi(_issueId)
+	if err != nil {
+		c.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+
 	if c.PostForm("comment_and_open") == "1" {
 		_, err := db.Exec(`UPDATE issues SET status = 'Open' WHERE id = $1`, _issueId)
 		if err != nil {
@@ -326,6 +332,14 @@ func createIssueComment(c *gin.Context, db *sql.DB) {
 			c.AbortWithStatus(http.StatusInternalServerError)
 			return
 		}
+
+		err = CommentNotifications(db, issueId, currentRepo, currentUser)
+		if err != nil {
+			fmt.Println(err)
+			c.AbortWithStatus(http.StatusInternalServerError)
+			return
+		}
+
 		c.Redirect(http.StatusFound, "http://localhost:8000/"+username+"/"+repoName+"/issues/"+IssueNumber)
 		return
 	}
@@ -337,15 +351,17 @@ func createIssueComment(c *gin.Context, db *sql.DB) {
 			c.AbortWithStatus(http.StatusInternalServerError)
 			return
 		}
+
+		err = CommentNotifications(db, issueId, currentRepo, currentUser)
+		if err != nil {
+			fmt.Println(err)
+			c.AbortWithStatus(http.StatusInternalServerError)
+			return
+		}
 		c.Redirect(http.StatusFound, "http://localhost:8000/"+username+"/"+repoName+"/issues/"+IssueNumber)
 		return
 	}
 
-	issueId, err := strconv.Atoi(_issueId)
-	if err != nil {
-		c.AbortWithStatus(http.StatusBadRequest)
-		return
-	}
 	comment := Comment{
 		Body:    body,
 		UserId:  userId,
@@ -359,60 +375,11 @@ func createIssueComment(c *gin.Context, db *sql.DB) {
 		return
 	}
 
-	CommentedUsersIds := []string{}
-	var UsersId string
-	rows, err := db.Query(`SELECT DISTINCT users.id FROM USERS JOIN comments ON 
-						comments.user_id = users.id WHERE issue_id = $1`, issueId)
+	err = CommentNotifications(db, issueId, currentRepo, currentUser)
 	if err != nil {
 		fmt.Println(err)
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
-	}
-
-	for rows.Next() {
-		err = rows.Scan(&UsersId)
-		if err != nil {
-			fmt.Println(err)
-			c.AbortWithStatus(http.StatusInternalServerError)
-			return
-		}
-		CommentedUsersIds = append(CommentedUsersIds, UsersId)
-	}
-
-	notificationUserIds := map[string]int{}
-	for _, item := range CommentedUsersIds {
-		if item != currentUser.ID {
-			notificationUserIds[item] = 0
-		}
-	}
-
-	rows, err = db.Query(`SELECT User_id FROM collaborators WHERE repo_id = $1`, repoId)
-	if err != nil {
-		fmt.Println(err)
-		c.AbortWithStatus(http.StatusInternalServerError)
-		return
-	}
-
-	for rows.Next() {
-		err = rows.Scan(&userId)
-		if err != nil {
-			fmt.Println(err)
-			c.AbortWithStatus(http.StatusInternalServerError)
-			return
-		}
-		notificationUserIds[userId] = 0
-	}
-	notificationUserIds[userId] = 0
-	notificationUserIds[currentRepo.UserId] = 0
-	delete(notificationUserIds, currentUser.ID)
-
-	for UserId, _ := range notificationUserIds {
-		err = CreateNotification(db, issueId, UserId, repoId)
-		if err != nil {
-			fmt.Println(err)
-			c.AbortWithStatus(http.StatusInternalServerError)
-			return
-		}
 	}
 
 	c.Redirect(http.StatusFound, "http://localhost:8000/"+username+"/"+repoName+"/issues/"+IssueNumber)
@@ -745,6 +712,19 @@ func postPinPageHandler(c *gin.Context, db *sql.DB) {
 		return
 	}
 
+	issueId, err := strconv.Atoi(_issueId)
+	if err != nil {
+		c.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+
+	err = CollaboratorNotifications(db, currentRepo, issueId)
+	if err != nil {
+		fmt.Println(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
 	c.Redirect(http.StatusFound, "http://localhost:8000/"+username+"/"+repoName+"/issues/"+IssueNumber)
 
 }
@@ -781,6 +761,19 @@ func postUnPinPageHandler(c *gin.Context, db *sql.DB) {
 	}
 
 	_, err = db.Exec(`UPDATE issues SET pinned = 'Unpinned' WHERE id = $1`, _issueId)
+	if err != nil {
+		fmt.Println(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	issueId, err := strconv.Atoi(_issueId)
+	if err != nil {
+		c.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+
+	err = CollaboratorNotifications(db, currentRepo, issueId)
 	if err != nil {
 		fmt.Println(err)
 		c.AbortWithStatus(http.StatusInternalServerError)
@@ -839,6 +832,19 @@ func postLockPageHandler(c *gin.Context, db *sql.DB) {
 		return
 	}
 
+	issueId, err := strconv.Atoi(_issueId)
+	if err != nil {
+		c.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+
+	err = CollaboratorNotifications(db, currentRepo, issueId)
+	if err != nil {
+		fmt.Println(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
 	c.Redirect(http.StatusFound, "http://localhost:8000/"+username+"/"+repoName+"/issues/"+IssueNumber)
 
 }
@@ -885,6 +891,19 @@ func postUnlockPageHandler(c *gin.Context, db *sql.DB) {
 	}
 
 	_, err = db.Exec(`UPDATE issues SET lock = 'Unlocked' WHERE id = $1`, _issueId)
+	if err != nil {
+		fmt.Println(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	issueId, err := strconv.Atoi(_issueId)
+	if err != nil {
+		c.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+
+	err = CollaboratorNotifications(db, currentRepo, issueId)
 	if err != nil {
 		fmt.Println(err)
 		c.AbortWithStatus(http.StatusInternalServerError)
@@ -1067,8 +1086,11 @@ func getNotificationsHandler(c *gin.Context, db *sql.DB) {
 	currentUser, err := authorize(c, db)
 	authorized := err == nil
 
-	rows, err := db.Query(`SELECT issues.title,notifications.read,issues.id FROM issues JOIN notifications ON issues.id = notifications.issue_id 
-						WHERE notifications.user_id=$1`, currentUser.ID)
+	rows, err := db.Query(
+		`SELECT issues.title, notifications.read,issues.id 
+		 FROM issues JOIN notifications ON issues.id = notifications.issue_id 
+		 WHERE notifications.user_id = $1 `,
+		currentUser.ID)
 
 	if err != nil {
 		fmt.Println(err)
