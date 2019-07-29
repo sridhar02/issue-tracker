@@ -459,7 +459,7 @@ func postNewIssuePageHandler(c *gin.Context, db *sql.DB) {
 		}
 		notificationUserIds[userId] = 0
 	}
-	notificationUserIds[currentRepo.UserId] = 0
+	// notificationUserIds[currentRepo.UserId] = 0
 
 	for UserId, _ := range notificationUserIds {
 		err = CreateNotification(db, IssueId, UserId, currentRepo.RepoId)
