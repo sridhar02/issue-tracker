@@ -1087,7 +1087,7 @@ func getNotificationsHandler(c *gin.Context, db *sql.DB) {
 	authorized := err == nil
 
 	rows, err := db.Query(
-		`SELECT issues.title, notifications.read,issues.id 
+		`SELECT issues.title, notifications.read,issues.id notifications.repo_id
 		 FROM issues JOIN notifications ON issues.id = notifications.issue_id 
 		 WHERE notifications.user_id = $1 `,
 		currentUser.ID)
@@ -1097,31 +1097,32 @@ func getNotificationsHandler(c *gin.Context, db *sql.DB) {
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
+	UserNotifications := map[string][]NotificationRequired{}
 
-	notifications := []NotificationRequired{}
-
-	var issueId int
-	var issueTitle, read string
 	for rows.Next() {
-		err = rows.Scan(&issueTitle, &read, &issueId)
+		var issueId int
+		var issueTitle, read, repoId string
+		err = rows.Scan(&issueTitle, &read, &issueId, &repoId)
 		if err != nil {
 			fmt.Println(err)
 			c.AbortWithStatus(http.StatusInternalServerError)
 			return
 		}
-		Notifications := NotificationRequired{
+		repoNotifications := UserNotifications[repoId]
+		Notification := NotificationRequired{
 			Title:   issueTitle,
 			Read:    read,
 			IssueId: issueId,
 		}
-		notifications = append(notifications, Notifications)
+		repoNotifications = append(repoNotifications, Notification)
+		UserNotifications[repoId] = repoNotifications
 	}
 
 	c.HTML(http.StatusOK, "notifications.html",
 		gin.H{
 			"CurrentUser":          currentUser,
 			"Authorized":           authorized,
-			"NotificationRequired": notifications,
+			"NotificationRequired": UserNotifications,
 		})
 
 }
