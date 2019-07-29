@@ -314,9 +314,7 @@ func createIssueComment(c *gin.Context, db *sql.DB) {
 	}
 
 	body := c.PostForm("body")
-	repoId := c.PostForm("repo_id")
 	_issueId := c.PostForm("issue_id")
-	userId := c.PostForm("user_id")
 	IssueNumber := c.PostForm("issue_number")
 
 	issueId, err := strconv.Atoi(_issueId)
@@ -364,8 +362,8 @@ func createIssueComment(c *gin.Context, db *sql.DB) {
 
 	comment := Comment{
 		Body:    body,
-		UserId:  userId,
-		RepoId:  repoId,
+		UserId:  currentRepo.UserId,
+		RepoId:  currentRepo.RepoId,
 		IssueId: issueId,
 	}
 	err = CreateComment(db, comment)
@@ -1087,7 +1085,7 @@ func getNotificationsHandler(c *gin.Context, db *sql.DB) {
 	authorized := err == nil
 
 	rows, err := db.Query(
-		`SELECT issues.title, notifications.read,issues.id notifications.repo_id
+		`SELECT issues.title, notifications.read,issues.id, notifications.repo_id
 		 FROM issues JOIN notifications ON issues.id = notifications.issue_id 
 		 WHERE notifications.user_id = $1 `,
 		currentUser.ID)
@@ -1101,21 +1099,28 @@ func getNotificationsHandler(c *gin.Context, db *sql.DB) {
 
 	for rows.Next() {
 		var issueId int
-		var issueTitle, read, repoId string
+		var issueTitle, read, repoId, repoName, username string
 		err = rows.Scan(&issueTitle, &read, &issueId, &repoId)
 		if err != nil {
 			fmt.Println(err)
 			c.AbortWithStatus(http.StatusInternalServerError)
 			return
 		}
-		repoNotifications := UserNotifications[repoId]
+		row := db.QueryRow(`SELECT repos.name,users.username FROM repos JOIN users 
+			ON repos.user_id = users.id WHERE repos.id = $1`, repoId)
+		err := row.Scan(&repoName, &username)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		repoNotifications := UserNotifications[username+"/"+repoName]
 		Notification := NotificationRequired{
 			Title:   issueTitle,
 			Read:    read,
 			IssueId: issueId,
 		}
 		repoNotifications = append(repoNotifications, Notification)
-		UserNotifications[repoId] = repoNotifications
+		UserNotifications[username+"/"+repoName] = repoNotifications
 	}
 
 	c.HTML(http.StatusOK, "notifications.html",
