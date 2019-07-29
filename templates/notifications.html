@@ -10,12 +10,16 @@
 	border-bottom: 0px;
 	max-width: 900px;
 	margin: 0 auto;
-	background-color: #ddd;
+	background-color: #f6f8fa;
+
 }
 .title{
 	padding: 10px;
 	border-top: 1px solid black;
 	border-bottom: 1px solid black;
+}
+
+div:last child{
 }
 .heading{
 	text-align: center;
@@ -24,16 +28,16 @@
 
 .read-button{
 	border:0px;
-	background: #ddd;	
+	background: #f6f8fa;	
 }
 .repoId{
+	padding: 10px;
 	font-weight: bold;
 }
 .notification{
 	display: flex;
 	justify-content: space-between;
 }
-
 </style>
 
 {{template "nav.html" .}}
@@ -42,9 +46,9 @@
 		{{range  $repoName,$value := .NotificationRequired}} 
 		<div>
 			<div class="notifications">
-			<div class="repoId">{{$repoName}}</div>
+				<div class="repoId">{{$repoName}}</div>
 				<div class="title">
-					<div >
+					<div>
 					{{range $value}}
 						<div class="notification">
 						{{.Title}}
@@ -57,7 +61,7 @@
 					{{end}}
 					</div>
 				</div>
-			{{end}}
 			</div>
 		</div>
+		{{end}}
 </div>
