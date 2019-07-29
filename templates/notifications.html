@@ -6,16 +6,17 @@
 }
 
 .notifications{
-	border: 1px solid #ddd;
+	border: 1px solid black;
 	border-bottom: 0px;
 	max-width: 900px;
 	margin: 0 auto;
+	background-color: #ddd;
 }
 .title{
 	display: flex;
 	justify-content: space-between;
 	padding: 10px;
-	border-bottom: 1px solid #ddd;
+	border-bottom: 1px solid black;
 }
 .heading{
 	text-align: center;
@@ -24,13 +25,13 @@
 
 .read-button{
 	border:0px;
-	background: white;	
+	background: #ddd;	
 }
 
 </style>
 
 {{template "nav.html" .}}
-<div class="Body">
+<div class="body">
 	<h2 class="heading">Notifications</h2>
 	<div class="notifications">
 		{{range .NotificationRequired}} 
