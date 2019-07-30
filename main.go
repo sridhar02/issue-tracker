@@ -1079,16 +1079,16 @@ type NotificationRequired struct {
 	IssueId int
 }
 
-func getNotificationsHandler(c *gin.Context, db *sql.DB) {
+func getUnreadNotificationsHandler(c *gin.Context, db *sql.DB) {
 
 	currentUser, err := authorize(c, db)
 	authorized := err == nil
 
 	rows, err := db.Query(
-		`SELECT issues.title, notifications.read,issues.id, notifications.repo_id
+		`SELECT DISTINCT issues.title, notifications.read,issues.id, notifications.repo_id
 		 FROM issues JOIN notifications ON issues.id = notifications.issue_id 
-		 WHERE notifications.user_id = $1 `,
-		currentUser.ID)
+		 WHERE notifications.user_id = $1 AND notifications.read = $2`,
+		currentUser.ID, "unread")
 
 	if err != nil {
 		fmt.Println(err)
@@ -1105,6 +1105,65 @@ func getNotificationsHandler(c *gin.Context, db *sql.DB) {
 			fmt.Println(err)
 			c.AbortWithStatus(http.StatusInternalServerError)
 			return
+		}
+		if read != read {
+
+		}
+		row := db.QueryRow(`SELECT repos.name,users.username FROM repos JOIN users 
+			ON repos.user_id = users.id WHERE repos.id = $1`, repoId)
+		err := row.Scan(&repoName, &username)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		repoNotifications := UserNotifications[username+"/"+repoName]
+		Notification := NotificationRequired{
+			Title:   issueTitle,
+			Read:    read,
+			IssueId: issueId,
+		}
+		repoNotifications = append(repoNotifications, Notification)
+		UserNotifications[username+"/"+repoName] = repoNotifications
+	}
+
+	c.HTML(http.StatusOK, "notifications.html",
+		gin.H{
+			"CurrentUser":          currentUser,
+			"Authorized":           authorized,
+			"NotificationRequired": UserNotifications,
+		})
+
+}
+
+func getReadNotificationsHandler(c *gin.Context, db *sql.DB) {
+
+	currentUser, err := authorize(c, db)
+	authorized := err == nil
+
+	rows, err := db.Query(
+		`SELECT DISTINCT issues.title, notifications.read,issues.id, notifications.repo_id
+		 FROM issues JOIN notifications ON issues.id = notifications.issue_id 
+		 WHERE notifications.user_id = $1 AND notifications.read = $2`,
+		currentUser.ID, "read")
+
+	if err != nil {
+		fmt.Println(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	UserNotifications := map[string][]NotificationRequired{}
+
+	for rows.Next() {
+		var issueId int
+		var issueTitle, read, repoId, repoName, username string
+		err = rows.Scan(&issueTitle, &read, &issueId, &repoId)
+		if err != nil {
+			fmt.Println(err)
+			c.AbortWithStatus(http.StatusInternalServerError)
+			return
+		}
+		if read != read {
+
 		}
 		row := db.QueryRow(`SELECT repos.name,users.username FROM repos JOIN users 
 			ON repos.user_id = users.id WHERE repos.id = $1`, repoId)
@@ -1201,7 +1260,9 @@ func main() {
 		case "favicon.ico":
 			c.Status(http.StatusOK)
 		case "notifications":
-			getNotificationsHandler(c, db)
+			getUnreadNotificationsHandler(c, db)
+		case "notifications-read":
+			getReadNotificationsHandler(c, db)
 		default:
 			getUserPageHandler(c, db)
 		}

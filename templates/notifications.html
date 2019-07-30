@@ -4,11 +4,13 @@
 	padding: 0px;
 	margin: 0px;
 }
+.body{
+}
 
 .notifications{
 	border: 1px solid #ccc;
 	border-bottom: 0px;
-	max-width: 900px;
+	max-width: 800px;
 	margin: 10px auto;
 	background-color: #f6f8fa;
 }
@@ -35,13 +37,41 @@
 	display: flex;
 	justify-content: space-between;
 }
+.side-bar{
+	display: inline;
+	max-width: 100px;
+	/*margin: 0 auto;*/
+	margin-left: 20px;
+	height: 50px;
+	/*border: 1px solid #ccc;*/
+}
+.side-bar a{
+	margin: 5px;
+	margin-bottom: 10px;
+	text-decoration: none;
+	color: black;
+}
+.main-section{
+	/*display: flex;*/
+	/*flex-direction: column;*/
+}
+.side-bar-alignment{
+	display: flex;
+	flex-direction: column;
+}
 </style>
 
 {{template "nav.html" .}}
-<div class="body">
 	<h2 class="heading">Notifications</h2>
+<div class="body">
+			<div class="side-bar">
+				<span class="side-bar-alignment">
+					<span><a href="/notifications">Unread</a></span>
+					<span><a href="/notifications-read">Read</a></span>
+				</span>	
+			</div>
+		<div class="main-section">
 		{{range  $repoName,$value := .NotificationRequired}} 
-		<div>
 			<div class="notifications">
 				<div class="repoId">{{$repoName}}</div>
 				<div class="title">
