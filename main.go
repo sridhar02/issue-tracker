@@ -1328,6 +1328,7 @@ func main() {
 	} else {
 		port = ":8000"
 	}
+	fmt.Println(port)
 
 	// router.Run(port)
 
