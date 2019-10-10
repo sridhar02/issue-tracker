@@ -7,3 +7,5 @@ require (
 	github.com/joho/godotenv v1.3.0
 	github.com/lib/pq v1.1.1
 )
+
+go 1.13
