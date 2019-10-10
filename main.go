@@ -1230,7 +1230,12 @@ func main() {
 	if err != nil {
 		fmt.Println(".env file not found")
 	}
-	connStr := "user=postgres dbname=issue_tracker host=localhost password=test1234 sslmode=disable"
+	connStr := fmt.Sprintf("user=%s dbname=%s host=%s password=%s sslmode=disable",
+		os.Getenv("DB_USER"),
+		os.Getenv("DB_NAME"),
+		os.Getenv("DB_HOST"),
+		os.Getenv("DB_PASSWORD"),
+	)
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
 		fmt.Println(err)
