@@ -301,7 +301,7 @@ func getIssuePageHandler(c *gin.Context, db *sql.DB) {
 func createIssueComment(c *gin.Context, db *sql.DB) {
 	currentUser, err := authorize(c, db)
 	if err != nil {
-		c.Redirect(http.StatusFound, "http://localhost:8000/login")
+		c.Redirect(http.StatusFound, os.Getenv("URL")+"/login")
 		return
 	}
 	username := c.Param("user_name")
@@ -339,7 +339,7 @@ func createIssueComment(c *gin.Context, db *sql.DB) {
 			return
 		}
 
-		c.Redirect(http.StatusFound, os.Getenv("URL")+username+"/"+repoName+"/issues/"+IssueNumber)
+		c.Redirect(http.StatusFound, os.Getenv("URL")+"/"+username+"/"+repoName+"/issues/"+IssueNumber)
 		return
 	}
 
@@ -357,7 +357,7 @@ func createIssueComment(c *gin.Context, db *sql.DB) {
 			c.AbortWithStatus(http.StatusInternalServerError)
 			return
 		}
-		c.Redirect(http.StatusFound, os.Getenv("URL")+username+"/"+repoName+"/issues/"+IssueNumber)
+		c.Redirect(http.StatusFound, os.Getenv("URL")+"/"+username+"/"+repoName+"/issues/"+IssueNumber)
 		return
 	}
 
@@ -381,14 +381,14 @@ func createIssueComment(c *gin.Context, db *sql.DB) {
 		return
 	}
 
-	c.Redirect(http.StatusFound, os.Getenv("URL")+username+"/"+repoName+"/issues/"+IssueNumber)
+	c.Redirect(http.StatusFound, os.Getenv("URL")+"/"+username+"/"+repoName+"/issues/"+IssueNumber)
 }
 
 func getNewIssuePageHandler(c *gin.Context, db *sql.DB) {
 
 	currentUser, err := authorize(c, db)
 	if err != nil {
-		c.Redirect(http.StatusFound, "http://localhost:8000/login")
+		c.Redirect(http.StatusFound, os.Getenv("URL")+"/login")
 		return
 	}
 
@@ -413,7 +413,7 @@ func getNewIssuePageHandler(c *gin.Context, db *sql.DB) {
 func postNewIssuePageHandler(c *gin.Context, db *sql.DB) {
 	currentUser, err := authorize(c, db)
 	if err != nil {
-		c.Redirect(http.StatusFound, "http://localhost:8000/login")
+		c.Redirect(http.StatusFound, os.Getenv("URL")+"/login")
 		return
 	}
 	username := c.Param("user_name")
@@ -471,13 +471,13 @@ func postNewIssuePageHandler(c *gin.Context, db *sql.DB) {
 		}
 	}
 
-	c.Redirect(http.StatusFound, os.Getenv("URL")+username+"/"+repoName+"/issues/"+strconv.Itoa(issueNumber))
+	c.Redirect(http.StatusFound, os.Getenv("URL")+"/"+username+"/"+repoName+"/issues/"+strconv.Itoa(issueNumber))
 }
 
 func getRepoNewPageHandler(c *gin.Context, db *sql.DB) {
 	currentUser, err := authorize(c, db)
 	if err != nil {
-		c.Redirect(http.StatusFound, "http://localhost:8000/login")
+		c.Redirect(http.StatusFound, os.Getenv("URL")+"/login")
 		return
 	}
 	c.HTML(http.StatusOK, "repo_new.html", gin.H{"CurrentUser": currentUser})
@@ -486,7 +486,7 @@ func getRepoNewPageHandler(c *gin.Context, db *sql.DB) {
 func PostRepoNewPageHandler(c *gin.Context, db *sql.DB) {
 	_, err := authorize(c, db)
 	if err != nil {
-		c.Redirect(http.StatusFound, "http://localhost:8000/login")
+		c.Redirect(http.StatusFound, os.Getenv("URL")+"/login")
 		return
 	}
 	name := c.PostForm("name")
@@ -506,13 +506,13 @@ func PostRepoNewPageHandler(c *gin.Context, db *sql.DB) {
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
-	c.Redirect(http.StatusFound, os.Getenv("URL")+userName+"/"+name+"/issues")
+	c.Redirect(http.StatusFound, os.Getenv("URL")+"/"+userName+"/"+name+"/issues")
 }
 
 func getUserNewPageHandler(c *gin.Context, db *sql.DB) {
 	currentUser, err := authorize(c, db)
 	if err == nil {
-		c.Redirect(http.StatusFound, os.Getenv("URL")+currentUser.Username)
+		c.Redirect(http.StatusFound, os.Getenv("URL")+"/"+currentUser.Username)
 		return
 	}
 	c.HTML(http.StatusOK, "user_signup.html", gin.H{})
@@ -521,7 +521,7 @@ func getUserNewPageHandler(c *gin.Context, db *sql.DB) {
 func PostUserNewPageHandler(c *gin.Context, db *sql.DB) {
 	currentUser, err := authorize(c, db)
 	if err == nil {
-		c.Redirect(http.StatusFound, os.Getenv("URL")+currentUser.Username)
+		c.Redirect(http.StatusFound, os.Getenv("URL")+"/"+currentUser.Username)
 		return
 	}
 	name := c.PostForm("name")
@@ -546,7 +546,7 @@ func PostUserNewPageHandler(c *gin.Context, db *sql.DB) {
 func getUserSigninPageHandler(c *gin.Context, db *sql.DB) {
 	currentUser, err := authorize(c, db)
 	if err == nil {
-		c.Redirect(http.StatusFound, os.Getenv("URL")+currentUser.Username)
+		c.Redirect(http.StatusFound, os.Getenv("URL")+"/"+currentUser.Username)
 		return
 	}
 	c.HTML(http.StatusOK, "user_signin.html", gin.H{})
@@ -555,7 +555,7 @@ func getUserSigninPageHandler(c *gin.Context, db *sql.DB) {
 func PostUserSigninPageHandler(c *gin.Context, db *sql.DB) {
 	currentUser, err := authorize(c, db)
 	if err == nil {
-		c.Redirect(http.StatusFound, os.Getenv("URL")+currentUser.Username)
+		c.Redirect(http.StatusFound, os.Getenv("URL")+"/"+currentUser.Username)
 		return
 	}
 	fmt.Println(currentUser)
@@ -584,7 +584,7 @@ func PostUserSigninPageHandler(c *gin.Context, db *sql.DB) {
 		return
 	}
 	c.SetCookie("session", cookie, 300, "/", "localhost:8000", false, true)
-	c.Redirect(http.StatusFound, os.Getenv("URL")+username)
+	c.Redirect(http.StatusFound, os.Getenv("URL")+"/"+username)
 }
 
 func authorize(c *gin.Context, db *sql.DB) (User, error) {
@@ -638,13 +638,13 @@ func PostUserSignOutHandler(c *gin.Context, db *sql.DB) {
 	_, err := authorize(c, db)
 	if err != nil {
 		fmt.Println("error")
-		c.Redirect(http.StatusFound, "http://localhost:8000/login")
+		c.Redirect(http.StatusFound, os.Getenv("URL")+"/login")
 		return
 	}
 
 	session, err := c.Cookie("session")
 	if err != nil {
-		c.Redirect(http.StatusFound, "http://localhost:8000/login")
+		c.Redirect(http.StatusFound, os.Getenv("URL")+"/login")
 		return
 	}
 
@@ -655,14 +655,14 @@ func PostUserSignOutHandler(c *gin.Context, db *sql.DB) {
 		return
 	}
 
-	c.Redirect(http.StatusFound, "http://localhost:8000/login")
+	c.Redirect(http.StatusFound, os.Getenv("URL")+"/login")
 }
 
 func postPinPageHandler(c *gin.Context, db *sql.DB) {
 
 	currentUser, err := authorize(c, db)
 	if err != nil {
-		c.Redirect(http.StatusFound, "http://localhost:8000/login")
+		c.Redirect(http.StatusFound, os.Getenv("URL")+"/login")
 		return
 	}
 
@@ -685,7 +685,7 @@ func postPinPageHandler(c *gin.Context, db *sql.DB) {
 		return
 	}
 	if !writeAccess {
-		c.Redirect(http.StatusFound, "http://localhost:8000/"+username+"/"+repoName+"/issues/"+IssueNumber)
+		c.Redirect(http.StatusFound, os.Getenv("URL")+"/"+username+"/"+repoName+"/issues/"+IssueNumber)
 		return
 	}
 
@@ -700,7 +700,7 @@ func postPinPageHandler(c *gin.Context, db *sql.DB) {
 	}
 
 	if count >= 3 {
-		c.Redirect(http.StatusFound, "http://localhost:8000/"+username+"/"+repoName+"/issues/"+IssueNumber)
+		c.Redirect(http.StatusFound, os.Getenv("URL")+"/"+username+"/"+repoName+"/issues/"+IssueNumber)
 		return
 	}
 
@@ -724,7 +724,7 @@ func postPinPageHandler(c *gin.Context, db *sql.DB) {
 		return
 	}
 
-	c.Redirect(http.StatusFound, "http://localhost:8000/"+username+"/"+repoName+"/issues/"+IssueNumber)
+	c.Redirect(http.StatusFound, os.Getenv("URL")+"/"+username+"/"+repoName+"/issues/"+IssueNumber)
 
 }
 
@@ -732,7 +732,7 @@ func postUnPinPageHandler(c *gin.Context, db *sql.DB) {
 
 	currentUser, err := authorize(c, db)
 	if err != nil {
-		c.Redirect(http.StatusFound, "http://localhost:8000/login")
+		c.Redirect(http.StatusFound, os.Getenv("URL")+"/login")
 		return
 	}
 
@@ -755,7 +755,7 @@ func postUnPinPageHandler(c *gin.Context, db *sql.DB) {
 		return
 	}
 	if !writeAccess {
-		c.Redirect(http.StatusFound, "http://localhost:8000/"+username+"/"+repoName+"/issues/"+IssueNumber)
+		c.Redirect(http.StatusFound, os.Getenv("URL")+"/"+username+"/"+repoName+"/issues/"+IssueNumber)
 		return
 	}
 
@@ -779,7 +779,7 @@ func postUnPinPageHandler(c *gin.Context, db *sql.DB) {
 		return
 	}
 
-	c.Redirect(http.StatusFound, "http://localhost:8000/"+username+"/"+repoName+"/issues/"+IssueNumber)
+	c.Redirect(http.StatusFound, os.Getenv("URL")+"/"+username+"/"+repoName+"/issues/"+IssueNumber)
 
 }
 
@@ -787,7 +787,7 @@ func postLockPageHandler(c *gin.Context, db *sql.DB) {
 
 	currentUser, err := authorize(c, db)
 	if err != nil {
-		c.Redirect(http.StatusFound, "http://localhost:8000/login")
+		c.Redirect(http.StatusFound, os.Getenv("URL")+"/login")
 		return
 	}
 
@@ -813,7 +813,7 @@ func postLockPageHandler(c *gin.Context, db *sql.DB) {
 		return
 	}
 	if !writeAccess {
-		c.Redirect(http.StatusFound, "http://localhost:8000/"+username+"/"+repoName+"/issues/"+IssueNumber)
+		c.Redirect(http.StatusFound, os.Getenv("URL")+"/"+username+"/"+repoName+"/issues/"+IssueNumber)
 		return
 	}
 
@@ -844,7 +844,7 @@ func postLockPageHandler(c *gin.Context, db *sql.DB) {
 		return
 	}
 
-	c.Redirect(http.StatusFound, "http://localhost:8000/"+username+"/"+repoName+"/issues/"+IssueNumber)
+	c.Redirect(http.StatusFound, os.Getenv("URL")+"/"+username+"/"+repoName+"/issues/"+IssueNumber)
 
 }
 
@@ -852,7 +852,7 @@ func postUnlockPageHandler(c *gin.Context, db *sql.DB) {
 
 	currentUser, err := authorize(c, db)
 	if err != nil {
-		c.Redirect(http.StatusFound, "http://localhost:8000/login")
+		c.Redirect(http.StatusFound, os.Getenv("URL")+"/login")
 		return
 	}
 
@@ -878,7 +878,7 @@ func postUnlockPageHandler(c *gin.Context, db *sql.DB) {
 		return
 	}
 	if !writeAccess {
-		c.Redirect(http.StatusFound, "http://localhost:8000/"+username+"/"+repoName+"/issues/"+IssueNumber)
+		c.Redirect(http.StatusFound, os.Getenv("URL")+"/"+username+"/"+repoName+"/issues/"+IssueNumber)
 		return
 	}
 
@@ -909,7 +909,7 @@ func postUnlockPageHandler(c *gin.Context, db *sql.DB) {
 		return
 	}
 
-	c.Redirect(http.StatusFound, "http://localhost:8000/"+username+"/"+repoName+"/issues/"+IssueNumber)
+	c.Redirect(http.StatusFound, os.Getenv("URL")+"/"+username+"/"+repoName+"/issues/"+IssueNumber)
 }
 
 type Collaborator struct {
@@ -928,7 +928,7 @@ func getCollaboratorPageHandler(c *gin.Context, db *sql.DB) {
 
 	IsRepoOwner := currentUser.Username == username
 	if !IsRepoOwner {
-		c.Redirect(http.StatusFound, "http://localhost:8000/"+currentUser.Username)
+		c.Redirect(http.StatusFound, os.Getenv("URL")+currentUser.Username)
 		return
 	}
 
@@ -986,7 +986,7 @@ func postCollaboratorPageHandler(c *gin.Context, db *sql.DB) {
 
 	currentUser, err := authorize(c, db)
 	if err != nil {
-		c.Redirect(http.StatusFound, "http://localhost:8000/login")
+		c.Redirect(http.StatusFound, os.Getenv("URL")+"/login")
 		return
 	}
 
@@ -995,7 +995,7 @@ func postCollaboratorPageHandler(c *gin.Context, db *sql.DB) {
 
 	IsRepoOwner := currentUser.Username == username
 	if !IsRepoOwner {
-		c.Redirect(http.StatusFound, "http://localhost:8000/"+currentUser.Username)
+		c.Redirect(http.StatusFound, os.Getenv("URL")+currentUser.Username)
 		return
 	}
 
@@ -1008,7 +1008,7 @@ func postCollaboratorPageHandler(c *gin.Context, db *sql.DB) {
 
 	userName := c.PostForm("user_name")
 	if userName == currentUser.Username {
-		c.Redirect(http.StatusFound, "http://localhost:8000/"+username+"/"+repoName+"/collaboration")
+		c.Redirect(http.StatusFound, os.Getenv("URL")+"/"+username+"/"+repoName+"/collaboration")
 		return
 	}
 
@@ -1027,14 +1027,14 @@ func postCollaboratorPageHandler(c *gin.Context, db *sql.DB) {
 		return
 	}
 
-	c.Redirect(http.StatusFound, "http://localhost:8000/"+username+"/"+repoName+"/collaboration")
+	c.Redirect(http.StatusFound, os.Getenv("URL")+"/"+username+"/"+repoName+"/collaboration")
 }
 
 func postRemoveCollaboratorHandler(c *gin.Context, db *sql.DB) {
 
 	currentUser, err := authorize(c, db)
 	if err != nil {
-		c.Redirect(http.StatusFound, "http://localhost:8000/"+currentUser.Username)
+		c.Redirect(http.StatusFound, os.Getenv("URL")+"/"+currentUser.Username)
 		return
 	}
 
@@ -1043,7 +1043,7 @@ func postRemoveCollaboratorHandler(c *gin.Context, db *sql.DB) {
 
 	IsRepoOwner := currentUser.Username == username
 	if !IsRepoOwner {
-		c.Redirect(http.StatusFound, "http://localhost:8000/"+currentUser.Username)
+		c.Redirect(http.StatusFound, os.Getenv("URL")+"/"+currentUser.Username)
 		return
 	}
 
@@ -1071,7 +1071,7 @@ func postRemoveCollaboratorHandler(c *gin.Context, db *sql.DB) {
 		return
 	}
 
-	c.Redirect(http.StatusFound, "http://localhost:8000/"+username+"/"+repoName+"/collaboration")
+	c.Redirect(http.StatusFound, os.Getenv("URL")+"/"+username+"/"+repoName+"/collaboration")
 }
 
 type NotificationRequired struct {
@@ -1197,7 +1197,7 @@ func PostNotificationsHandler(c *gin.Context, db *sql.DB) {
 	_, err := authorize(c, db)
 	if err != nil {
 		fmt.Println("error")
-		c.Redirect(http.StatusFound, "http://localhost:8000/login")
+		c.Redirect(http.StatusFound, os.Getenv("URL")+"/login")
 		return
 	}
 
@@ -1333,9 +1333,6 @@ func main() {
 	} else {
 		port = ":8000"
 	}
-	fmt.Println(port)
-
-	// router.Run(port)
 
 	http.ListenAndServe(port, nil)
 }
