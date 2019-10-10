@@ -7,7 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
-	"log"
+	// "log"
 	"net/http"
 	"strconv"
 	"time"
