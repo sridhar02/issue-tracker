@@ -9,7 +9,7 @@ import (
 	_ "github.com/lib/pq"
 	// "log"
 	"net/http"
-	"os"
+	// "os"
 	"strconv"
 	"time"
 )
@@ -1321,7 +1321,12 @@ func main() {
 
 	http.Handle("/", router)
 
-	port := os.Getenv("PORT")
-
+	// port := os.Getenv("PORT")
+	var port string
+	if port != "" {
+		port = ":" + port
+	} else {
+		port = ":8000"
+	}
 	http.ListenAndServe(port, nil)
 }
