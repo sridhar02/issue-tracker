@@ -87,8 +87,8 @@ func CommentNotifications(db *sql.DB, issueId int, currentRepo CurrentRepo, curr
 		fmt.Println(err)
 		return err
 	}
-	var userId string
 	for rows.Next() {
+		var userId string
 		err = rows.Scan(&userId)
 		if err != nil {
 			fmt.Println(err)
@@ -96,10 +96,8 @@ func CommentNotifications(db *sql.DB, issueId int, currentRepo CurrentRepo, curr
 		}
 		notificationUserIds[userId] = 0
 	}
-	notificationUserIds[userId] = 0
 	notificationUserIds[currentRepo.UserId] = 0
 	delete(notificationUserIds, currentUser.ID)
-
 	for UserId, _ := range notificationUserIds {
 		err = CreateNotification(db, issueId, UserId, currentRepo.RepoId)
 		if err != nil {
