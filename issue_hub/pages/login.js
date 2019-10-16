@@ -25,34 +25,68 @@ const loginStyles = theme => ({
 });
 
 class _Login extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      username: "",
+      password: ""
+    };
+  }
+
+  handleChange = event => {
+    this.setState({
+      [event.target.name]: event.target.value
+    });
+  };
+
+  handleSubmit = event => {
+    event.preventDefault();
+    axios
+      .post("/signin", {
+        username: this.state.username,
+        password: this.state.password
+      })
+      .then(response => {
+        localStorage.setItem("secret", response.data.secret);
+        Router.push("/user");
+      });
+  };
   render() {
     const { classes } = this.props;
     return (
       <div className={cx(classes.mainSection, "container")}>
-        <div className="row">
-          <div className="col">
-            <Typography variant="h6" className={classes.title}>
-              Sign in to GitHub
-            </Typography>
-            <form onSubmit={this.handleSubmit} className={"col-12 col-md-4"}>
+        <form onSubmit={this.handleSubmit}>
+          <div className="row">
+            <div className="col-12">
+              <Typography variant="h6" className={classes.title}>
+                Sign in to GitHub
+              </Typography>
               <Typography variant="h6">Username or email address </Typography>
               <TextField
-                placeholder="username or email"
+                placeholder="username"
+                name="username"
                 margin="normal"
                 variant="outlined"
+                value={this.state.name}
+                onChange={this.handleChange}
               />
               <Typography variant="h6">Password </Typography>
               <TextField
+                name="password"
                 placeholder="password"
                 margin="normal"
                 variant="outlined"
+                value={this.state.name}
+                onChange={this.handleChange}
               />
-              <Button variant="contained" color="primary">
-                Sign in
-              </Button>
-            </form>
+              <div>
+                <Button variant="contained" color="primary" type="submit">
+                  Sign in
+                </Button>
+              </div>
+            </div>
           </div>
-        </div>
+        </form>
       </div>
     );
   }
