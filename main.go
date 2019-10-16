@@ -3,9 +3,12 @@ package main
 import (
 	"database/sql"
 	"fmt"
+	"math/rand"
 	// "github.com/dustin/go-humanize"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
+
 	_ "github.com/lib/pq"
 	// "log"
 	"net/http"
@@ -509,40 +512,6 @@ func PostRepoNewPageHandler(c *gin.Context, db *sql.DB) {
 	c.Redirect(http.StatusFound, os.Getenv("URL")+"/"+userName+"/"+name+"/issues")
 }
 
-func getUserNewPageHandler(c *gin.Context, db *sql.DB) {
-	currentUser, err := authorize(c, db)
-	if err == nil {
-		c.Redirect(http.StatusFound, os.Getenv("URL")+"/"+currentUser.Username)
-		return
-	}
-	c.HTML(http.StatusOK, "user_signup.html", gin.H{})
-}
-
-func PostUserNewPageHandler(c *gin.Context, db *sql.DB) {
-	currentUser, err := authorize(c, db)
-	if err == nil {
-		c.Redirect(http.StatusFound, os.Getenv("URL")+"/"+currentUser.Username)
-		return
-	}
-	name := c.PostForm("name")
-	username := c.PostForm("username")
-	email := c.PostForm("email")
-	password := c.PostForm("password")
-	user := User{
-		Name:     name,
-		Username: username,
-		Email:    email,
-		Password: password,
-	}
-	err = CreateUser(db, user)
-	if err != nil {
-		fmt.Println(err)
-		c.AbortWithStatus(http.StatusInternalServerError)
-		return
-	}
-	c.Redirect(http.StatusFound, os.Getenv("URL")+"/login")
-}
-
 func getUserSigninPageHandler(c *gin.Context, db *sql.DB) {
 	currentUser, err := authorize(c, db)
 	if err == nil {
@@ -550,41 +519,6 @@ func getUserSigninPageHandler(c *gin.Context, db *sql.DB) {
 		return
 	}
 	c.HTML(http.StatusOK, "user_signin.html", gin.H{})
-}
-
-func PostUserSigninPageHandler(c *gin.Context, db *sql.DB) {
-	currentUser, err := authorize(c, db)
-	if err == nil {
-		c.Redirect(http.StatusFound, os.Getenv("URL")+"/"+currentUser.Username)
-		return
-	}
-	fmt.Println(currentUser)
-	username := c.PostForm("username")
-	password := c.PostForm("password")
-	// user := User{
-	// 	Username: username,
-	// 	Password: password,
-	// }
-	var Password, Id string
-	row := db.QueryRow(`SELECT password,id FROM users WHERE username=$1`, username)
-	err = row.Scan(&Password, &Id)
-	if err != nil {
-		fmt.Println(err)
-		c.AbortWithStatus(http.StatusInternalServerError)
-		return
-	}
-	if Password != password {
-		c.Redirect(http.StatusFound, os.Getenv("URL")+"/login")
-		return
-	}
-	cookie, err := CreateCookie(db, Id)
-	if err != nil {
-		fmt.Println(err)
-		c.AbortWithStatus(http.StatusInternalServerError)
-		return
-	}
-	c.SetCookie("session", cookie, 300, "/", "localhost:8000", false, true)
-	c.Redirect(http.StatusFound, os.Getenv("URL")+"/"+username)
 }
 
 func authorize(c *gin.Context, db *sql.DB) (User, error) {
@@ -1225,6 +1159,96 @@ func PostNotificationsHandler(c *gin.Context, db *sql.DB) {
 	c.Redirect(http.StatusFound, os.Getenv("URL")+"/notifications")
 }
 
+func postUserSignupHandler(c *gin.Context, db *sql.DB) {
+	user := User{}
+	err := c.BindJSON(&user)
+	if err != nil {
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	err = CreateUser(db, user)
+	if err != nil {
+		fmt.Println(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	c.Status(http.StatusCreated)
+}
+
+const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+
+func RandStringBytes(n int) string {
+	b := make([]byte, n)
+	var i int
+	for i = range b {
+		b[i] = letterBytes[rand.Intn(len(letterBytes))]
+	}
+	return string(b)
+}
+
+type Login struct {
+	UserId    string    `json:"user_id,omitempty"`
+	Secret    string    `json:"secret,omitempty"`
+	CreatedAt time.Time `json:"created_at,omitempty"`
+	UpdatedAt time.Time `json:"updated_at,omitempty"`
+}
+
+func CreateLogin(db *sql.DB, userId string) (Login, error) {
+
+	secret := RandStringBytes(32)
+	_, err := db.Exec(`INSERT INTO logins(user_id,secret,created_at,updated_at)
+									VALUES($1,$2,$3,$4)`,
+		userId,
+		secret,
+		time.Now().Format(time.RFC3339),
+		time.Now().Format(time.RFC3339))
+
+	login := Login{
+		UserId:    userId,
+		Secret:    secret,
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	}
+
+	if err != nil {
+		return login, err
+	}
+
+	return login, nil
+}
+
+func PostUserSigninPageHandler(c *gin.Context, db *sql.DB) {
+
+	user := User{}
+	err := c.BindJSON(&user)
+	if err != nil {
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	var Password, Id string
+	row := db.QueryRow(`SELECT password,id FROM users WHERE username=$1`, user.Username)
+	err = row.Scan(&Password, &Id)
+	if err != nil {
+		fmt.Println(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	if Password != user.Password {
+		c.Redirect(http.StatusFound, os.Getenv("URL")+"/login")
+		return
+	}
+	login, err := CreateLogin(db, Id)
+	if err != nil {
+		fmt.Println(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	c.JSON(201, login)
+
+}
+
 func main() {
 	err := godotenv.Load()
 	if err != nil {
@@ -1251,73 +1275,83 @@ func main() {
 	}
 	router := gin.Default()
 	router.LoadHTMLGlob("./templates/*")
+	router.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"*"},
+		AllowMethods:     []string{"PUT", "GET", "DELETE", "POST", "PATCH"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+		MaxAge:           12 * time.Hour,
+	}))
 
-	router.GET("", func(c *gin.Context) { getUserNewPageHandler(c, db) })
-	router.POST("", func(c *gin.Context) { PostUserNewPageHandler(c, db) })
+	router.POST("/signup", func(c *gin.Context) { postUserSignupHandler(c, db) })
+	router.POST("/signin", func(c *gin.Context) { PostUserSigninPageHandler(c, db) })
 
-	userGroup := router.Group("/:user_name")
+	// userGroup := router.Group("/:user_name")
 
-	userGroup.GET("", func(c *gin.Context) {
-		switch c.Param("user_name") {
-		case "new":
-			getRepoNewPageHandler(c, db)
-		case "login":
-			getUserSigninPageHandler(c, db)
-		case "favicon.ico":
-			c.Status(http.StatusOK)
-		case "notifications":
-			getUnreadNotificationsHandler(c, db)
-		case "notifications-read":
-			getReadNotificationsHandler(c, db)
-		default:
-			getUserPageHandler(c, db)
-		}
-	})
-	userGroup.POST("", func(c *gin.Context) {
-		switch c.Param("user_name") {
-		case "new":
-			PostRepoNewPageHandler(c, db)
-		case "login":
-			PostUserSigninPageHandler(c, db)
-		case "Signout":
-			PostUserSignOutHandler(c, db)
-		case "notifications":
-			PostNotificationsHandler(c, db)
-		default:
-			c.Status(500)
-		}
-	})
+	// userGroup.GET("", func(c *gin.Context) {
+	// 	switch c.Param("user_name") {
+	// 	case "new":
+	// 		getRepoNewPageHandler(c, db)
+	// 	case "login":
+	// 		getUserSigninPageHandler(c, db)
+	// 	case "favicon.ico":
+	// 		c.Status(http.StatusOK)
+	// 	case "notifications":
+	// 		getUnreadNotificationsHandler(c, db)
+	// 	case "notifications-read":
+	// 		getReadNotificationsHandler(c, db)
+	// 	default:
+	// 		getUserPageHandler(c, db)
+	// 	}
+	// })
+	// userGroup.POST("", func(c *gin.Context) {
+	// 	switch c.Param("user_name") {
+	// 	case "new":
+	// 		PostRepoNewPageHandler(c, db)
+	// 	case "join":
+	// 		PostUserNewPageHandler(c, db)
+	// 	case "login":
+	// 		PostUserSigninPageHandler(c, db)
+	// 	case "Signout":
+	// 		PostUserSignOutHandler(c, db)
+	// 	case "notifications":
+	// 		PostNotificationsHandler(c, db)
+	// 	default:
+	// 		c.Status(500)
+	// 	}
+	// })
 
-	pages := userGroup.Group("/:repo_name")
-	pages.GET("/issues",
-		func(c *gin.Context) { getIssuesPageHandler(c, db) })
-	pages.POST("/issues/:issue_number", func(c *gin.Context) {
-		if c.Param("issue_number") == "new" {
-			postNewIssuePageHandler(c, db)
-		} else {
-			c.Status(http.StatusNotFound)
-		}
-	})
+	// pages := userGroup.Group("/:repo_name")
+	// pages.GET("/issues",
+	// 	func(c *gin.Context) { getIssuesPageHandler(c, db) })
+	// pages.POST("/issues/:issue_number", func(c *gin.Context) {
+	// 	if c.Param("issue_number") == "new" {
+	// 		postNewIssuePageHandler(c, db)
+	// 	} else {
+	// 		c.Status(http.StatusNotFound)
+	// 	}
+	// })
 
-	pages.GET("/issues/:issue_number",
-		func(c *gin.Context) {
-			if c.Param("issue_number") == "new" {
-				getNewIssuePageHandler(c, db)
-			} else {
-				getIssuePageHandler(c, db)
-			}
-		})
+	// pages.GET("/issues/:issue_number",
+	// 	func(c *gin.Context) {
+	// 		if c.Param("issue_number") == "new" {
+	// 			getNewIssuePageHandler(c, db)
+	// 		} else {
+	// 			getIssuePageHandler(c, db)
+	// 		}
+	// 	})
 
-	pages.POST("/issues/:issue_number/pin", func(c *gin.Context) { postPinPageHandler(c, db) })
-	pages.POST("/issues/:issue_number/unpin", func(c *gin.Context) { postUnPinPageHandler(c, db) })
-	pages.POST("/issues/:issue_number/lock", func(c *gin.Context) { postLockPageHandler(c, db) })
-	pages.POST("/issues/:issue_number/unlock", func(c *gin.Context) { postUnlockPageHandler(c, db) })
+	// pages.POST("/issues/:issue_number/pin", func(c *gin.Context) { postPinPageHandler(c, db) })
+	// pages.POST("/issues/:issue_number/unpin", func(c *gin.Context) { postUnPinPageHandler(c, db) })
+	// pages.POST("/issues/:issue_number/lock", func(c *gin.Context) { postLockPageHandler(c, db) })
+	// pages.POST("/issues/:issue_number/unlock", func(c *gin.Context) { postUnlockPageHandler(c, db) })
 
-	pages.GET("/collaboration", func(c *gin.Context) { getCollaboratorPageHandler(c, db) })
-	pages.POST("/collaboration", func(c *gin.Context) { postCollaboratorPageHandler(c, db) })
-	pages.POST("/removecollaborator", func(c *gin.Context) { postRemoveCollaboratorHandler(c, db) })
+	// pages.GET("/collaboration", func(c *gin.Context) { getCollaboratorPageHandler(c, db) })
+	// pages.POST("/collaboration", func(c *gin.Context) { postCollaboratorPageHandler(c, db) })
+	// pages.POST("/removecollaborator", func(c *gin.Context) { postRemoveCollaboratorHandler(c, db) })
 
-	pages.POST("/comments", func(c *gin.Context) { createIssueComment(c, db) })
+	// pages.POST("/comments", func(c *gin.Context) { createIssueComment(c, db) })
 
 	stylesRouter := gin.Default()
 	stylesRouter.Static("/styles", "./styles")
