@@ -81,3 +81,9 @@ post('http://localhost:8000/signin',
 		'username': 'DONE',
 		'password':'j25p4e9EjzEnscL',
 	})
+
+
+get('http://localhost:8000/user',
+	 headers={
+	    "Authorization": "Bearer XVlBzgbaiCMRAjWwhTHctcuAxhxKQFDa"
+	})

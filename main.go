@@ -14,51 +14,9 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 )
-
-func getUserPageHandler(c *gin.Context, db *sql.DB) {
-	currentUser, err := authorize(c, db)
-	authorized := err == nil
-
-	username := c.Param("user_name")
-	user, err := GetUserByUserName(db, username)
-	if err != nil {
-		fmt.Println(err)
-		c.AbortWithStatus(http.StatusInternalServerError)
-		return
-	}
-
-	rows, err := db.Query(
-		`SELECT repos.name FROM repos JOIN users ON repos.user_id = users.id WHERE users.username = $1;`,
-		username)
-	if err != nil {
-		fmt.Println(err)
-		c.AbortWithStatus(http.StatusInternalServerError)
-		return
-	}
-
-	repoNames := []string{}
-
-	var repoName string
-
-	for rows.Next() {
-		err = rows.Scan(&repoName)
-		if err != nil {
-			fmt.Println(err)
-			c.AbortWithStatus(http.StatusInternalServerError)
-			return
-		}
-
-		repoNames = append(repoNames, repoName)
-	}
-
-	c.HTML(http.StatusOK, "user.html",
-		gin.H{"User": user,
-			"RepoNames":   repoNames,
-			"CurrentUser": currentUser,
-			"Authorized":  authorized})
-}
 
 type IssueName struct {
 	ID          int
@@ -1249,7 +1207,90 @@ func PostUserSigninPageHandler(c *gin.Context, db *sql.DB) {
 
 }
 
+func authorization(c *gin.Context, db *sql.DB) (string, error) {
+
+	value := c.GetHeader("Authorization")
+	secret := strings.TrimPrefix(value, "Bearer ")
+
+	var userId string
+	row := db.QueryRow(`SELECT user_id FROM logins WHERE secret=$1`, secret)
+	err := row.Scan(&userId)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			fmt.Println(err)
+			c.AbortWithStatus(http.StatusUnauthorized)
+			return "", err
+		} else {
+			c.AbortWithStatus(http.StatusInternalServerError)
+			return "", err
+		}
+	}
+
+	return userId, nil
+
+}
+
+type UserDetails struct {
+	User      User     `json:"user,omitempty"`
+	RepoNames []string `json:"reponames"`
+}
+
+func getUserPageHandler(c *gin.Context, db *sql.DB) {
+
+	userId, err := authorization(c, db)
+	if err != nil {
+		return
+	}
+
+	var username string
+	row := db.QueryRow(`select username from users where id=$1`, userId)
+	err = row.Scan(&username)
+	if err != nil {
+		fmt.Println(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	user, err := GetUserByUserName(db, username)
+	if err != nil {
+		fmt.Println(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	rows, err := db.Query(
+		`SELECT repos.name FROM repos JOIN users ON repos.user_id = users.id WHERE users.username = $1;`,
+		username)
+	if err != nil {
+		fmt.Println(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	repoNames := []string{}
+
+	var repoName string
+
+	for rows.Next() {
+		err = rows.Scan(&repoName)
+		if err != nil {
+			fmt.Println(err)
+			c.AbortWithStatus(http.StatusInternalServerError)
+			return
+		}
+
+		repoNames = append(repoNames, repoName)
+	}
+
+	userDetails := UserDetails{
+		User:      user,
+		RepoNames: repoNames,
+	}
+
+	c.JSON(201, userDetails)
+}
+
 func main() {
+	rand.Seed(time.Now().UTC().UnixNano())
 	err := godotenv.Load()
 	if err != nil {
 		fmt.Println(".env file not found")
@@ -1286,6 +1327,7 @@ func main() {
 
 	router.POST("/signup", func(c *gin.Context) { postUserSignupHandler(c, db) })
 	router.POST("/signin", func(c *gin.Context) { PostUserSigninPageHandler(c, db) })
+	router.GET("/user", func(c *gin.Context) { getUserPageHandler(c, db) })
 
 	// userGroup := router.Group("/:user_name")
 
