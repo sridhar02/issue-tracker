@@ -87,3 +87,18 @@ get('http://localhost:8000/user',
 	 headers={
 	    "Authorization": "Bearer XVlBzgbaiCMRAjWwhTHctcuAxhxKQFDa"
 	})
+
+get('http://localhost:8000/user/repos',
+	headers={
+	    "Authorization": "Bearer XVlBzgbaiCMRAjWwhTHctcuAxhxKQFDa"
+	})
+
+get('http://localhost:8000/user/repos',
+	headers={
+	    "Authorization": "Bearer XVlBzgbaiCMRAjWwhTHctcuAxhxKQFDa"
+	})
+
+get('http://localhost:8000/repos/DONE/test123/issues',
+	headers={
+	    "Authorization": "Bearer XVlBzgbaiCMRAjWwhTHctcuAxhxKQFDa"
+	})
