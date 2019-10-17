@@ -48,7 +48,7 @@ class _Login extends Component {
       })
       .then(response => {
         localStorage.setItem("secret", response.data.secret);
-        Router.push("/user");
+        Router.push(`/user/${this.state.username}`);
       });
   };
   render() {
