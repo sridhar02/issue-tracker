@@ -146,22 +146,6 @@ func DeleteUser(db *sql.DB, id string) error {
 	return nil
 }
 
-func getUserHandler(c *gin.Context, db *sql.DB) {
-
-	id := c.Param("id")
-
-	user, err := GetUser(db, id)
-
-	if err != nil {
-		c.AbortWithStatus(http.StatusInternalServerError)
-		return
-	}
-	c.JSON(http.StatusOK, user)
-
-	// c.Status(http.StatusNoContent)
-
-}
-
 func postUserHandler(c *gin.Context, db *sql.DB) {
 
 	user := User{}
