@@ -23,13 +23,16 @@ type Issue struct {
 	UpdatedAt   time.Time `json:"updated_at,omitempty"`
 }
 
-func GetIssue(db *sql.DB, id int) (Issue, error) {
+func GetIssue(db *sql.DB, userId string) (Issue, error) {
 
-	var title, userId, body, repoId, status, createdAt, updatedAt, pinned string
-	var issueNumber int
+	fmt.Println("error")
 
-	row := db.QueryRow("SELECT title, user_id,body,repo_id,issue_number,status,pinned,created_at, updated_at FROM issues WHERE id=$1", id)
-	err := row.Scan(&title, &userId, &body, &repoId, &issueNumber, &status, &createdAt, &updatedAt, &pinned)
+	var title, body, repoId, status, createdAt, updatedAt, pinned string
+	var id, issueNumber int
+
+	row := db.QueryRow(`SELECT id,title,body,repo_id,issue_number,status,pinned,created_at, 
+						updated_at FROM issues WHERE user_id=$1`, userId)
+	err := row.Scan(&id, &title, &body, &repoId, &issueNumber, &status, &createdAt, &updatedAt, &pinned)
 	if err != nil {
 		return Issue{}, err
 	}
@@ -49,7 +52,6 @@ func GetIssue(db *sql.DB, id int) (Issue, error) {
 	issue := Issue{
 		ID:          id,
 		Title:       title,
-		UserId:      userId,
 		Body:        body,
 		RepoId:      repoId,
 		IssueNumber: issueNumber,
@@ -58,6 +60,7 @@ func GetIssue(db *sql.DB, id int) (Issue, error) {
 		UpdatedAt:   UpdatedAt,
 		Pinned:      pinned,
 	}
+	fmt.Println(issue)
 
 	return issue, nil
 }
@@ -121,28 +124,6 @@ func DeleteIssue(db *sql.DB, id int) error {
 	}
 
 	return nil
-}
-
-func getIssueHandler(c *gin.Context, db *sql.DB) {
-
-	id := c.Param("id")
-
-	Id, err := strconv.Atoi(id)
-	if err != nil {
-		c.AbortWithStatus(http.StatusInternalServerError)
-		return
-	}
-
-	issue, err := GetIssue(db, Id)
-
-	if err != nil {
-		c.AbortWithStatus(http.StatusInternalServerError)
-		return
-	}
-	c.JSON(http.StatusOK, issue)
-
-	// c.Status(http.StatusNoContent)
-
 }
 
 func postIssueHandler(c *gin.Context, db *sql.DB) {

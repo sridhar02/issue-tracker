@@ -102,3 +102,8 @@ get('http://localhost:8000/repos/DONE/test123/issues',
 	headers={
 	    "Authorization": "Bearer XVlBzgbaiCMRAjWwhTHctcuAxhxKQFDa"
 	})
+
+get('http://localhost:8000/repos/DONE/test123/issues/2',
+	headers={
+	    "Authorization": "Bearer XVlBzgbaiCMRAjWwhTHctcuAxhxKQFDa"
+	})
