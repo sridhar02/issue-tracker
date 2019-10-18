@@ -202,13 +202,13 @@ func getReposHandler(c *gin.Context, db *sql.DB) {
 }
 func getIssuesHandler(c *gin.Context, db *sql.DB) {
 
-	userId, err := authorization(c, db)
-	if err != nil {
-		return
-	}
+	username := c.Param("owner")
+	repoName := c.Param("repo")
 
-	rows, err := db.Query(`SELECT id,title,body,repo_id,issue_number,created_at,updated_at,pinned,
-		status,lock FROM issues where user_id=$1`, userId)
+	rows, err := db.Query(`WITH repoCTE AS(SELECT repos.id FROM repos JOIN users ON repos.user_id= users.id 
+						   WHERE repos.name=$1 AND users.username=$2) select id,title,user_id ,body, 
+						   created_at, updated_at,issue_number,pinned, status, lock from issues where repo_id 
+						   in (select id from repoCTE)`, repoName, username)
 	if err != nil {
 		fmt.Println(err)
 		c.AbortWithStatus(http.StatusInternalServerError)
@@ -216,9 +216,9 @@ func getIssuesHandler(c *gin.Context, db *sql.DB) {
 	}
 	issues := []Issue{}
 	for rows.Next() {
-		var title, body, repoId, createdAt, updatedAt, pinned, status, lock string
+		var title, userId, body, createdAt, updatedAt, pinned, status, lock string
 		var id, issueNumber int
-		err = rows.Scan(&id, &title, &body, &repoId, &issueNumber, &createdAt, &updatedAt, &pinned, &status, &lock)
+		err = rows.Scan(&id, &title, &userId, &body, &createdAt, &updatedAt, &issueNumber, &pinned, &status, &lock)
 		if err != nil {
 			fmt.Println(err)
 			c.AbortWithStatus(http.StatusInternalServerError)
@@ -240,8 +240,8 @@ func getIssuesHandler(c *gin.Context, db *sql.DB) {
 		issue := Issue{
 			ID:          id,
 			Title:       title,
+			UserId:      userId,
 			Body:        body,
-			RepoId:      repoId,
 			IssueNumber: issueNumber,
 			Status:      status,
 			Pinned:      pinned,
@@ -252,6 +252,23 @@ func getIssuesHandler(c *gin.Context, db *sql.DB) {
 		issues = append(issues, issue)
 	}
 	c.JSON(200, issues)
+}
+func getIssueHandler(c *gin.Context, db *sql.DB) {
+
+	userId, err := authorization(c, db)
+	if err != nil {
+		return
+	}
+	fmt.Println(userId)
+
+	issue, err := GetIssue(db, userId)
+	if err != nil {
+		fmt.Println(issue)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		fmt.Println(issue)
+		return
+	}
+	c.JSON(http.StatusOK, issue)
 }
 
 func main() {
@@ -294,7 +311,8 @@ func main() {
 	router.POST("/signin", func(c *gin.Context) { PostUserSigninPageHandler(c, db) })
 	router.GET("/user", func(c *gin.Context) { getUserHandler(c, db) })
 	router.GET("/user/repos", func(c *gin.Context) { getReposHandler(c, db) })
-	router.GET("/repos/:owner/:repos/issues", func(c *gin.Context) { getIssuesHandler(c, db) })
+	router.GET("/repos/:owner/:repo/issues", func(c *gin.Context) { getIssuesHandler(c, db) })
+	router.GET("/repos/:owner/:repo/issues/:issue_number", func(c *gin.Context) { getIssueHandler(c, db) })
 
 	stylesRouter := gin.Default()
 	stylesRouter.Static("/styles", "./styles")

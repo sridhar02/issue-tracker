@@ -90,7 +90,9 @@ class _User extends Component {
             <div>
               {repos.map(repo => (
                 <div key={repo.id} className={classes.repo}>
-                  <Link href="/repo/:${user.username}/:${repo.name}/issues">
+                  <Link
+                    href={`/user/${user.username}/repos/${repo.name}/issues`}
+                  >
                     {repo.name}
                   </Link>
                 </div>
