@@ -25,27 +25,26 @@ type Issue struct {
 
 func GetIssue(db *sql.DB, userId string) (Issue, error) {
 
-	fmt.Println("error")
-
-	var title, body, repoId, status, createdAt, updatedAt, pinned string
+	var title, body, repoId, status, createdAt, updatedAt, pinned, lock string
 	var id, issueNumber int
 
-	row := db.QueryRow(`SELECT id,title,body,repo_id,issue_number,status,pinned,created_at, 
+	row := db.QueryRow(`SELECT id,title,body,repo_id,issue_number,status,pinned,lock,created_at, 
 						updated_at FROM issues WHERE user_id=$1`, userId)
-	err := row.Scan(&id, &title, &body, &repoId, &issueNumber, &status, &createdAt, &updatedAt, &pinned)
+	err := row.Scan(&id, &title, &body, &repoId, &issueNumber, &status, &pinned, &lock, &createdAt, &updatedAt)
 	if err != nil {
 		return Issue{}, err
 	}
 
 	CreatedAt, err := time.Parse(time.RFC3339, createdAt)
-
 	if err != nil {
+		fmt.Println(createdAt)
+		fmt.Println(err)
 		return Issue{}, err
 	}
 
 	UpdatedAt, err := time.Parse(time.RFC3339, updatedAt)
-
 	if err != nil {
+		fmt.Println(err)
 		return Issue{}, err
 	}
 
@@ -59,8 +58,8 @@ func GetIssue(db *sql.DB, userId string) (Issue, error) {
 		CreatedAt:   CreatedAt,
 		UpdatedAt:   UpdatedAt,
 		Pinned:      pinned,
+		Lock:        lock,
 	}
-	fmt.Println(issue)
 
 	return issue, nil
 }

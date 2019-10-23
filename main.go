@@ -255,17 +255,21 @@ func getIssuesHandler(c *gin.Context, db *sql.DB) {
 }
 func getIssueHandler(c *gin.Context, db *sql.DB) {
 
-	userId, err := authorization(c, db)
+	username := c.Param("owner")
+	// repoName := c.Param("repo")
+
+	var userId string
+	row := db.QueryRow(`SELECT id FROM users  WHERE username=$1`, username)
+	err := row.Scan(&userId)
 	if err != nil {
+		fmt.Println(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
-	fmt.Println(userId)
 
 	issue, err := GetIssue(db, userId)
 	if err != nil {
-		fmt.Println(issue)
 		c.AbortWithStatus(http.StatusInternalServerError)
-		fmt.Println(issue)
 		return
 	}
 	c.JSON(http.StatusOK, issue)
@@ -311,6 +315,7 @@ func main() {
 	router.POST("/signin", func(c *gin.Context) { PostUserSigninPageHandler(c, db) })
 	router.GET("/user", func(c *gin.Context) { getUserHandler(c, db) })
 	router.GET("/user/repos", func(c *gin.Context) { getReposHandler(c, db) })
+	router.POST("/user/repos", func(c *gin.Context) { postRepoHandler(c, db) })
 	router.GET("/repos/:owner/:repo/issues", func(c *gin.Context) { getIssuesHandler(c, db) })
 	router.GET("/repos/:owner/:repo/issues/:issue_number", func(c *gin.Context) { getIssueHandler(c, db) })
 
