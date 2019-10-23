@@ -74,7 +74,10 @@ class _Issues extends Component {
             </div>
             {issues.map(issue => (
               <div key={issue.id} className={classes.issue}>
-                <Link href="/kadssadasd">{issue.title}</Link>
+                <Link href="/kadssadasd">
+                  <a>{issue.title}</a>
+                </Link>
+                <div>#{issue.issue_number} opened 3 days ago by sridhar02</div>
               </div>
             ))}
           </div>
