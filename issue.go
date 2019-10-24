@@ -34,7 +34,6 @@ func GetIssue(db *sql.DB, userId string) (Issue, error) {
 	if err != nil {
 		return Issue{}, err
 	}
-
 	CreatedAt, err := time.Parse(time.RFC3339, createdAt)
 	if err != nil {
 		fmt.Println(createdAt)

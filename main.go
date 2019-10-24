@@ -256,8 +256,6 @@ func getIssuesHandler(c *gin.Context, db *sql.DB) {
 func getIssueHandler(c *gin.Context, db *sql.DB) {
 
 	username := c.Param("owner")
-	// repoName := c.Param("repo")
-
 	var userId string
 	row := db.QueryRow(`SELECT id FROM users  WHERE username=$1`, username)
 	err := row.Scan(&userId)
@@ -273,6 +271,59 @@ func getIssueHandler(c *gin.Context, db *sql.DB) {
 		return
 	}
 	c.JSON(http.StatusOK, issue)
+}
+
+func getCommentsHandler(c *gin.Context, db *sql.DB) {
+
+	username := c.Param("owner")
+	repoName := c.Param("repo")
+	issueNumber := c.Param("issue_number")
+
+	rows, err := db.Query(`WITH repo_cte AS (select repos.id FROM repos JOIN users ON repos.user_id= users.id 
+         				   WHERE repos.name= $1 AND users.username= $2),issue_cte AS (select id from issues where repo_id in 
+         				   (select id from repo_cte) AND issue_number=$3) select id ,user_id,body,created_at,updated_at from 
+         				   comments where issue_id in (select id from issue_cte)`, repoName, username, issueNumber)
+	if err != nil {
+		fmt.Println(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	comments := []Comment{}
+	for rows.Next() {
+		var userId, body, createdAt, updatedAt string
+		var id int
+		err = rows.Scan(&id, &userId, &body, &createdAt, &updatedAt)
+		fmt.Println(body)
+		fmt.Println(id)
+		if err != nil {
+			fmt.Println(err)
+			c.AbortWithStatus(http.StatusInternalServerError)
+			return
+		}
+		CreatedAt, err := time.Parse(time.RFC3339, createdAt)
+		if err != nil {
+			fmt.Println(err)
+			c.AbortWithStatus(http.StatusInternalServerError)
+			return
+		}
+
+		UpdatedAt, err := time.Parse(time.RFC3339, updatedAt)
+		if err != nil {
+			fmt.Println(err)
+			c.AbortWithStatus(http.StatusInternalServerError)
+			return
+		}
+		comment := Comment{
+			ID:        id,
+			UserId:    userId,
+			Body:      body,
+			CreatedAt: CreatedAt,
+			UpdatedAt: UpdatedAt,
+		}
+		comments = append(comments, comment)
+	}
+	c.JSON(200, comments)
 }
 
 func main() {
@@ -317,7 +368,9 @@ func main() {
 	router.GET("/user/repos", func(c *gin.Context) { getReposHandler(c, db) })
 	router.POST("/user/repos", func(c *gin.Context) { postRepoHandler(c, db) })
 	router.GET("/repos/:owner/:repo/issues", func(c *gin.Context) { getIssuesHandler(c, db) })
+	router.POST("/repos/:owner/:repo/issues", func(c *gin.Context) { postIssueHandler(c, db) })
 	router.GET("/repos/:owner/:repo/issues/:issue_number", func(c *gin.Context) { getIssueHandler(c, db) })
+	router.GET("/repos/:owner/:repo/issues/:issue_number/comments", func(c *gin.Context) { getCommentsHandler(c, db) })
 
 	stylesRouter := gin.Default()
 	stylesRouter.Static("/styles", "./styles")
