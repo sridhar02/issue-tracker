@@ -31,13 +31,15 @@ const issueStyles = theme => ({
 
 class _Issues extends Component {
   static getInitialProps({ query }) {
-    return { query };
+    return { query, username: query.username, repo: query.repo };
   }
 
   constructor(props) {
     super(props);
     this.state = {
-      issues: []
+      issues: [],
+      user: undefined,
+      repos: []
     };
   }
 
@@ -61,8 +63,12 @@ class _Issues extends Component {
   }
 
   render() {
-    const { classes } = this.props;
-    const { issues } = this.state;
+    const { classes, username, repo } = this.props;
+    const { issues, user, repos } = this.state;
+    if (issues === undefined) {
+      return null;
+    }
+
     return (
       <div className={cx(classes.mainSection, "container")}>
         <div className="row">
@@ -74,7 +80,9 @@ class _Issues extends Component {
             </div>
             {issues.map(issue => (
               <div key={issue.id} className={classes.issue}>
-                <Link href="/kadssadasd">
+                <Link
+                  href={`/user/${username}/repos/${repo}/issues/${issue.issue_number}`}
+                >
                   <a>{issue.title}</a>
                 </Link>
                 <div>#{issue.issue_number} opened 3 days ago by sridhar02</div>

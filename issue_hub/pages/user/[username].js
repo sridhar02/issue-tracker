@@ -93,7 +93,7 @@ class _User extends Component {
                   <Link
                     href={`/user/${user.username}/repos/${repo.name}/issues`}
                   >
-                    {repo.name}
+                    <a>{repo.name}</a>
                   </Link>
                 </div>
               ))}
