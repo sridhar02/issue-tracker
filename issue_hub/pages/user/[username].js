@@ -28,6 +28,9 @@ const userStyles = theme => ({
     border: "1px solid #ddd",
     padding: theme.spacing(1),
     margin: theme.spacing(1)
+  },
+  navbar: {
+    marginBottom: theme.spacing(1)
   }
 });
 
@@ -79,28 +82,38 @@ class _User extends Component {
       return null;
     }
     return (
-      <div className={cx(classes.container, "container")}>
-        <div className="row">
-          <div className="col-12">
-            <div>
-              <img src={user.image} className={classes.image} />
-              <Typography variant="body2">{user.name}</Typography>
-              <Typography variant="body2">{user.username}</Typography>
-            </div>
-            <div>
-              {repos.map(repo => (
-                <div key={repo.id} className={classes.repo}>
-                  <Link
-                    href={`/user/${user.username}/repos/${repo.name}/issues`}
-                  >
-                    <a>{repo.name}</a>
-                  </Link>
-                </div>
-              ))}
+      <Fragment>
+        <Navbar className={classes.navbar} />
+        <div className={cx(classes.container, "container")}>
+          <div className="row">
+            <div className="col-12">
+              <div>
+                <img src={user.image} className={classes.image} />
+                <Typography variant="body2">{user.name}</Typography>
+                <Typography variant="body2">{user.username}</Typography>
+              </div>
+              <div>
+                <Link href="/new">
+                  <Button color="primary" variant="contained">
+                    <a>New</a>
+                  </Button>
+                </Link>
+              </div>
+              <div>
+                {repos.map(repo => (
+                  <div key={repo.id} className={classes.repo}>
+                    <Link
+                      href={`/user/${user.username}/repos/${repo.name}/issues`}
+                    >
+                      <a>{repo.name}</a>
+                    </Link>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      </Fragment>
     );
   }
 }

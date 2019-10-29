@@ -6,8 +6,6 @@ import { Button, TextField, Typography } from "@material-ui/core";
 
 import { withStyles } from "@material-ui/styles";
 
-import { Redirect } from "react-router-dom";
-
 import Router from "next/router";
 import { makeStyles } from "@material-ui/core/styles";
 import AppBar from "@material-ui/core/AppBar";
