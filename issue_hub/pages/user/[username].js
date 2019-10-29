@@ -14,7 +14,7 @@ import TextField from "@material-ui/core/TextField";
 
 import cx from "classnames";
 
-// import Navbar from "../utils/utils.js";
+import { Navbar } from "../../utils/utils.js";
 
 const userStyles = theme => ({
   image: {
