@@ -72,22 +72,15 @@ class _NewRepo extends Component {
   };
   handleSubmit = event => {
     event.preventDefault();
+    const { user } = this.state;
     axios
-      .post(
-        "/user/repos",
-        {
-          name: this.state.name,
-          type: this.state.type,
-          description: this.state.description,
-          user_id: this.state.user.user_id
-        },
-        authHeaders()
-      )
-      .then(reponse => {
-        if (reponse == 201) {
-          router.push(`/user/${this.state.user.username}`);
-        }
+      .post("/user/repos", {
+        name: this.state.name,
+        type: this.state.type,
+        description: this.state.description,
+        user_id: user.id
       })
+      .then(response => Router.push(`/user/${user.username}`))
       .catch(error => {
         console.log(error);
       });
@@ -150,7 +143,7 @@ class _NewRepo extends Component {
                     onChange={this.handleChange}
                   >
                     <FormControlLabel
-                      value="Public"
+                      value="public"
                       control={<Radio />}
                       label="Public"
                     />
