@@ -200,6 +200,7 @@ func getReposHandler(c *gin.Context, db *sql.DB) {
 	}
 	c.JSON(200, Repos)
 }
+
 func getIssuesHandler(c *gin.Context, db *sql.DB) {
 
 	username := c.Param("owner")
@@ -351,6 +352,7 @@ func main() {
 		fmt.Println(err)
 		return
 	}
+
 	router := gin.Default()
 	router.LoadHTMLGlob("./templates/*")
 	router.Use(cors.New(cors.Config{
