@@ -30,7 +30,7 @@ class _Navbar extends Component {
         <div className="container">
           <div className="row">
             <div className="col-12">
-              <Link href="/user/[username]">
+              <Link href="#">
                 <Button color="inherit">USER</Button>
               </Link>
               <Link href="/account">
