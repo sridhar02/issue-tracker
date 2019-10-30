@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"net/http"
@@ -65,12 +66,13 @@ func CreateRepo(db *sql.DB, repo Repo) error {
 		ID,
 		repo.Name,
 		repo.UserId,
-		repo.IssuesCount,
+		0,
 		time.Now().Format(time.RFC3339),
 		time.Now().Format(time.RFC3339),
 		repo.Description,
 		repo.Type)
 	if err != nil {
+		fmt.Println(err)
 		return err
 	}
 	return nil
@@ -130,7 +132,6 @@ func postRepoHandler(c *gin.Context, db *sql.DB) {
 	}
 
 	c.Status(http.StatusCreated)
-
 }
 
 func putRepoHandler(c *gin.Context, db *sql.DB) {

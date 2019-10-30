@@ -96,11 +96,11 @@ post('http://localhost:8000/repos/DONE/test123/issues',
 		'body': 'a new issue is created in a the same  repo',
 		'repo_id': 'd360c6f3-60dc-4846-bb6a-0919a1817d5e'
 	})
-post('http://localhost:8000/api/repos',
+post('http://localhost:8000/user/repos',
 	json={
-		'id': 'ac6f8b68-8f31-48ea-c536-05b9813b4840',
-		'name': 'Katta Sridhar',
-		'user_id': 'ac6f8b68-8f31-48ea-a436-05b9813b4840',
+		'name': 'ecommercerey',
+		'user_id': '43c36a04-707d-4ef8-abd2-875784aee0e0',
+		'type':'private',
 	})
 
 get('http://localhost:8000/repos/DONE/test123/issues/1/comments')
