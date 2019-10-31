@@ -89,9 +89,7 @@ class _Issue extends Component {
     axios
       .post("/user/repos", {
         title: this.state.title,
-        body: this.state.body,
-        user_id: user.id
-        // repo_id:
+        body: this.state.body
       })
       .then(response => Router.push(`/user/${user.username}`))
       .catch(error => {

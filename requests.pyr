@@ -89,18 +89,21 @@ post('http://localhost:8000/repos/DONE/test123/issues',
 		'repo_id': 'd360c6f3-60dc-4846-bb6a-0919a1817d5e'
 	})
 post('http://localhost:8000/user/repos',
+	headers={
+	    "Authorization": "Bearer CIySftTxPpQRsGShMSQVEDYghCLxvvNJ"
+	},
 	json={
-		'name': 'ecommercerey',
-		'user_id': '43c36a04-707d-4ef8-abd2-875784aee0e0',
-		'type':'private',
+		'name': 'ecommercerekopy',
+		'type':'public',
 	})
 
 get('http://localhost:8000/repos/DONE/test123/issues/1/comments')
 
 post('http://localhost:8000/repos/DONE/test123/issues',
+	headers={
+	    "Authorization": "Bearer CIySftTxPpQRsGShMSQVEDYghCLxvvNJ"
+	},
 	json={
 		'title': '2nd issue is updated',
-		'user_id':'43c36a04-707d-4ef8-abd2-875784aee0e0',
 		'body': 'a new issue is updated in a new repo',
-		'repo_id': '93327cea-5c16-476b-a267-f72395a4c1c6'
 	})
