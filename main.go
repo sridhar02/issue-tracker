@@ -257,16 +257,21 @@ func getIssuesHandler(c *gin.Context, db *sql.DB) {
 func getIssueHandler(c *gin.Context, db *sql.DB) {
 
 	username := c.Param("owner")
-	var userId string
-	row := db.QueryRow(`SELECT id FROM users  WHERE username=$1`, username)
-	err := row.Scan(&userId)
+	repoName := c.Param("repo")
+	issueNumber := c.Param("issue_number")
+
+	var Id int
+	row := db.QueryRow(`WITH repo_cte AS (select repos.id FROM repos JOIN users ON repos.user_id= users.id 
+                		WHERE repos.name= $1 AND users.username= $2) select id from issues where repo_id 
+                		in (select id from repo_cte) and issue_number=$3`, repoName, username, issueNumber)
+	err := row.Scan(&Id)
 	if err != nil {
 		fmt.Println(err)
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
 
-	issue, err := GetIssue(db, userId)
+	issue, err := GetIssue(db, Id)
 	if err != nil {
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
