@@ -118,12 +118,19 @@ func getRepoHandler(c *gin.Context, db *sql.DB) {
 
 func postRepoHandler(c *gin.Context, db *sql.DB) {
 
+	userId, err := authorization(c, db)
+	if err != nil {
+		return
+	}
+
 	repo := Repo{}
-	err := c.BindJSON(&repo)
+	err = c.BindJSON(&repo)
 	if err != nil {
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
+
+	repo.UserId = userId
 
 	err = CreateRepo(db, repo)
 	if err != nil {

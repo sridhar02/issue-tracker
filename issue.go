@@ -126,13 +126,31 @@ func DeleteIssue(db *sql.DB, id int) error {
 
 func postIssueHandler(c *gin.Context, db *sql.DB) {
 
+	userId, err := authorization(c, db)
+	if err != nil {
+		return
+	}
+	username := c.Param("owner")
+	repoName := c.Param("repo")
+	var repoId string
+	row := db.QueryRow(`SELECT repos.id FROM repos JOIN users ON repos.user_id= users.id 
+						   WHERE repos.name=$1 AND users.username=$2)`, repoName, username)
+	err = row.Scan(&repoId)
+	if err != nil {
+		// fmt.Println(err)
+		return
+	}
+
 	issue := Issue{}
-	err := c.BindJSON(&issue)
+	err = c.BindJSON(&issue)
 	if err != nil {
 		fmt.Println(err)
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
+
+	issue.UserId = userId
+	issue.RepoId = repoId
 
 	_, _, err = CreateIssue(db, issue)
 	if err != nil {

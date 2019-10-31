@@ -77,8 +77,7 @@ class _NewRepo extends Component {
       .post("/user/repos", {
         name: this.state.name,
         type: this.state.type,
-        description: this.state.description,
-        user_id: user.id
+        description: this.state.description
       })
       .then(response => Router.push(`/user/${user.username}`))
       .catch(error => {
