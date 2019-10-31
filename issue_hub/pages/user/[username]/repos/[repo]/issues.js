@@ -74,9 +74,11 @@ class _Issues extends Component {
         <div className="row">
           <div className="col-12">
             <div className={classes.button}>
-              <Button color="primary" variant="contained">
-                NEW
-              </Button>
+              <Link href={`/user/${username}/repos/${repo}/issues/new`}>
+                <Button color="primary" variant="contained">
+                  <a>New issue</a>
+                </Button>
+              </Link>
             </div>
             {issues.map(issue => (
               <div key={issue.id} className={classes.issue}>

@@ -115,7 +115,7 @@ class _NewRepo extends Component {
                   variant="outlined"
                   label="name"
                   name="name"
-                  value={this.state.email}
+                  value={this.state.name}
                   onChange={this.handleChange}
                   placeholder=" Enter repo name"
                 />
@@ -128,7 +128,7 @@ class _NewRepo extends Component {
                   variant="outlined"
                   label="description"
                   name="description"
-                  value={this.state.email}
+                  value={this.state.description}
                   onChange={this.handleChange}
                 />
                 <FormControl
