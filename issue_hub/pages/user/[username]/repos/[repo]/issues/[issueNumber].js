@@ -54,7 +54,6 @@ class _Issue extends Component {
 
   componentDidMount() {
     const { username, repo, issueNumber } = Router.router.query;
-    console.log(Router.router);
     axios
       .get(`/repos/${username}/${repo}/issues/${issueNumber}`, {
         headers: {

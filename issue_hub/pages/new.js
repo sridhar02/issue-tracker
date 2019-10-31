@@ -74,11 +74,19 @@ class _NewRepo extends Component {
     event.preventDefault();
     const { user } = this.state;
     axios
-      .post("/user/repos", {
-        name: this.state.name,
-        type: this.state.type,
-        description: this.state.description
-      })
+      .post(
+        "/user/repos",
+        {
+          name: this.state.name,
+          type: this.state.type,
+          description: this.state.description
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("secret")}`
+          }
+        }
+      )
       .then(response => Router.push(`/user/${user.username}`))
       .catch(error => {
         console.log(error);
