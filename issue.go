@@ -23,13 +23,13 @@ type Issue struct {
 	UpdatedAt   time.Time `json:"updated_at,omitempty"`
 }
 
-func GetIssue(db *sql.DB, userId string) (Issue, error) {
+func GetIssue(db *sql.DB, Id int) (Issue, error) {
 
 	var title, body, repoId, status, createdAt, updatedAt, pinned, lock string
 	var id, issueNumber int
 
 	row := db.QueryRow(`SELECT id,title,body,repo_id,issue_number,status,pinned,lock,created_at, 
-						updated_at FROM issues WHERE user_id=$1`, userId)
+						updated_at FROM issues WHERE id=$1`, Id)
 	err := row.Scan(&id, &title, &body, &repoId, &issueNumber, &status, &pinned, &lock, &createdAt, &updatedAt)
 	if err != nil {
 		return Issue{}, err
@@ -134,10 +134,10 @@ func postIssueHandler(c *gin.Context, db *sql.DB) {
 	repoName := c.Param("repo")
 	var repoId string
 	row := db.QueryRow(`SELECT repos.id FROM repos JOIN users ON repos.user_id= users.id 
-						   WHERE repos.name=$1 AND users.username=$2)`, repoName, username)
+						   WHERE repos.name=$1 AND users.username=$2`, repoName, username)
 	err = row.Scan(&repoId)
 	if err != nil {
-		// fmt.Println(err)
+		fmt.Println(err)
 		return
 	}
 
