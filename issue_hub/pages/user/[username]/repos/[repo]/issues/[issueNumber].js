@@ -31,12 +31,22 @@ const issueStyles = theme => ({
   },
   issueBody: {
     border: "1px solid #ddd",
-    padding: theme.spacing(1),
-    margin: theme.spacing(1)
+    marginBottom: theme.spacing(1),
+    marginTop: theme.spacing(1)
   },
   username: {
     borderBottom: "1px solid #ddd",
+    padding: theme.spacing(1),
     backgroundColor: "#c0d3eb"
+  },
+  commentSection: {
+    display: "block",
+    width: "100%",
+    minHeight: "100px",
+    maxHeight: "500px",
+    marginBottom: theme.spacing(1),
+    padding: theme.spacing(1),
+    resize: "vertical"
   }
 });
 
@@ -48,7 +58,8 @@ class _Issue extends Component {
     super(props);
     this.state = {
       issue: undefined,
-      user: undefined
+      user: undefined,
+      comments: []
     };
   }
 
@@ -82,10 +93,20 @@ class _Issue extends Component {
       .catch(error => {
         console.log(error);
       });
+    axios
+      .get(`/repos/${username}/${repo}/issues/${issueNumber}/comments`)
+      .then(response =>
+        this.setState({
+          comments: response.data
+        })
+      )
+      .catch(error => {
+        console.log(error);
+      });
   }
 
   render() {
-    const { issue, user } = this.state;
+    const { issue, user, comments } = this.state;
     const { classes } = this.props;
     if (issue == undefined) {
       return null;
@@ -97,32 +118,46 @@ class _Issue extends Component {
       <div className="container">
         <div className="row">
           <div className="col-12">
-            <Typography variant="h6" className={classes.title}>
-              {issue.title} #{issue.issue_number}
-            </Typography>
             <div>
               <Button variant="contained">Edit</Button>
-            </div>
-            <div>
               <Button variant="contained" color="primary">
                 New issue
               </Button>
             </div>
+            <Typography variant="h6" className={classes.title}>
+              {issue.title} #{issue.issue_number}
+            </Typography>
             <div>
-              <Button className={classes.status}>{issue.status}</Button>
+              <Button variant="contained" className={classes.status}>
+                {issue.status}
+              </Button>
               <Typography variant="body2">
                 opened this issue 9 days ago
               </Typography>
             </div>
             <div>
-              <img src={user.image} className={classes.image} />
+              <img src={user.image} className={cx(classes.image, "d-none")} />
               <div className={classes.issueBody}>
                 <div className={classes.username}>
-                  {user.username}commented 9 days ago
+                  {user.username} commented 9 days ago
                 </div>
                 <Typography variant="h6" className={classes.body}>
                   {issue.body}
                 </Typography>
+              </div>
+              <div>
+                {comments.map(comment => (
+                  <div key={comment.id} className={classes.repo}>
+                    {repo.name}
+                  </div>
+                ))}
+              </div>
+              <div>
+                <textarea className={classes.commentSection} />
+                <Button type="submit">close issue</Button>
+                <Button variant="contained" color="primary" type="submit">
+                  Comment
+                </Button>
               </div>
             </div>
           </div>

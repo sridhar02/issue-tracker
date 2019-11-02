@@ -118,13 +118,42 @@ func getCommentHandler(c *gin.Context, db *sql.DB) {
 
 func postCommentHandler(c *gin.Context, db *sql.DB) {
 
+	userId, err := authorization(c, db)
+	if err != nil {
+		return
+	}
+
+	username := c.Param("owner")
+	repoName := c.Param("repo")
+	issueNumber := c.Param("issue_number")
+	var repoId string
+	var issueId int
+	row := db.QueryRow(`select repos.id FROM repos JOIN users ON repos.user_id= users.id 
+         				   WHERE repos.name= $1 AND users.username= $2`, repoName, username)
+	err = row.Scan(&repoId)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	row = db.QueryRow(`select id FROM issues WHERE repo_id= $1 AND issue_number= $2`, repoId, issueNumber)
+	err = row.Scan(&issueId)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
 	comment := Comment{}
-	err := c.BindJSON(&comment)
+	err = c.BindJSON(&comment)
 	if err != nil {
 		fmt.Println(err)
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
+
+	comment.UserId = userId
+	comment.RepoId = repoId
+	comment.IssueId = issueId
 
 	err = CreateComment(db, comment)
 	if err != nil {
