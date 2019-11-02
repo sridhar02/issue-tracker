@@ -47,6 +47,12 @@ const issueStyles = theme => ({
     marginBottom: theme.spacing(1),
     padding: theme.spacing(1),
     resize: "vertical"
+  },
+  comment: {
+    border: "1px solid #ddd",
+    marginBottom: theme.spacing(1),
+    marginTop: theme.spacing(1),
+    padding: theme.spacing(1)
   }
 });
 
@@ -59,6 +65,7 @@ class _Issue extends Component {
     this.state = {
       issue: undefined,
       user: undefined,
+      body: "",
       comments: []
     };
   }
@@ -104,6 +111,35 @@ class _Issue extends Component {
         console.log(error);
       });
   }
+  handleChange = event => {
+    this.setState({
+      [event.target.name]: event.target.value
+    });
+  };
+  handleSubmit = event => {
+    const { username, repo, issueNumber } = Router.router.query;
+    event.preventDefault();
+    const { user } = this.state;
+    axios
+      .post(
+        `/repos/${username}/${repo}/issues/${issueNumber}/comments`,
+        {
+          body: this.state.body
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("secret")}`
+          }
+        }
+      )
+      .then(response => {
+        if (response === 201) {
+        }
+      })
+      .catch(error => {
+        console.log(error);
+      });
+  };
 
   render() {
     const { issue, user, comments } = this.state;
@@ -147,18 +183,25 @@ class _Issue extends Component {
               </div>
               <div>
                 {comments.map(comment => (
-                  <div key={comment.id} className={classes.repo}>
-                    {repo.name}
+                  <div key={comment.id} className={classes.comment}>
+                    {comment.body}
                   </div>
                 ))}
               </div>
-              <div>
-                <textarea className={classes.commentSection} />
-                <Button type="submit">close issue</Button>
-                <Button variant="contained" color="primary" type="submit">
-                  Comment
-                </Button>
-              </div>
+              <form onSubmit={this.handleSubmit}>
+                <div>
+                  <textarea
+                    className={classes.commentSection}
+                    name="body"
+                    value={this.state.body}
+                    onChange={this.handleChange}
+                  />
+                  <Button type="submit">close issue</Button>
+                  <Button variant="contained" color="primary" type="submit">
+                    Comment
+                  </Button>
+                </div>
+              </form>
             </div>
           </div>
         </div>
