@@ -378,6 +378,7 @@ func main() {
 	router.POST("/repos/:owner/:repo/issues", func(c *gin.Context) { postIssueHandler(c, db) })
 	router.GET("/repos/:owner/:repo/issues/:issue_number", func(c *gin.Context) { getIssueHandler(c, db) })
 	router.GET("/repos/:owner/:repo/issues/:issue_number/comments", func(c *gin.Context) { getCommentsHandler(c, db) })
+	router.POST("/repos/:owner/:repo/issues/:issue_number/comments", func(c *gin.Context) { postCommentHandler(c, db) })
 
 	stylesRouter := gin.Default()
 	stylesRouter.Static("/styles", "./styles")
