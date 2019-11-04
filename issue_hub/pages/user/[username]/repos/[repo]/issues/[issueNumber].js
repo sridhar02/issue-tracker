@@ -26,8 +26,9 @@ const issueStyles = theme => ({
     backgroundColor: "green"
   },
   image: {
-    height: theme.spacing(6),
-    width: theme.spacing(6)
+    height: theme.spacing(4),
+    width: theme.spacing(4),
+    marginRight: theme.spacing(1)
   },
   issueBody: {
     border: "1px solid #ddd",
@@ -53,6 +54,16 @@ const issueStyles = theme => ({
     marginBottom: theme.spacing(1),
     marginTop: theme.spacing(1),
     padding: theme.spacing(1)
+  },
+  editButton: {
+    marginRight: theme.spacing(1)
+  },
+  container: {
+    margin: theme.spacing(1)
+  },
+  name: {
+    fontWeight: "bold",
+    marginRight: theme.spacing(1)
   }
 });
 
@@ -151,11 +162,13 @@ class _Issue extends Component {
       return null;
     }
     return (
-      <div className="container">
+      <div className={cx(classes.container, "container")}>
         <div className="row">
           <div className="col-12">
             <div>
-              <Button variant="contained">Edit</Button>
+              <Button variant="contained" className={classes.editButton}>
+                Edit
+              </Button>
               <Button variant="contained" color="primary">
                 New issue
               </Button>
@@ -172,12 +185,13 @@ class _Issue extends Component {
               </Typography>
             </div>
             <div>
-              <img src={user.image} className={cx(classes.image, "d-none")} />
               <div className={classes.issueBody}>
                 <div className={classes.username}>
-                  {user.username} commented 9 days ago
+                  <img src={user.image} className={cx(classes.image)} />
+                  <span className={classes.name}>{user.username}</span>
+                  commented 9 days ago
                 </div>
-                <Typography variant="h6" className={classes.body}>
+                <Typography variant="body2" className={classes.body}>
                   {issue.body}
                 </Typography>
               </div>
@@ -191,7 +205,7 @@ class _Issue extends Component {
               <form onSubmit={this.handleSubmit}>
                 <div>
                   <textarea
-                    className={classes.commentSection}
+                    className={cx(classes.commentSection, "form-control")}
                     name="body"
                     value={this.state.body}
                     onChange={this.handleChange}
