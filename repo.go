@@ -18,6 +18,7 @@ type Repo struct {
 	UpdatedAt   time.Time `json:"updated_at,omitempty"`
 	Description string    `json:"description,omitempty"`
 	Type        string    `json:"type,omitempty"`
+	User        User      `json:"user,omitempty"`
 }
 
 func GetRepo(db *sql.DB, id string) (Repo, error) {
