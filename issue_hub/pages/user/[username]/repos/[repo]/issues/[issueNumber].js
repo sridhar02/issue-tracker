@@ -14,6 +14,57 @@ import TextField from "@material-ui/core/TextField";
 
 import cx from "classnames";
 
+const commentStyles = theme => ({
+  image: {
+    height: theme.spacing(3),
+    width: theme.spacing(3),
+    marginRight: theme.spacing(1)
+  },
+  comment: {
+    border: "1px solid #ddd",
+    marginBottom: theme.spacing(1),
+    marginTop: theme.spacing(1)
+  },
+  commentUser: {
+    display: "flex",
+    backgroundColor: "#f6f8fa",
+    padding: theme.spacing(1),
+    borderBottom: "1px solid #ddd"
+  },
+  body: {
+    margin: theme.spacing(1),
+    padding: theme.spacing(1)
+  },
+  username: {
+    fontWeight: "bold",
+    marginRight: theme.spacing(1)
+  }
+});
+
+class _Comment extends Component {
+  render() {
+    const { comments, classes } = this.props;
+    return (
+      <div>
+        {comments.map(comment => (
+          <div key={comment.id} className={classes.comment}>
+            <div className={classes.commentUser}>
+              <img src={comment.user.image} className={cx(classes.image)} />
+              <Typography variant="body2" className={classes.username}>
+                {comment.user.username}
+              </Typography>
+              <div>commented 9 days ago</div>
+            </div>
+            <div className={classes.body}> {comment.body}</div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+}
+
+const Comment = withStyles(commentStyles)(_Comment);
+
 const issueStyles = theme => ({
   body: {
     padding: theme.spacing(1),
@@ -23,11 +74,15 @@ const issueStyles = theme => ({
     margin: theme.spacing(1)
   },
   status: {
-    backgroundColor: "green"
+    marginRight: theme.spacing(1),
+    fontSize: theme.spacing(1.5),
+    padding: theme.spacing(0.5),
+    backgroundColor: "#2cbe4e",
+    color: "#fff"
   },
   image: {
-    height: theme.spacing(4),
-    width: theme.spacing(4),
+    height: theme.spacing(3),
+    width: theme.spacing(3),
     marginRight: theme.spacing(1)
   },
   issueBody: {
@@ -36,9 +91,10 @@ const issueStyles = theme => ({
     marginTop: theme.spacing(1)
   },
   username: {
+    display: "flex",
     borderBottom: "1px solid #ddd",
     padding: theme.spacing(1),
-    backgroundColor: "#c0d3eb"
+    backgroundColor: "#f6f8fa"
   },
   commentSection: {
     display: "block",
@@ -49,14 +105,17 @@ const issueStyles = theme => ({
     padding: theme.spacing(1),
     resize: "vertical"
   },
-  comment: {
-    border: "1px solid #ddd",
-    marginBottom: theme.spacing(1),
-    marginTop: theme.spacing(1),
-    padding: theme.spacing(1)
-  },
   editButton: {
+    fontSize: theme.spacing(1.5),
+    padding: theme.spacing(0.5),
+    backgroundColor: "#eff3f6",
     marginRight: theme.spacing(1)
+  },
+  newIssue: {
+    color: "#fff",
+    backgroundColor: "#2cbe4e",
+    fontSize: theme.spacing(1.5),
+    padding: theme.spacing(0.5)
   },
   container: {
     margin: theme.spacing(1)
@@ -66,9 +125,23 @@ const issueStyles = theme => ({
     marginRight: theme.spacing(1)
   },
   sidebar: {
+    padding: theme.spacing(1),
     margin: theme.spacing(1),
-    borderBottom: "1px solid #ddd",
-    padding: theme.spacing(1)
+    borderBottom: "1px solid #ddd"
+  },
+  issueStatus: {
+    display: "flex",
+    paddingBottom: theme.spacing(2.5),
+    marginBottom: theme.spacing(2.5),
+    borderBottom: "1px solid #ddd"
+  },
+  commentButton: {
+    color: "#fff",
+    backgroundColor: "#2cbe4e"
+  },
+  commentClose: {
+    marginRight: theme.spacing(1),
+    backgroundColor: "#eff3f6"
   }
 });
 
@@ -171,7 +244,7 @@ class _Issue extends Component {
   };
 
   render() {
-    const { issue, user, comments } = this.state;
+    const { issue, user } = this.state;
     const { classes } = this.props;
     if (issue == undefined) {
       return null;
@@ -187,14 +260,18 @@ class _Issue extends Component {
               <Button variant="contained" className={classes.editButton}>
                 Edit
               </Button>
-              <Button variant="contained" color="primary">
+              <Button
+                variant="contained"
+                color="primary"
+                className={classes.newIssue}
+              >
                 New issue
               </Button>
             </div>
-            <Typography variant="h6" className={classes.title}>
+            <Typography variant="h5" className={classes.title}>
               {issue.title} #{issue.issue_number}
             </Typography>
-            <div>
+            <div className={classes.issueStatus}>
               <Button variant="contained" className={classes.status}>
                 {issue.status}
               </Button>
@@ -205,21 +282,17 @@ class _Issue extends Component {
             <div>
               <div className={classes.issueBody}>
                 <div className={classes.username}>
-                  <img src={user.image} className={cx(classes.image)} />
-                  <span className={classes.name}>{user.username}</span>
-                  commented 9 days ago
+                  <img src={issue.user.image} className={cx(classes.image)} />
+                  <Typography variant="body2" className={classes.name}>
+                    {issue.user.username}
+                  </Typography>
+                  <div>commented 9 days ago</div>
                 </div>
                 <Typography variant="body2" className={classes.body}>
                   {issue.body}
                 </Typography>
               </div>
-              <div>
-                {comments.map(comment => (
-                  <div key={comment.id} className={classes.comment}>
-                    {comment.body}
-                  </div>
-                ))}
-              </div>
+              <Comment comments={this.state.comments} />
               <form onSubmit={this.handleSubmit}>
                 <div>
                   <textarea
@@ -228,8 +301,14 @@ class _Issue extends Component {
                     value={this.state.body}
                     onChange={this.handleChange}
                   />
-                  <Button type="submit">close issue</Button>
-                  <Button variant="contained" color="primary" type="submit">
+                  <Button variant="contained" className={classes.commentClose}>
+                    close issue
+                  </Button>
+                  <Button
+                    variant="contained"
+                    className={classes.commentButton}
+                    type="submit"
+                  >
                     Comment
                   </Button>
                 </div>

@@ -15,7 +15,7 @@ type Comment struct {
 	Body      string    `json:"body,omitempty"`
 	IssueId   int       `json:"issue_id,omitempty"`
 	RepoId    string    `json:"repo_id,omitempty"`
-	User      User      `json:'user,omitempty'`
+	User      User      `json:"user,omitempty"`
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 }
