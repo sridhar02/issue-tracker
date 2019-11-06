@@ -301,8 +301,6 @@ func getCommentsHandler(c *gin.Context, db *sql.DB) {
 		var userId, body, createdAt, updatedAt string
 		var id int
 		err = rows.Scan(&id, &userId, &body, &createdAt, &updatedAt)
-		fmt.Println(body)
-		fmt.Println(id)
 		if err != nil {
 			fmt.Println(err)
 			c.AbortWithStatus(http.StatusInternalServerError)
@@ -321,10 +319,28 @@ func getCommentsHandler(c *gin.Context, db *sql.DB) {
 			c.AbortWithStatus(http.StatusInternalServerError)
 			return
 		}
+
+		var name, username, email, image string
+		row := db.QueryRow(`SELECT name,username,email,image FROM users where id=$1`, userId)
+		err = row.Scan(&name, &username, &email, &image)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+
+		user := User{
+			ID:       userId,
+			Name:     name,
+			Username: username,
+			Email:    email,
+			Image:    image,
+		}
+
 		comment := Comment{
 			ID:        id,
 			UserId:    userId,
 			Body:      body,
+			User:      user,
 			CreatedAt: CreatedAt,
 			UpdatedAt: UpdatedAt,
 		}

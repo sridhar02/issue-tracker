@@ -15,6 +15,7 @@ type Comment struct {
 	Body      string    `json:"body,omitempty"`
 	IssueId   int       `json:"issue_id,omitempty"`
 	RepoId    string    `json:"repo_id,omitempty"`
+	User      User      `json:'user,omitempty'`
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 }
@@ -31,13 +32,11 @@ func GetComment(db *sql.DB, id int) (Comment, error) {
 	}
 
 	CreatedAt, err := time.Parse(time.RFC3339, createdAt)
-
 	if err != nil {
 		return Comment{}, err
 	}
 
 	UpdatedAt, err := time.Parse(time.RFC3339, updatedAt)
-
 	if err != nil {
 		return Comment{}, err
 	}
@@ -113,7 +112,6 @@ func getCommentHandler(c *gin.Context, db *sql.DB) {
 	}
 	c.JSON(http.StatusOK, comment)
 
-	// c.Status(http.StatusNoContent)
 }
 
 func postCommentHandler(c *gin.Context, db *sql.DB) {
