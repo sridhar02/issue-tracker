@@ -155,6 +155,7 @@ class _Issue extends Component {
       issue: undefined,
       user: undefined,
       body: "",
+      status: "",
       comments: []
     };
   }
@@ -200,11 +201,13 @@ class _Issue extends Component {
         console.log(error);
       });
   }
+
   handleChange = event => {
     this.setState({
       [event.target.name]: event.target.value
     });
   };
+
   handleSubmit = event => {
     const { username, repo, issueNumber } = Router.router.query;
     event.preventDefault();
@@ -236,6 +239,56 @@ class _Issue extends Component {
           this.setState({
             body: ""
           });
+        }
+      })
+      .catch(error => {
+        console.log(error);
+      });
+  };
+
+  handleClick = event => {
+    const { username, repo, issueNumber } = Router.router.query;
+    event.preventDefault();
+    const { issue } = this.state;
+    if (issue.status === "Open") {
+      this.setState({
+        status: "Closed"
+      });
+    } else {
+      this.setState({
+        status: "Open"
+      });
+    }
+
+    console.log(this.state.status);
+    axios
+      .put(
+        `/repos/${username}/${repo}/issues/${issueNumber}`,
+        {
+          status: this.state.status
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("secret")}`
+          }
+        }
+      )
+      .then(response => {
+        if (response.status === 204) {
+          axios
+            .get(`/repos/${username}/${repo}/issues/${issueNumber}`, {
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem("secret")}`
+              }
+            })
+            .then(response =>
+              this.setState({
+                issue: response.data
+              })
+            )
+            .catch(error => {
+              console.log(error);
+            });
         }
       })
       .catch(error => {
@@ -301,7 +354,11 @@ class _Issue extends Component {
                     value={this.state.body}
                     onChange={this.handleChange}
                   />
-                  <Button variant="contained" className={classes.commentClose}>
+                  <Button
+                    variant="contained"
+                    onClick={this.handleClick}
+                    className={classes.commentClose}
+                  >
                     close issue
                   </Button>
                   <Button

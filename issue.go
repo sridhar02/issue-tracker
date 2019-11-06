@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"fmt"
+	sq "github.com/Masterminds/squirrel"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"strconv"
@@ -182,8 +183,52 @@ func postIssueHandler(c *gin.Context, db *sql.DB) {
 
 func putIssueHandler(c *gin.Context, db *sql.DB) {
 
+	_, err := authorization(c, db)
+	if err != nil {
+		return
+	}
+	username := c.Param("owner")
+	repoName := c.Param("repo")
+	issueNumber := c.Param("issue_number")
+
+	var Id int
+	row := db.QueryRow(`WITH repo_cte AS (select repos.id FROM repos JOIN users ON repos.user_id= users.id 
+                		WHERE repos.name= $1 AND users.username= $2) select id from issues where repo_id 
+                		in (select id from repo_cte) and issue_number=$3`, repoName, username, issueNumber)
+	err = row.Scan(&Id)
+	if err != nil {
+		fmt.Println(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
 	issue := Issue{}
-	err := c.BindJSON(&issue)
+	err = c.BindJSON(&issue)
+	if err != nil {
+		fmt.Println(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	query := psql.Update("issues")
+	if issue.Status != "" {
+		query = query.Set("status", issue.Status)
+	}
+	// if Issue. != "" {
+	// 	query = query.Set("sex", user.Sex)
+	// }
+	// if user.Email != "" {
+	// 	query = query.Set("email", user.Email)
+	// }
+	// fmt.Println(user.Phonenumber)
+	// if user.Phonenumber != "" {
+	// 	query = query.Set("phonenumber", user.Phonenumber)
+	// }
+	query = query.Where(sq.Eq{"id": Id})
+
+	q, args, err := query.ToSql()
+
+	_, err = db.Exec(q, args...)
 	if err != nil {
 		fmt.Println(err)
 		c.AbortWithStatus(http.StatusInternalServerError)
