@@ -101,7 +101,7 @@ post('http://localhost:8000/repos/DONE/test123/issues',
 		'title': '2nd issue is updated',
 		'body': 'a new issue is updated in a new repo',
 	})
-get('http://localhost:8000/repos/DONE/RepoFirst/issues/1/comments')
+get('http://localhost:8000/repos/DONE/RepoFirst/issues/3')
 
 post('http://localhost:8000/repos/DONE/RepoFirst/issues/2/comments',
 	headers={
