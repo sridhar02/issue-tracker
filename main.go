@@ -190,6 +190,22 @@ func getReposHandler(c *gin.Context, db *sql.DB) {
 			return
 		}
 
+		var NAme, username, email, image string
+		row := db.QueryRow(`SELECT name,username,email,image FROM users where id=$1`, userId)
+		err = row.Scan(&NAme, &username, &email, &image)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+
+		user := User{
+			ID:       userId,
+			Name:     NAme,
+			Username: username,
+			Email:    email,
+			Image:    image,
+		}
+
 		repo := Repo{
 			ID:          id,
 			Name:        name,
@@ -198,6 +214,7 @@ func getReposHandler(c *gin.Context, db *sql.DB) {
 			UpdatedAt:   UpdatedAt,
 			Description: description,
 			Type:        Type,
+			User:        user,
 		}
 		Repos = append(Repos, repo)
 	}

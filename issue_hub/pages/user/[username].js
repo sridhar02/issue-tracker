@@ -18,19 +18,36 @@ import { Navbar } from "../../utils/utils.js";
 
 const userStyles = theme => ({
   image: {
-    heigth: theme.spacing(8),
-    width: theme.spacing(8)
+    heigth: theme.spacing(13.75),
+    width: theme.spacing(13.75),
+    margin: theme.spacing(0, 1.875, 0, 0)
   },
   container: {
-    padding: theme.spacing(2)
+    padding: theme.spacing(0)
   },
   repo: {
     border: "1px solid #ddd",
-    padding: theme.spacing(1),
-    margin: theme.spacing(1)
+    padding: theme.spacing(2)
   },
   navbar: {
     marginBottom: theme.spacing(1)
+  },
+  userDetails: {
+    display: "flex",
+    padding: theme.spacing(1.875, 1.875, 1.25)
+  },
+  userProfile: {
+    padding: "0 15px 15px",
+    margin: theme.spacing(1, 0, 0),
+    borderBottom: "1px solid #ddd",
+    whiteSpace: "pre-wrap"
+  },
+  repotitle: {
+    margin: "13.28px 0"
+  },
+  repoDisplay: {
+    margin: theme.spacing(2, 0, 0),
+    padding: theme.spacing(0, 2, 2)
   }
 });
 
@@ -87,25 +104,29 @@ class _User extends Component {
         <div className={cx(classes.container, "container")}>
           <div className="row">
             <div className="col-12">
-              <div>
+              <div className={classes.userDetails}>
                 <img src={user.image} className={classes.image} />
-                <Typography variant="body2">{user.name}</Typography>
+                <div></div>
                 <Typography variant="body2">{user.username}</Typography>
               </div>
-              <div>
+              <div className={classes.userProfile}></div>
+              <div className="d-none">
                 <Link href="/new">
                   <Button color="primary" variant="contained">
                     <a>New</a>
                   </Button>
                 </Link>
               </div>
-              <div>
+              <div className={classes.repoDisplay}>
+                <div className={classes.repotitle}>Popular respositories</div>
                 {repos.map(repo => (
                   <div key={repo.id} className={classes.repo}>
                     <Link
                       href={`/user/${user.username}/repos/${repo.name}/issues`}
                     >
-                      <a>{repo.name}</a>
+                      <a>
+                        {repo.user.username}/{repo.name}
+                      </a>
                     </Link>
                   </div>
                 ))}
