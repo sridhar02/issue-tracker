@@ -74,6 +74,7 @@ class _Login extends Component {
               <TextField
                 name="password"
                 placeholder="password"
+                type="password"
                 margin="normal"
                 variant="outlined"
                 value={this.state.name}

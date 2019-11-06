@@ -19,19 +19,21 @@ type Issue struct {
 	Status      string    `json:"status,omitempty"`
 	Pinned      string    `json:"pinned,omitempty"`
 	Lock        string    `json:"lock,omitempty"`
+	User        User      `json:"user,omitempty"`
 	CreatedAt   time.Time `json:"created_at,omitempty"`
 	UpdatedAt   time.Time `json:"updated_at,omitempty"`
 }
 
 func GetIssue(db *sql.DB, Id int) (Issue, error) {
 
-	var title, body, repoId, status, createdAt, updatedAt, pinned, lock string
+	var title, body, repoId, status, createdAt, userId, updatedAt, pinned, lock string
 	var id, issueNumber int
 
-	row := db.QueryRow(`SELECT id,title,body,repo_id,issue_number,status,pinned,lock,created_at, 
+	row := db.QueryRow(`SELECT id,title,body,repo_id,issue_number,status,pinned,lock,user_id,created_at, 
 						updated_at FROM issues WHERE id=$1`, Id)
-	err := row.Scan(&id, &title, &body, &repoId, &issueNumber, &status, &pinned, &lock, &createdAt, &updatedAt)
+	err := row.Scan(&id, &title, &body, &repoId, &issueNumber, &status, &pinned, &lock, &userId, &createdAt, &updatedAt)
 	if err != nil {
+		fmt.Println(err)
 		return Issue{}, err
 	}
 	CreatedAt, err := time.Parse(time.RFC3339, createdAt)
@@ -46,6 +48,20 @@ func GetIssue(db *sql.DB, Id int) (Issue, error) {
 		fmt.Println(err)
 		return Issue{}, err
 	}
+	var name, username, email, image string
+	row = db.QueryRow(`SELECT name,username,email,image FROM users where id=$1`, userId)
+	err = row.Scan(&name, &username, &email, &image)
+	if err != nil {
+		fmt.Println(err)
+		return Issue{}, err
+	}
+	user := User{
+		ID:       userId,
+		Name:     name,
+		Username: username,
+		Email:    email,
+		Image:    image,
+	}
 
 	issue := Issue{
 		ID:          id,
@@ -58,6 +74,7 @@ func GetIssue(db *sql.DB, Id int) (Issue, error) {
 		UpdatedAt:   UpdatedAt,
 		Pinned:      pinned,
 		Lock:        lock,
+		User:        user,
 	}
 
 	return issue, nil

@@ -7,6 +7,7 @@ import { Button, TextField, Typography } from "@material-ui/core";
 import { withStyles } from "@material-ui/styles";
 
 import Router from "next/router";
+
 import { makeStyles } from "@material-ui/core/styles";
 import AppBar from "@material-ui/core/AppBar";
 import Toolbar from "@material-ui/core/Toolbar";
@@ -32,6 +33,9 @@ class _Navbar extends Component {
             <div className="col-12">
               <Link href="#">
                 <Button color="inherit">USER</Button>
+              </Link>
+              <Link href="#">
+                <Button color="inherit">Notifications</Button>
               </Link>
               <Link href="/account">
                 <Button color="inherit" onClick={this.onSignout}>

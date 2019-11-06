@@ -64,6 +64,11 @@ const issueStyles = theme => ({
   name: {
     fontWeight: "bold",
     marginRight: theme.spacing(1)
+  },
+  sidebar: {
+    margin: theme.spacing(1),
+    borderBottom: "1px solid #ddd",
+    padding: theme.spacing(1)
   }
 });
 
@@ -144,7 +149,20 @@ class _Issue extends Component {
         }
       )
       .then(response => {
-        if (response === 201) {
+        if (response.status === 201) {
+          axios
+            .get(`/repos/${username}/${repo}/issues/${issueNumber}/comments`)
+            .then(response =>
+              this.setState({
+                comments: response.data
+              })
+            )
+            .catch(error => {
+              console.log(error);
+            });
+          this.setState({
+            body: ""
+          });
         }
       })
       .catch(error => {
@@ -164,7 +182,7 @@ class _Issue extends Component {
     return (
       <div className={cx(classes.container, "container")}>
         <div className="row">
-          <div className="col-12">
+          <div className="col-lg-10">
             <div>
               <Button variant="contained" className={classes.editButton}>
                 Edit
@@ -217,6 +235,15 @@ class _Issue extends Component {
                 </div>
               </form>
             </div>
+          </div>
+          <div className="col-lg-2">
+            <div className={classes.sidebar}>Assignee</div>
+            <div className={classes.sidebar}>Labels</div>
+            <div className={classes.sidebar}>Projects</div>
+            <div className={classes.sidebar}>Milestone</div>
+            <div className={classes.sidebar}>Lock conversation</div>
+            <div className={classes.sidebar}>Pin</div>
+            <div className={classes.sidebar}>Delete Issue</div>
           </div>
         </div>
       </div>

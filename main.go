@@ -273,6 +273,7 @@ func getIssueHandler(c *gin.Context, db *sql.DB) {
 
 	issue, err := GetIssue(db, Id)
 	if err != nil {
+		fmt.Println(err)
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
