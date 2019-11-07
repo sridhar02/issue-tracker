@@ -159,7 +159,7 @@ func getReposHandler(c *gin.Context, db *sql.DB) {
 	}
 
 	rows, err := db.Query(`SELECT id,name,issue_count,created_at,updated_at,description,type FROM repos 
-						  where user_id=$1`, userId)
+						  where user_id=$1 ORDER BY id ASC`, userId)
 	if err != nil {
 		fmt.Println(err)
 		c.AbortWithStatus(http.StatusInternalServerError)
@@ -273,7 +273,7 @@ func getIssueHandler(c *gin.Context, db *sql.DB) {
 	var Id int
 	row := db.QueryRow(`WITH repo_cte AS (select repos.id FROM repos JOIN users ON repos.user_id= users.id 
                 		WHERE repos.name= $1 AND users.username= $2) select id from issues where repo_id 
-                		in (select id from repo_cte) and issue_number=$3`, repoName, username, issueNumber)
+                		in (select id from repo_cte) and issue_number=$3 `, repoName, username, issueNumber)
 	err := row.Scan(&Id)
 	if err != nil {
 		fmt.Println(err)

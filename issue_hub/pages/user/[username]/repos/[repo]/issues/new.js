@@ -12,6 +12,8 @@ import TextField from "@material-ui/core/TextField";
 
 import cx from "classnames";
 
+import { Navbar } from "../../../../../../utils/utils.js";
+
 const issueStyles = theme => ({
   image: {
     heigth: theme.spacing(4),
@@ -51,7 +53,7 @@ const issueStyles = theme => ({
   button: {
     marginTop: theme.spacing(1),
     marginLeft: theme.spacing(2),
-    width: "100%"
+    backgroundColor: "#2cbe4e"
   }
 });
 
@@ -121,61 +123,69 @@ class _Issue extends Component {
     }
 
     return (
-      <div className={cx(classes.container, "container")}>
-        <div className="row">
-          <div className="col-12">
-            <div className={classes.mainSection}>
-              <img src={user.image} className={cx(classes.image, "d-none")} />
-              <div className={classes.issue}>
-                <form onSubmit={this.handleSubmit}>
-                  <div className={classes.title}>
-                    <TextField
-                      variant="outlined"
-                      placeholder="Title"
-                      name="title"
-                      value={this.state.title}
-                      onChange={this.handleChange}
-                    />
-                    <div className={classes.options}>
-                      <div className={classes.write}>
-                        <Typography variant="body2">write</Typography>
+      <Fragment>
+        <Navbar />
+        <div className={cx(classes.container, "container")}>
+          <div className="row">
+            <div className="col-12">
+              <div className={classes.mainSection}>
+                <img src={user.image} className={cx(classes.image, "d-none")} />
+                <div className={classes.issue}>
+                  <form onSubmit={this.handleSubmit}>
+                    <div className={classes.title}>
+                      <TextField
+                        variant="outlined"
+                        placeholder="Title"
+                        name="title"
+                        value={this.state.title}
+                        onChange={this.handleChange}
+                      />
+                      <div className={classes.options}>
+                        <div className={classes.write}>
+                          <Typography variant="body2">write</Typography>
+                        </div>
+                        <Typography variant="body2">preview</Typography>
                       </div>
-                      <Typography variant="body2">preview</Typography>
+                      <textarea
+                        variant="outlined"
+                        placeholder="body"
+                        className={classes.body}
+                        name="body"
+                        value={this.state.body}
+                        onChange={this.handleChange}
+                      />
+                      <div>
+                        <div className={classes.issueOptions}>
+                          <Typography variant="body2">Assignees</Typography>
+                        </div>
+                        <div className={classes.issueOptions}>
+                          <Typography variant="body2">Lables</Typography>
+                        </div>
+                        <div className={classes.issueOptions}>
+                          <Typography variant="body2">Projects</Typography>
+                        </div>
+                        <div className={classes.issueOptions}>
+                          <Typography variant="body2">MileStone</Typography>
+                        </div>
+                      </div>
+                      <div>
+                        <Button
+                          className={classes.button}
+                          color="primary"
+                          variant="contained"
+                          type="submit"
+                        >
+                          submit new issue
+                        </Button>
+                      </div>
                     </div>
-                    <textarea
-                      variant="outlined"
-                      placeholder="body"
-                      className={classes.body}
-                      name="body"
-                      value={this.state.body}
-                      onChange={this.handleChange}
-                    />
-                    <div>
-                      <div className={classes.issueOptions}>
-                        <Typography variant="body2">Assignees</Typography>
-                      </div>
-                      <div className={classes.issueOptions}>
-                        <Typography variant="body2">Lables</Typography>
-                      </div>
-                      <div className={classes.issueOptions}>
-                        <Typography variant="body2">Projects</Typography>
-                      </div>
-                      <div className={classes.issueOptions}>
-                        <Typography variant="body2">MileStone</Typography>
-                      </div>
-                    </div>
-                    <div className={classes.button}>
-                      <Button color="primary" variant="contained" type="submit">
-                        submit new issue
-                      </Button>
-                    </div>
-                  </div>
-                </form>
+                  </form>
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
+      </Fragment>
     );
   }
 }

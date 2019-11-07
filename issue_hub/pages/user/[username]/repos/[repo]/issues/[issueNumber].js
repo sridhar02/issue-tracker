@@ -12,6 +12,10 @@ import { Button, Typography } from "@material-ui/core";
 
 import TextField from "@material-ui/core/TextField";
 
+import LockIcon from "@material-ui/icons/Lock";
+
+import DeleteIcon from "@material-ui/icons/Delete";
+
 import cx from "classnames";
 
 import { Navbar } from "../../../../../../utils/utils.js";
@@ -67,6 +71,9 @@ class _Comment extends Component {
 
 const Comment = withStyles(commentStyles)(_Comment);
 
+const STATUS_OPEN = "Open";
+const STATUS_CLOSED = "Closed";
+
 const issueStyles = theme => ({
   body: {
     padding: theme.spacing(1),
@@ -75,11 +82,18 @@ const issueStyles = theme => ({
   title: {
     margin: theme.spacing(1)
   },
-  status: {
+  statusOpen: {
     marginRight: theme.spacing(1),
     fontSize: theme.spacing(1.5),
     padding: theme.spacing(0.5),
     backgroundColor: "#2cbe4e",
+    color: "#fff"
+  },
+  statusClose: {
+    marginRight: theme.spacing(1),
+    fontSize: theme.spacing(1.5),
+    padding: theme.spacing(0.5),
+    backgroundColor: "#CB2431",
     color: "#fff"
   },
   image: {
@@ -144,6 +158,10 @@ const issueStyles = theme => ({
   commentClose: {
     marginRight: theme.spacing(1),
     backgroundColor: "#eff3f6"
+  },
+  commentOpen: {
+    marginRight: theme.spacing(1),
+    backgroundColor: "#eff3f6"
   }
 });
 
@@ -157,7 +175,6 @@ class _Issue extends Component {
       issue: undefined,
       user: undefined,
       body: "",
-      status: "",
       comments: []
     };
   }
@@ -248,26 +265,17 @@ class _Issue extends Component {
       });
   };
 
-  handleClick = event => {
+  issueStatusHandler = event => {
     const { username, repo, issueNumber } = Router.router.query;
-    event.preventDefault();
     const { issue } = this.state;
-    if (issue.status === "Open") {
-      this.setState({
-        status: "Closed"
-      });
-    } else {
-      this.setState({
-        status: "Open"
-      });
-    }
+    const newStatus =
+      issue.status === STATUS_OPEN ? STATUS_CLOSED : STATUS_OPEN;
 
-    console.log(this.state.status);
     axios
       .put(
         `/repos/${username}/${repo}/issues/${issueNumber}`,
         {
-          status: this.state.status
+          status: newStatus
         },
         {
           headers: {
@@ -298,15 +306,46 @@ class _Issue extends Component {
       });
   };
 
+  lockIssueHandler = event => {
+    const { username, repo, issueNumber } = Router.router.query;
+    const { issue } = this.state;
+  };
+
   render() {
     const { issue, user } = this.state;
     const { classes } = this.props;
-    if (issue == undefined) {
+
+    if (issue === undefined || user === undefined) {
       return null;
     }
-    if (user == undefined) {
-      return null;
-    }
+
+    const button = (
+      <Button
+        variant="contained"
+        onClick={this.issueStatusHandler}
+        className={
+          issue.status === STATUS_OPEN
+            ? classes.commentOpen
+            : classes.commentClose
+        }
+      >
+        {issue.status === STATUS_OPEN ? "Close" : "Reopen"} issue
+      </Button>
+    );
+
+    const status = (
+      <Button
+        variant="contained"
+        className={
+          issue.status === STATUS_OPEN
+            ? classes.statusOpen
+            : classes.statusClose
+        }
+      >
+        {issue.status}
+      </Button>
+    );
+
     return (
       <Fragment>
         <Navbar />
@@ -317,21 +356,21 @@ class _Issue extends Component {
                 <Button variant="contained" className={classes.editButton}>
                   Edit
                 </Button>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  className={classes.newIssue}
-                >
-                  New issue
-                </Button>
+                <Link href="">
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    className={classes.newIssue}
+                  >
+                    New issue
+                  </Button>
+                </Link>
               </div>
               <Typography variant="h5" className={classes.title}>
                 {issue.title} #{issue.issue_number}
               </Typography>
               <div className={classes.issueStatus}>
-                <Button variant="contained" className={classes.status}>
-                  {issue.status}
-                </Button>
+                {status}
                 <Typography variant="body2">
                   opened this issue 9 days ago
                 </Typography>
@@ -358,13 +397,7 @@ class _Issue extends Component {
                       value={this.state.body}
                       onChange={this.handleChange}
                     />
-                    <Button
-                      variant="contained"
-                      onClick={this.handleClick}
-                      className={classes.commentClose}
-                    >
-                      close issue
-                    </Button>
+                    {button}
                     <Button
                       variant="contained"
                       className={classes.commentButton}
@@ -381,9 +414,16 @@ class _Issue extends Component {
               <div className={classes.sidebar}>Labels</div>
               <div className={classes.sidebar}>Projects</div>
               <div className={classes.sidebar}>Milestone</div>
-              <div className={classes.sidebar}>Lock conversation</div>
-              <div className={classes.sidebar}>Pin</div>
-              <div className={classes.sidebar}>Delete Issue</div>
+              <Button
+                className={classes.sidebar}
+                onClick={this.lockIssueHandler}
+              >
+                <LockIcon /> Lock conversation
+              </Button>
+              <Button className={classes.sidebar}>Pin</Button>
+              <Button className={classes.sidebar}>
+                <DeleteIcon /> Delete Issue
+              </Button>
             </div>
           </div>
         </div>
