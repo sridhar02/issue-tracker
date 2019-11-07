@@ -49,19 +49,11 @@ func GetIssue(db *sql.DB, Id int) (Issue, error) {
 		fmt.Println(err)
 		return Issue{}, err
 	}
-	var name, username, email, image string
-	row = db.QueryRow(`SELECT name,username,email,image FROM users where id=$1`, userId)
-	err = row.Scan(&name, &username, &email, &image)
+
+	user, err := GetUser(db, userId)
 	if err != nil {
 		fmt.Println(err)
 		return Issue{}, err
-	}
-	user := User{
-		ID:       userId,
-		Name:     name,
-		Username: username,
-		Email:    email,
-		Image:    image,
 	}
 
 	issue := Issue{
@@ -214,16 +206,15 @@ func putIssueHandler(c *gin.Context, db *sql.DB) {
 	if issue.Status != "" {
 		query = query.Set("status", issue.Status)
 	}
-	// if Issue. != "" {
-	// 	query = query.Set("sex", user.Sex)
-	// }
-	// if user.Email != "" {
-	// 	query = query.Set("email", user.Email)
-	// }
-	// fmt.Println(user.Phonenumber)
-	// if user.Phonenumber != "" {
-	// 	query = query.Set("phonenumber", user.Phonenumber)
-	// }
+	if issue.Title != "" {
+		query = query.Set("title", issue.Title)
+	}
+	if issue.Body != "" {
+		query = query.Set("body", issue.Body)
+	}
+	if issue.Pinned != "" {
+		query = query.Set("pinned", issue.Pinned)
+	}
 	query = query.Where(sq.Eq{"id": Id})
 
 	q, args, err := query.ToSql()
@@ -262,6 +253,88 @@ func deleteIssueHandler(c *gin.Context, db *sql.DB) {
 		return
 	}
 	// c.JSON(http.StatusOK, repo)
+
+	c.Status(http.StatusNoContent)
+
+}
+
+func putLocKHandler(c *gin.Context, db *sql.DB) {
+
+	_, err := authorization(c, db)
+	if err != nil {
+		return
+	}
+	username := c.Param("owner")
+	repoName := c.Param("repo")
+	issueNumber := c.Param("issue_number")
+
+	var Id int
+	row := db.QueryRow(`WITH repo_cte AS (select repos.id FROM repos JOIN users ON repos.user_id= users.id 
+                		WHERE repos.name= $1 AND users.username= $2) select id from issues where repo_id 
+                		in (select id from repo_cte) and issue_number=$3`, repoName, username, issueNumber)
+	err = row.Scan(&Id)
+	if err != nil {
+		fmt.Println(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	issue := Issue{}
+	err = c.BindJSON(&issue)
+	if err != nil {
+		fmt.Println(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	_, err = db.Exec(`UPDATE issues SET lock = $1 WHERE id = $2`, issue.Lock, Id)
+
+	if err != nil {
+		fmt.Println(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	c.Status(http.StatusNoContent)
+
+}
+
+func deleteLocKHandler(c *gin.Context, db *sql.DB) {
+
+	_, err := authorization(c, db)
+	if err != nil {
+		return
+	}
+	username := c.Param("owner")
+	repoName := c.Param("repo")
+	issueNumber := c.Param("issue_number")
+
+	var Id int
+	row := db.QueryRow(`WITH repo_cte AS (select repos.id FROM repos JOIN users ON repos.user_id= users.id 
+                		WHERE repos.name= $1 AND users.username= $2) select id from issues where repo_id 
+                		in (select id from repo_cte) and issue_number=$3`, repoName, username, issueNumber)
+	err = row.Scan(&Id)
+	if err != nil {
+		fmt.Println(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	issue := Issue{}
+	err = c.BindJSON(&issue)
+	if err != nil {
+		fmt.Println(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	_, err = db.Exec(`UPDATE issues SET lock = $1 WHERE id = $2`, issue.Lock, Id)
+
+	if err != nil {
+		fmt.Println(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
 
 	c.Status(http.StatusNoContent)
 

@@ -111,5 +111,29 @@ put('http://localhost:8000/repos/DONE/RepoFirst/issues/3',
 	    "Authorization": "Bearer CIySftTxPpQRsGShMSQVEDYghCLxvvNJ"
 	},
 	json={
-		'status':'Open',
+		'pinned':'Pinned',
+	})
+
+put('http://localhost:8000/repos/DONE/RepoFirst/issues/2',
+	headers={
+	    "Authorization": "Bearer CIySftTxPpQRsGShMSQVEDYghCLxvvNJ"
+	},
+	json={
+		'status':'Closed',
+	})
+
+put('http://localhost:8000/repos/DONE/RepoFirst/issues/3/lock',
+	headers={
+	    "Authorization": "Bearer CIySftTxPpQRsGShMSQVEDYghCLxvvNJ"
+	},
+	json={
+		'lock':'Locked',
+	})
+
+delete('http://localhost:8000/repos/DONE/RepoFirst/issues/3/lock',
+	headers={
+	    "Authorization": "Bearer CIySftTxPpQRsGShMSQVEDYghCLxvvNJ"
+	},
+	json={
+		'lock':'Unlocked',
 	})

@@ -14,7 +14,7 @@ import TextField from "@material-ui/core/TextField";
 
 import cx from "classnames";
 
-// import { Navbar } from "../repos/[username]/user/pages/utils/utils.js";
+import { Navbar } from "../../../../../utils/utils.js";
 
 const issueStyles = theme => ({
   issue: {
@@ -86,37 +86,40 @@ class _Issues extends Component {
     }
 
     return (
-      <div className={cx(classes.mainSection, "container")}>
-        <div className="row">
-          <div className="col-12">
-            <div className="d-none">
-              <Link href={`/user/${username}/repos/${repo}/issues/new`}>
-                <Button color="primary" variant="contained">
-                  <a>New issue</a>
-                </Button>
-              </Link>
-            </div>
-            <div className={classes.issueStatus}>
-              <a className={classes.status}>Open</a>
-              <a className={classes.status}>Closed</a>
-              <a className={classes.status}>Yours</a>
-            </div>
-            {issues.map(issue => (
-              <div key={issue.id} className={classes.issue}>
-                <div className={classes.issueDisplay}>
-                  <Link
-                    href={`/user/${username}/repos/${repo}/issues/${issue.issue_number}`}
-                  >
-                    <a className={classes.title}>{issue.title}</a>
-                  </Link>
-                  <div>#{issue.issue_number}</div>
-                </div>
-                <div> opened 3 days ago by sridhar02</div>
+      <Fragment>
+        <Navbar />
+        <div className={cx(classes.mainSection, "container")}>
+          <div className="row">
+            <div className="col-12">
+              <div className="d-none">
+                <Link href={`/user/${username}/repos/${repo}/issues/new`}>
+                  <Button color="primary" variant="contained">
+                    <a>New issue</a>
+                  </Button>
+                </Link>
               </div>
-            ))}
+              <div className={classes.issueStatus}>
+                <a className={classes.status}>Open</a>
+                <a className={classes.status}>Closed</a>
+                <a className={classes.status}>Yours</a>
+              </div>
+              {issues.map(issue => (
+                <div key={issue.id} className={classes.issue}>
+                  <div className={classes.issueDisplay}>
+                    <Link
+                      href={`/user/${username}/repos/${repo}/issues/${issue.issue_number}`}
+                    >
+                      <a className={classes.title}>{issue.title}</a>
+                    </Link>
+                    <div>#{issue.issue_number}</div>
+                  </div>
+                  <div> opened 3 days ago by sridhar02</div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
-      </div>
+      </Fragment>
     );
   }
 }
