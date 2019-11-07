@@ -190,20 +190,10 @@ func getReposHandler(c *gin.Context, db *sql.DB) {
 			return
 		}
 
-		var NAme, username, email, image string
-		row := db.QueryRow(`SELECT name,username,email,image FROM users where id=$1`, userId)
-		err = row.Scan(&NAme, &username, &email, &image)
+		user, err := GetUser(db, userId)
 		if err != nil {
 			fmt.Println(err)
 			return
-		}
-
-		user := User{
-			ID:       userId,
-			Name:     NAme,
-			Username: username,
-			Email:    email,
-			Image:    image,
 		}
 
 		repo := Repo{
@@ -340,20 +330,10 @@ func getCommentsHandler(c *gin.Context, db *sql.DB) {
 			return
 		}
 
-		var name, username, email, image string
-		row := db.QueryRow(`SELECT name,username,email,image FROM users where id=$1`, userId)
-		err = row.Scan(&name, &username, &email, &image)
+		user, err := GetUser(db, userId)
 		if err != nil {
 			fmt.Println(err)
 			return
-		}
-
-		user := User{
-			ID:       userId,
-			Name:     name,
-			Username: username,
-			Email:    email,
-			Image:    image,
 		}
 
 		comment := Comment{
@@ -415,6 +395,8 @@ func main() {
 	router.POST("/repos/:owner/:repo/issues", func(c *gin.Context) { postIssueHandler(c, db) })
 	router.GET("/repos/:owner/:repo/issues/:issue_number", func(c *gin.Context) { getIssueHandler(c, db) })
 	router.PUT("/repos/:owner/:repo/issues/:issue_number", func(c *gin.Context) { putIssueHandler(c, db) })
+	router.PUT("/repos/:owner/:repo/issues/:issue_number/lock", func(c *gin.Context) { putLocKHandler(c, db) })
+	router.DELETE("/repos/:owner/:repo/issues/:issue_number/lock", func(c *gin.Context) { deleteLocKHandler(c, db) })
 	router.GET("/repos/:owner/:repo/issues/:issue_number/comments", func(c *gin.Context) { getCommentsHandler(c, db) })
 	router.POST("/repos/:owner/:repo/issues/:issue_number/comments", func(c *gin.Context) { postCommentHandler(c, db) })
 
