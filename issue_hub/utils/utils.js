@@ -99,17 +99,19 @@ class _Navbar extends Component {
     };
   }
 
+  fetchUser = async () => {
+    try {
+      const response = await axios.get("/user", authHeaders());
+      if (response.status === 200) {
+        this.setState({ user: response.data });
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   componentDidMount() {
-    axios
-      .get("/user", authHeaders())
-      .then(response =>
-        this.setState({
-          user: response.data
-        })
-      )
-      .catch(error => {
-        console.log(error);
-      });
+    this.fetchUser();
   }
 
   handleClick = event => {
