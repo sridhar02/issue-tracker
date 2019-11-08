@@ -74,6 +74,12 @@ const Comment = withStyles(commentStyles)(_Comment);
 const STATUS_OPEN = "Open";
 const STATUS_CLOSED = "Closed";
 
+const LOCK_OPEN = "Unlocked";
+const LOCK_CLOSE = "Locked";
+
+const PIN = "Pinned";
+const UNPIN = "Unpinned";
+
 const issueStyles = theme => ({
   body: {
     padding: theme.spacing(1),
@@ -309,6 +315,79 @@ class _Issue extends Component {
   lockIssueHandler = event => {
     const { username, repo, issueNumber } = Router.router.query;
     const { issue } = this.state;
+    const lockStatus = issue.lock === LOCK_OPEN ? LOCK_CLOSE : LOCK_OPEN;
+    axios
+      .put(
+        `/repos/${username}/${repo}/issues/${issueNumber}/lock`,
+        {
+          lock: lockStatus
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("secret")}`
+          }
+        }
+      )
+      .then(response => {
+        if (response.status === 204) {
+          axios
+            .get(`/repos/${username}/${repo}/issues/${issueNumber}`, {
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem("secret")}`
+              }
+            })
+            .then(response =>
+              this.setState({
+                issue: response.data
+              })
+            )
+            .catch(error => {
+              console.log(error);
+            });
+        }
+      })
+      .catch(error => {
+        console.log(error);
+      });
+  };
+
+  pinIssueHandler = event => {
+    const { username, repo, issueNumber } = Router.router.query;
+    const { issue } = this.state;
+    const pinStatus = issue.pinned === UNPIN ? PIN : UNPIN;
+    axios
+      .put(
+        `/repos/${username}/${repo}/issues/${issueNumber}`,
+        {
+          pinned: pinStatus
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("secret")}`
+          }
+        }
+      )
+      .then(response => {
+        if (response.status === 204) {
+          axios
+            .get(`/repos/${username}/${repo}/issues/${issueNumber}`, {
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem("secret")}`
+              }
+            })
+            .then(response =>
+              this.setState({
+                issue: response.data
+              })
+            )
+            .catch(error => {
+              console.log(error);
+            });
+        }
+      })
+      .catch(error => {
+        console.log(error);
+      });
   };
 
   render() {
@@ -343,6 +422,17 @@ class _Issue extends Component {
         }
       >
         {issue.status}
+      </Button>
+    );
+
+    const lockButton = (
+      <Button onClick={this.lockIssueHandler}>
+        <LockIcon /> {issue.lock === LOCK_OPEN ? "Lock" : "Unlock"} conversation
+      </Button>
+    );
+    const pinButton = (
+      <Button onClick={this.pinIssueHandler}>
+        {issue.pinned === PIN ? "Unpin" : "Pin"} Issue
       </Button>
     );
 
@@ -414,16 +504,13 @@ class _Issue extends Component {
               <div className={classes.sidebar}>Labels</div>
               <div className={classes.sidebar}>Projects</div>
               <div className={classes.sidebar}>Milestone</div>
-              <Button
-                className={classes.sidebar}
-                onClick={this.lockIssueHandler}
-              >
-                <LockIcon /> Lock conversation
-              </Button>
-              <Button className={classes.sidebar}>Pin</Button>
-              <Button className={classes.sidebar}>
-                <DeleteIcon /> Delete Issue
-              </Button>
+              <div className={classes.sidebar}>{lockButton}</div>
+              <div className={classes.sidebar}>{pinButton}</div>
+              <div className={classes.sidebar}>
+                <Button>
+                  <DeleteIcon /> Delete Issue
+                </Button>
+              </div>
             </div>
           </div>
         </div>
