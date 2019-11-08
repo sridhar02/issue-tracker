@@ -78,7 +78,7 @@ const LOCK_LOCK = "Locked";
 const LOCK_UNLOCK = "Unlocked";
 
 const PIN_PIN = "Pinned";
-const UNPIN_UNPIN = "Unpinned";
+const PIN_UNPIN = "Unpinned";
 
 const issueStyles = theme => ({
   body: {
@@ -354,7 +354,7 @@ class _Issue extends Component {
   togglePinIssue = event => {
     const { username, repo, issueNumber } = Router.router.query;
     const { issue } = this.state;
-    const pinStatus = issue.pinned === UNPIN_UNPIN ? PIN_PIN : UNPIN_UNPIN;
+    const pinStatus = issue.pinned === PIN_UNPIN ? PIN_PIN : PIN_UNPIN;
     axios
       .put(
         `/repos/${username}/${repo}/issues/${issueNumber}`,
