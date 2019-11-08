@@ -1,26 +1,17 @@
 import React, { Component, Fragment } from "react";
-
 import Router from "next/router";
-
 import Link from "next/link";
-
 import axios from "axios";
-
-import { withStyles } from "@material-ui/core/styles";
-
-import { Button, Typography } from "@material-ui/core";
-
-import TextField from "@material-ui/core/TextField";
-
-import LockIcon from "@material-ui/icons/Lock";
-
-import DeleteIcon from "@material-ui/icons/Delete";
-
 import cx from "classnames";
 
+import { withStyles } from "@material-ui/core/styles";
+import { Button, Typography } from "@material-ui/core";
+import TextField from "@material-ui/core/TextField";
+import LockIcon from "@material-ui/icons/Lock";
+import DeleteIcon from "@material-ui/icons/Delete";
 import ErrorOutlineIcon from "@material-ui/icons/ErrorOutline";
 
-import { Navbar } from "../../../../../../utils/utils.js";
+import { Navbar, authHeaders } from "../../../../../../utils/utils.js";
 
 const commentStyles = theme => ({
   image: {
@@ -36,7 +27,6 @@ const commentStyles = theme => ({
   commentUser: {
     display: "flex",
     backgroundColor: "#f6f8fa",
-    // padding: theme.spacing(1),
     borderBottom: "1px solid #ddd"
   },
   body: {
@@ -217,36 +207,23 @@ class _Issue extends Component {
     };
   }
 
-  componentDidMount() {
+  fetchIssue = () => {
     const { username, repo, issueNumber } = Router.router.query;
     axios
-      .get(`/repos/${username}/${repo}/issues/${issueNumber}`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("secret")}`
-        }
-      })
+      .get(`/repos/${username}/${repo}/issues/${issueNumber}`)
       .then(response =>
         this.setState({
-          issue: response.data
+          issue: response.data,
+          title: response.data.title
         })
       )
       .catch(error => {
         console.log(error);
       });
-    axios
-      .get("/user", {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("secret")}`
-        }
-      })
-      .then(response =>
-        this.setState({
-          user: response.data
-        })
-      )
-      .catch(error => {
-        console.log(error);
-      });
+  };
+
+  fetchComments = () => {
+    const { username, repo, issueNumber } = Router.router.query;
     axios
       .get(`/repos/${username}/${repo}/issues/${issueNumber}/comments`)
       .then(response =>
@@ -257,6 +234,22 @@ class _Issue extends Component {
       .catch(error => {
         console.log(error);
       });
+  };
+
+  componentDidMount() {
+    const { username, repo, issueNumber } = Router.router.query;
+    this.fetchIssue();
+    axios
+      .get("/user", authHeaders())
+      .then(response =>
+        this.setState({
+          user: response.data
+        })
+      )
+      .catch(error => {
+        console.log(error);
+      });
+    this.fetchComments();
   }
 
   handleChange = event => {
@@ -275,24 +268,11 @@ class _Issue extends Component {
         {
           body: this.state.body
         },
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("secret")}`
-          }
-        }
+        authHeaders()
       )
       .then(response => {
         if (response.status === 201) {
-          axios
-            .get(`/repos/${username}/${repo}/issues/${issueNumber}/comments`)
-            .then(response =>
-              this.setState({
-                comments: response.data
-              })
-            )
-            .catch(error => {
-              console.log(error);
-            });
+          this.fetchComments();
           this.setState({
             body: ""
           });
@@ -315,28 +295,11 @@ class _Issue extends Component {
         {
           status: newStatus
         },
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("secret")}`
-          }
-        }
+        authHeaders()
       )
       .then(response => {
         if (response.status === 204) {
-          axios
-            .get(`/repos/${username}/${repo}/issues/${issueNumber}`, {
-              headers: {
-                Authorization: `Bearer ${localStorage.getItem("secret")}`
-              }
-            })
-            .then(response =>
-              this.setState({
-                issue: response.data
-              })
-            )
-            .catch(error => {
-              console.log(error);
-            });
+          this.fetchIssue();
         }
       })
       .catch(error => {
@@ -354,28 +317,11 @@ class _Issue extends Component {
         {
           lock: lockStatus
         },
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("secret")}`
-          }
-        }
+        authHeaders()
       )
       .then(response => {
         if (response.status === 204) {
-          axios
-            .get(`/repos/${username}/${repo}/issues/${issueNumber}`, {
-              headers: {
-                Authorization: `Bearer ${localStorage.getItem("secret")}`
-              }
-            })
-            .then(response =>
-              this.setState({
-                issue: response.data
-              })
-            )
-            .catch(error => {
-              console.log(error);
-            });
+          this.fetchIssue();
         }
       })
       .catch(error => {
@@ -393,28 +339,11 @@ class _Issue extends Component {
         {
           pinned: pinStatus
         },
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("secret")}`
-          }
-        }
+        authHeaders()
       )
       .then(response => {
         if (response.status === 204) {
-          axios
-            .get(`/repos/${username}/${repo}/issues/${issueNumber}`, {
-              headers: {
-                Authorization: `Bearer ${localStorage.getItem("secret")}`
-              }
-            })
-            .then(response =>
-              this.setState({
-                issue: response.data
-              })
-            )
-            .catch(error => {
-              console.log(error);
-            });
+          this.fetchIssue();
         }
       })
       .catch(error => {
@@ -424,18 +353,12 @@ class _Issue extends Component {
 
   toggleTitle = event => {
     event.preventDefault();
-    if (this.state.editTitle === false) {
-      this.setState({
-        editTitle: true
-      });
-    } else {
-      this.setState({
-        editTitle: false
-      });
-    }
+    this.setState({
+      editTitle: !this.state.editTitle
+    });
   };
 
-  toggleIssueTitle = event => {
+  updateIssueTitle = event => {
     event.preventDefault();
     console.log(this.state.title);
     const { username, repo, issueNumber } = Router.router.query;
@@ -445,28 +368,11 @@ class _Issue extends Component {
         {
           title: this.state.title
         },
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("secret")}`
-          }
-        }
+        authHeaders()
       )
       .then(response => {
         if (response.status === 204) {
-          axios
-            .get(`/repos/${username}/${repo}/issues/${issueNumber}`, {
-              headers: {
-                Authorization: `Bearer ${localStorage.getItem("secret")}`
-              }
-            })
-            .then(response =>
-              this.setState({
-                issue: response.data
-              })
-            )
-            .catch(error => {
-              console.log(error);
-            });
+          this.fetchIssue();
         }
         this.setState({
           editTitle: false
@@ -487,7 +393,7 @@ class _Issue extends Component {
     const { issue, user, editTitle } = this.state;
     const { classes } = this.props;
 
-    if (issue === undefined || user === undefined) {
+    if (issue === undefined) {
       return null;
     }
 
@@ -538,7 +444,7 @@ class _Issue extends Component {
     const title =
       editTitle === true ? (
         <div>
-          <form onSubmit={this.toggleIssueTitle}>
+          <form onSubmit={this.updateIssueTitle}>
             <TextField
               name="title"
               variant="outlined"
