@@ -181,6 +181,23 @@ const issueStyles = theme => ({
   },
   statusCloseIcon: {
     color: "#CB2431"
+  },
+  issueHeading: {
+    display: "flex"
+  },
+  issueTitle: {
+    marginTop: theme.spacing(1)
+  },
+  save: {
+    backgroundColor: "#2cbe4e",
+    marginBottom: theme.spacing(1),
+    marginTop: theme.spacing(1)
+  },
+  cancel: {
+    margin: theme.spacing(1, 0, 1, 1)
+  },
+  titleEditButtons: {
+    display: "flex"
   }
 });
 
@@ -193,7 +210,9 @@ class _Issue extends Component {
     this.state = {
       issue: undefined,
       user: undefined,
+      title: "",
       body: "",
+      editTitle: false,
       comments: []
     };
   }
@@ -403,8 +422,69 @@ class _Issue extends Component {
       });
   };
 
+  toggleTitle = event => {
+    event.preventDefault();
+    if (this.state.editTitle === false) {
+      this.setState({
+        editTitle: true
+      });
+    } else {
+      this.setState({
+        editTitle: false
+      });
+    }
+  };
+
+  toggleIssueTitle = event => {
+    event.preventDefault();
+    console.log(this.state.title);
+    const { username, repo, issueNumber } = Router.router.query;
+    axios
+      .put(
+        `/repos/${username}/${repo}/issues/${issueNumber}`,
+        {
+          title: this.state.title
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("secret")}`
+          }
+        }
+      )
+      .then(response => {
+        if (response.status === 204) {
+          axios
+            .get(`/repos/${username}/${repo}/issues/${issueNumber}`, {
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem("secret")}`
+              }
+            })
+            .then(response =>
+              this.setState({
+                issue: response.data
+              })
+            )
+            .catch(error => {
+              console.log(error);
+            });
+        }
+        this.setState({
+          editTitle: false
+        });
+      })
+      .catch(error => {
+        console.log(error);
+      });
+  };
+
+  cancelIssueEdit = event => {
+    this.setState({
+      editTitle: false
+    });
+  };
+
   render() {
-    const { issue, user } = this.state;
+    const { issue, user, editTitle } = this.state;
     const { classes } = this.props;
 
     if (issue === undefined || user === undefined) {
@@ -455,6 +535,42 @@ class _Issue extends Component {
       </Button>
     );
 
+    const title =
+      editTitle === true ? (
+        <div>
+          <form onSubmit={this.toggleIssueTitle}>
+            <TextField
+              name="title"
+              variant="outlined"
+              placeholder={issue.title}
+              value={this.state.title}
+              onChange={this.handleChange}
+              className={classes.issueTitle}
+            />
+            <div className={classes.titleEditButtons}>
+              <Button
+                className={classes.save}
+                variant="contained"
+                type="submit"
+              >
+                Save
+              </Button>
+              <Button
+                className={classes.cancel}
+                variant="contained"
+                onClick={this.cancelIssueEdit}
+              >
+                Cancel
+              </Button>
+            </div>
+          </form>
+        </div>
+      ) : (
+        <Typography variant="h5" className={classes.title}>
+          {issue.title}
+        </Typography>
+      );
+
     return (
       <Fragment>
         <Navbar user={issue.user} />
@@ -462,7 +578,11 @@ class _Issue extends Component {
           <div className="row">
             <div className="col-lg-11">
               <div>
-                <Button variant="contained" className={classes.editButton}>
+                <Button
+                  variant="contained"
+                  className={classes.editButton}
+                  onClick={this.toggleTitle}
+                >
                   Edit
                 </Button>
                 <Link href="">
@@ -475,9 +595,12 @@ class _Issue extends Component {
                   </Button>
                 </Link>
               </div>
-              <Typography variant="h5" className={classes.title}>
-                {issue.title} #{issue.issue_number}
-              </Typography>
+              <div className={classes.issueHeading}>
+                {title}
+                <Typography variant="h5" className={classes.title}>
+                  #{issue.issue_number}
+                </Typography>
+              </div>
               <div className={classes.issueStatus}>
                 {status}
                 <Typography variant="body2">
