@@ -74,11 +74,11 @@ const Comment = withStyles(commentStyles)(_Comment);
 const STATUS_OPEN = "Open";
 const STATUS_CLOSED = "Closed";
 
-const LOCK_OPEN = "Unlocked";
-const LOCK_CLOSE = "Locked";
+const LOCK_LOCK = "Unlocked";
+const LOCK_UNLOCK = "Locked";
 
-const PIN = "Pinned";
-const UNPIN = "Unpinned";
+const PIN_PIN = "Pinned";
+const UNPIN_UNPIN = "Unpinned";
 
 const issueStyles = theme => ({
   body: {
@@ -271,7 +271,7 @@ class _Issue extends Component {
       });
   };
 
-  issueStatusHandler = event => {
+  toggleIssueStatus = event => {
     const { username, repo, issueNumber } = Router.router.query;
     const { issue } = this.state;
     const newStatus =
@@ -312,10 +312,10 @@ class _Issue extends Component {
       });
   };
 
-  lockIssueHandler = event => {
+  toggleLockIssue = event => {
     const { username, repo, issueNumber } = Router.router.query;
     const { issue } = this.state;
-    const lockStatus = issue.lock === LOCK_OPEN ? LOCK_CLOSE : LOCK_OPEN;
+    const lockStatus = issue.lock === LOCK_LOCK ? LOCK_UNLOCK : LOCK_LOCK;
     axios
       .put(
         `/repos/${username}/${repo}/issues/${issueNumber}/lock`,
@@ -351,10 +351,10 @@ class _Issue extends Component {
       });
   };
 
-  pinIssueHandler = event => {
+  togglePinIssue = event => {
     const { username, repo, issueNumber } = Router.router.query;
     const { issue } = this.state;
-    const pinStatus = issue.pinned === UNPIN ? PIN : UNPIN;
+    const pinStatus = issue.pinned === UNPIN_UNPIN ? PIN_PIN : UNPIN_UNPIN;
     axios
       .put(
         `/repos/${username}/${repo}/issues/${issueNumber}`,
@@ -401,7 +401,7 @@ class _Issue extends Component {
     const button = (
       <Button
         variant="contained"
-        onClick={this.issueStatusHandler}
+        onClick={this.toggleIssueStatus}
         className={
           issue.status === STATUS_OPEN
             ? classes.commentOpen
@@ -426,13 +426,13 @@ class _Issue extends Component {
     );
 
     const lockButton = (
-      <Button onClick={this.lockIssueHandler}>
-        <LockIcon /> {issue.lock === LOCK_OPEN ? "Lock" : "Unlock"} conversation
+      <Button onClick={this.toggleLockIssue}>
+        <LockIcon /> {issue.lock === LOCK_LOCK ? "Lock" : "Unlock"} conversation
       </Button>
     );
     const pinButton = (
-      <Button onClick={this.pinIssueHandler}>
-        {issue.pinned === PIN ? "Unpin" : "Pin"} Issue
+      <Button onClick={this.togglePinIssue}>
+        {issue.pinned === PIN_PIN ? "Unpin" : "Pin"} Issue
       </Button>
     );
 

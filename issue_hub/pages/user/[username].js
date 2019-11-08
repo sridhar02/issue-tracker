@@ -103,13 +103,15 @@ class _User extends Component {
         <Navbar className={classes.navbar} />
         <div className={cx(classes.container, "container")}>
           <div className="row">
-            <div className="col-12">
+            <div className="col-lg-3">
               <div className={classes.userDetails}>
                 <img src={user.image} className={classes.image} />
                 <div></div>
                 <Typography variant="body2">{user.username}</Typography>
               </div>
               <div className={classes.userProfile}></div>
+            </div>
+            <div className="col-lg-9">
               <div className="d-none">
                 <Link href="/new">
                   <Button color="primary" variant="contained">
