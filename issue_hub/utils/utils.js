@@ -44,6 +44,26 @@ const navbarStyles = theme => ({
     color: "#fff",
     padding: theme.spacing(0),
     margin: theme.spacing(0)
+  },
+  signout: {
+    color: "#fff",
+    padding: theme.spacing(1),
+    margin: theme.spacing(1)
+  },
+  dashboard: {
+    padding: theme.spacing(1),
+    margin: theme.spacing(1),
+    borderBottom: "1px solid #ddd"
+  },
+  issues: {
+    padding: theme.spacing(1),
+    margin: theme.spacing(1),
+    borderBottom: "1px solid #ddd"
+  },
+  userDetails: {
+    padding: theme.spacing(1),
+    margin: theme.spacing(1),
+    borderBottom: "1px solid #ddd"
   }
 });
 
@@ -60,14 +80,40 @@ class _Navbar extends Component {
   };
 
   handleClick = event => {
-    event.preventDefault();
-    this.setState({
-      navbar: "true"
-    });
+    if (this.state.navbar == "false") {
+      this.setState({
+        navbar: "true"
+      });
+    }
+    if (this.state.navbar == "true") {
+      this.setState({
+        navbar: "flase"
+      });
+    }
   };
 
   render() {
     const { classes } = this.props;
+    const { navbar } = this.state;
+    let button;
+    if (navbar === "true") {
+      button = (
+        <div>
+          <div className={classes.dashboard}>Dashboard</div>
+          <div className={classes.issues}>Issues</div>
+          <div className={classes.userDetails}>username</div>
+          <div>
+            <Link href="/login">
+              <Button className={classes.signout} onClick={this.onSignout}>
+                Signout
+              </Button>
+            </Link>
+          </div>
+        </div>
+      );
+    } else {
+      button = <div></div>;
+    }
     return (
       <AppBar position="static">
         <div className={cx(classes.container, "container")}>
@@ -80,6 +126,7 @@ class _Navbar extends Component {
                 <GitHubIcon />
                 <NotificationsIcon />
               </div>
+              {button}
               <div className={classes.overview}>
                 <div>Overview</div>
                 <div>Repositories</div>
