@@ -1,55 +1,20 @@
 import React, { Component } from "react";
-
 import Link from "next/link";
+import Router from "next/router";
+import cx from "classnames";
+import axios from "axios";
 
 import { Button, TextField, Typography } from "@material-ui/core";
-
-import { withStyles } from "@material-ui/styles";
-
-import Router from "next/router";
-
+import { withStyles } from "@material-ui/core/styles";
 import MenuIcon from "@material-ui/icons/Menu";
-
-import cx from "classnames";
-
-import { makeStyles } from "@material-ui/core/styles";
-
 import AppBar from "@material-ui/core/AppBar";
-
 import Toolbar from "@material-ui/core/Toolbar";
-
 import IconButton from "@material-ui/core/IconButton";
-
 import InputBase from "@material-ui/core/InputBase";
-
 import GitHubIcon from "@material-ui/icons/GitHub";
-
 import NotificationsIcon from "@material-ui/icons/Notifications";
 
-const navbarStyles = theme => ({
-  container: {
-    backgroundColor: "black",
-    padding: theme.spacing(1)
-  },
-  navbar: {
-    display: "flex",
-    justifyContent: "space-between"
-  },
-  overview: {
-    display: "flex",
-    justifyContent: "space-between",
-    marginTop: theme.spacing(3)
-  },
-  Button: {
-    color: "#fff",
-    padding: theme.spacing(0),
-    margin: theme.spacing(0)
-  },
-  signout: {
-    color: "#fff",
-    padding: theme.spacing(1),
-    margin: theme.spacing(1)
-  },
+const menuStyles = theme => ({
   dashboard: {
     padding: theme.spacing(1),
     margin: theme.spacing(1),
@@ -70,6 +35,58 @@ const navbarStyles = theme => ({
     heigth: theme.spacing(3),
     width: theme.spacing(3),
     margin: theme.spacing(0, 1, 0, 0)
+  },
+  signout: {
+    color: "#fff",
+    padding: theme.spacing(1),
+    margin: theme.spacing(1)
+  }
+});
+
+function _Menu({ classes, user }) {
+  const handleSignout = () => {
+    localStorage.removeItem("secret");
+    Router.push("/login");
+  };
+  return (
+    <div>
+      <div className={classes.dashboard}>Dashboard</div>
+      <div className={classes.issues}>Issues</div>
+      <div className={classes.userDetails}>
+        <img src={user.image} className={classes.userImage} />
+        <div>{user.username}</div>
+      </div>
+      <div>
+        <Link href="/login">
+          <Button className={classes.signout} onClick={handleSignout}>
+            Signout
+          </Button>
+        </Link>
+      </div>
+    </div>
+  );
+}
+
+const Menu = withStyles(menuStyles)(_Menu);
+
+const navbarStyles = theme => ({
+  container: {
+    backgroundColor: "black",
+    padding: theme.spacing(1)
+  },
+  navbar: {
+    display: "flex",
+    justifyContent: "space-between"
+  },
+  overview: {
+    display: "flex",
+    justifyContent: "space-between",
+    marginTop: theme.spacing(3)
+  },
+  Button: {
+    color: "#fff",
+    padding: theme.spacing(0),
+    margin: theme.spacing(0)
   }
 });
 
@@ -77,53 +94,39 @@ class _Navbar extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      navbar: "false"
+      navbar: false,
+      user: undefined
     };
   }
 
-  onSignout = () => {
-    localStorage.removeItem("secret");
-    Router.push("/login");
-  };
+  componentDidMount() {
+    axios
+      .get("/user", {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("secret")}`
+        }
+      })
+      .then(response =>
+        this.setState({
+          user: response.data
+        })
+      )
+      .catch(error => {
+        console.log(error);
+      });
+  }
 
   handleClick = event => {
-    if (this.state.navbar == "false") {
-      this.setState({
-        navbar: "true"
-      });
-    }
-    if (this.state.navbar == "true") {
-      this.setState({
-        navbar: "flase"
-      });
-    }
+    this.setState({
+      navbar: !this.state.navbar
+    });
   };
 
   render() {
-    const { classes, user } = this.props;
-    const { navbar } = this.state;
-    let button;
-    if (navbar === "true") {
-      button = (
-        <div>
-          <div className={classes.dashboard}>Dashboard</div>
-          <div className={classes.issues}>Issues</div>
-          <div className={classes.userDetails}>
-            <img src={user.image} className={classes.userImage} />
-            <div>{user.username}</div>
-          </div>
-          <div>
-            <Link href="/login">
-              <Button className={classes.signout} onClick={this.onSignout}>
-                Signout
-              </Button>
-            </Link>
-          </div>
-        </div>
-      );
-    } else {
-      button = <div></div>;
-    }
+    const { classes } = this.props;
+    const { navbar, user } = this.state;
+    const menu = navbar ? <Menu user={user} /> : <div></div>;
+
     return (
       <AppBar position="static" className={classes.container}>
         <div className={cx(classes.container, "container")}>
@@ -140,7 +143,7 @@ class _Navbar extends Component {
                 <GitHubIcon />
                 <NotificationsIcon />
               </div>
-              {button}
+              {menu}
               <div className={classes.overview}>
                 <div>Overview</div>
                 <div>Repositories</div>
