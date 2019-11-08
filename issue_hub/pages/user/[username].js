@@ -27,7 +27,8 @@ const userStyles = theme => ({
   },
   repo: {
     border: "1px solid #ddd",
-    padding: theme.spacing(2)
+    padding: theme.spacing(2),
+    fontWeight: "bold"
   },
   navbar: {
     marginBottom: theme.spacing(1)
@@ -100,7 +101,7 @@ class _User extends Component {
     }
     return (
       <Fragment>
-        <Navbar className={classes.navbar} />
+        <Navbar className={classes.navbar} user={user} />
         <div className={cx(classes.container, "container")}>
           <div className="row">
             <div className="col-lg-3">
