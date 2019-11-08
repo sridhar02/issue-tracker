@@ -101,11 +101,7 @@ class _Navbar extends Component {
 
   componentDidMount() {
     axios
-      .get("/user", {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("secret")}`
-        }
-      })
+      .get("/user", authHeaders())
       .then(response =>
         this.setState({
           user: response.data
@@ -158,3 +154,11 @@ class _Navbar extends Component {
 }
 
 export const Navbar = withStyles(navbarStyles)(_Navbar);
+
+export function authHeaders() {
+  return {
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem("secret")}`
+    }
+  };
+}
