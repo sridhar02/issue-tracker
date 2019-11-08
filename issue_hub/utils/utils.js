@@ -29,7 +29,7 @@ import NotificationsIcon from "@material-ui/icons/Notifications";
 const navbarStyles = theme => ({
   container: {
     backgroundColor: "black",
-    padding: theme.spacing(2)
+    padding: theme.spacing(1)
   },
   navbar: {
     display: "flex",
@@ -61,9 +61,15 @@ const navbarStyles = theme => ({
     borderBottom: "1px solid #ddd"
   },
   userDetails: {
+    display: "flex",
     padding: theme.spacing(1),
     margin: theme.spacing(1),
     borderBottom: "1px solid #ddd"
+  },
+  userImage: {
+    heigth: theme.spacing(3),
+    width: theme.spacing(3),
+    margin: theme.spacing(0, 1, 0, 0)
   }
 });
 
@@ -74,6 +80,7 @@ class _Navbar extends Component {
       navbar: "false"
     };
   }
+
   onSignout = () => {
     localStorage.removeItem("secret");
     Router.push("/login");
@@ -93,7 +100,7 @@ class _Navbar extends Component {
   };
 
   render() {
-    const { classes } = this.props;
+    const { classes, user } = this.props;
     const { navbar } = this.state;
     let button;
     if (navbar === "true") {
@@ -101,7 +108,10 @@ class _Navbar extends Component {
         <div>
           <div className={classes.dashboard}>Dashboard</div>
           <div className={classes.issues}>Issues</div>
-          <div className={classes.userDetails}>username</div>
+          <div className={classes.userDetails}>
+            <img src={user.image} className={classes.userImage} />
+            <div>{user.username}</div>
+          </div>
           <div>
             <Link href="/login">
               <Button className={classes.signout} onClick={this.onSignout}>
@@ -115,12 +125,16 @@ class _Navbar extends Component {
       button = <div></div>;
     }
     return (
-      <AppBar position="static">
+      <AppBar position="static" className={classes.container}>
         <div className={cx(classes.container, "container")}>
           <div className="row">
             <div className="col-12">
               <div className={classes.navbar}>
-                <Button onClick={this.handleClick} className={classes.Button}>
+                <Button
+                  onClick={this.handleClick}
+                  className={classes.Button}
+                  type="button"
+                >
                   <MenuIcon />
                 </Button>
                 <GitHubIcon />

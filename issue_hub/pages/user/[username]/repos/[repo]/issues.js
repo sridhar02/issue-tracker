@@ -53,15 +53,12 @@ class _Issues extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      issues: [],
-      user: undefined,
-      repos: []
+      issues: []
     };
   }
 
   componentDidMount() {
     const { username, repo } = Router.router.query;
-    console.log(username);
     axios
       .get(`/repos/${username}/${repo}/issues`, {
         headers: {
@@ -80,14 +77,13 @@ class _Issues extends Component {
 
   render() {
     const { classes, username, repo } = this.props;
-    const { issues, user, repos } = this.state;
+    const { issues } = this.state;
     if (issues === undefined) {
       return null;
     }
-
     return (
       <Fragment>
-        <Navbar />
+        <Navbar user={issues.user} />
         <div className={cx(classes.mainSection, "container")}>
           <div className="row">
             <div className="col-12">

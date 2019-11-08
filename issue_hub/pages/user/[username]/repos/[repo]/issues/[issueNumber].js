@@ -18,6 +18,8 @@ import DeleteIcon from "@material-ui/icons/Delete";
 
 import cx from "classnames";
 
+import ErrorOutlineIcon from "@material-ui/icons/ErrorOutline";
+
 import { Navbar } from "../../../../../../utils/utils.js";
 
 const commentStyles = theme => ({
@@ -34,7 +36,7 @@ const commentStyles = theme => ({
   commentUser: {
     display: "flex",
     backgroundColor: "#f6f8fa",
-    padding: theme.spacing(1),
+    // padding: theme.spacing(1),
     borderBottom: "1px solid #ddd"
   },
   body: {
@@ -93,14 +95,16 @@ const issueStyles = theme => ({
     fontSize: theme.spacing(1.5),
     padding: theme.spacing(0.5),
     backgroundColor: "#2cbe4e",
-    color: "#fff"
+    color: "#fff",
+    fontWeight: "bold"
   },
   statusClose: {
     marginRight: theme.spacing(1),
     fontSize: theme.spacing(1.5),
     padding: theme.spacing(0.5),
     backgroundColor: "#CB2431",
-    color: "#fff"
+    color: "#fff",
+    fontWeight: "bold"
   },
   image: {
     height: theme.spacing(3),
@@ -168,6 +172,15 @@ const issueStyles = theme => ({
   commentOpen: {
     marginRight: theme.spacing(1),
     backgroundColor: "#eff3f6"
+  },
+  statusIcon: {
+    marginRight: theme.spacing(0.5)
+  },
+  lockButton: {
+    fontSize: ""
+  },
+  statusCloseIcon: {
+    color: "#CB2431"
   }
 });
 
@@ -408,6 +421,11 @@ class _Issue extends Component {
             : classes.commentClose
         }
       >
+        {issue.status === STATUS_OPEN ? (
+          <ErrorOutlineIcon className={classes.statusCloseIcon} />
+        ) : (
+          ""
+        )}
         {issue.status === STATUS_OPEN ? "Close" : "Reopen"} issue
       </Button>
     );
@@ -421,13 +439,13 @@ class _Issue extends Component {
             : classes.statusClose
         }
       >
-        {issue.status}
+        <ErrorOutlineIcon className={classes.statusIcon} /> {issue.status}
       </Button>
     );
 
     const lockButton = (
-      <Button onClick={this.toggleLockIssue}>
-        <LockIcon /> {issue.lock === LOCK_UNLOCK ? "Lock" : "Unlock"}{" "}
+      <Button onClick={this.toggleLockIssue} className={classes.lockButton}>
+        <LockIcon /> {issue.lock === LOCK_UNLOCK ? "Lock" : "Unlock"}
         conversation
       </Button>
     );
@@ -439,10 +457,10 @@ class _Issue extends Component {
 
     return (
       <Fragment>
-        <Navbar />
+        <Navbar user={issue.user} />
         <div className={cx(classes.container, "container")}>
           <div className="row">
-            <div className="col-lg-10">
+            <div className="col-lg-11">
               <div>
                 <Button variant="contained" className={classes.editButton}>
                   Edit
@@ -500,7 +518,7 @@ class _Issue extends Component {
                 </form>
               </div>
             </div>
-            <div className="col-lg-2">
+            <div className="col-lg-1">
               <div className={classes.sidebar}>Assignee</div>
               <div className={classes.sidebar}>Labels</div>
               <div className={classes.sidebar}>Projects</div>
