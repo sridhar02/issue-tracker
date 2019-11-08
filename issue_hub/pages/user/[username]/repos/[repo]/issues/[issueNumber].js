@@ -74,8 +74,8 @@ const Comment = withStyles(commentStyles)(_Comment);
 const STATUS_OPEN = "Open";
 const STATUS_CLOSED = "Closed";
 
-const LOCK_LOCK = "Unlocked";
-const LOCK_UNLOCK = "Locked";
+const LOCK_LOCK = "Locked";
+const LOCK_UNLOCK = "Unlocked";
 
 const PIN_PIN = "Pinned";
 const UNPIN_UNPIN = "Unpinned";
@@ -427,7 +427,8 @@ class _Issue extends Component {
 
     const lockButton = (
       <Button onClick={this.toggleLockIssue}>
-        <LockIcon /> {issue.lock === LOCK_LOCK ? "Lock" : "Unlock"} conversation
+        <LockIcon /> {issue.lock === LOCK_UNLOCK ? "Lock" : "Unlock"}{" "}
+        conversation
       </Button>
     );
     const pinButton = (
