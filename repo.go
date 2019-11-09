@@ -176,3 +176,60 @@ func deleteRepoHandler(c *gin.Context, db *sql.DB) {
 	c.Status(http.StatusNoContent)
 
 }
+
+func getReposHandler(c *gin.Context, db *sql.DB) {
+
+	username := c.Param("username")
+
+	user, err := GetUserByUserName(db, username)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	rows, err := db.Query(`SELECT id,name,issue_count,created_at,updated_at,description,type FROM repos 
+						  where user_id=$1 ORDER BY id ASC`, user.ID)
+	if err != nil {
+		fmt.Println(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	Repos := []Repo{}
+	for rows.Next() {
+		var id, name, createdAt, updatedAt, description, Type string
+		var issueCount int
+		err = rows.Scan(&id, &name, &issueCount, &updatedAt, &createdAt, &description, &Type)
+		if err != nil {
+			fmt.Println(err)
+			c.AbortWithStatus(http.StatusInternalServerError)
+			return
+		}
+
+		CreatedAt, err := time.Parse(time.RFC3339, createdAt)
+		if err != nil {
+			fmt.Println(err)
+			c.AbortWithStatus(http.StatusInternalServerError)
+			return
+		}
+
+		UpdatedAt, err := time.Parse(time.RFC3339, updatedAt)
+		if err != nil {
+			fmt.Println(err)
+			c.AbortWithStatus(http.StatusInternalServerError)
+			return
+		}
+
+		repo := Repo{
+			ID:          id,
+			Name:        name,
+			IssuesCount: issueCount,
+			CreatedAt:   CreatedAt,
+			UpdatedAt:   UpdatedAt,
+			Description: description,
+			Type:        Type,
+			User:        user,
+		}
+		Repos = append(Repos, repo)
+	}
+	c.JSON(200, Repos)
+}

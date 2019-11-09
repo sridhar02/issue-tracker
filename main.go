@@ -134,7 +134,7 @@ func authorization(c *gin.Context, db *sql.DB) (string, error) {
 
 }
 
-func getUserHandler(c *gin.Context, db *sql.DB) {
+func getAuthenticatedUserHandler(c *gin.Context, db *sql.DB) {
 
 	userId, err := authorization(c, db)
 	if err != nil {
@@ -151,7 +151,7 @@ func getUserHandler(c *gin.Context, db *sql.DB) {
 
 }
 
-func getReposHandler(c *gin.Context, db *sql.DB) {
+func getAuthenticatedUserReposHandler(c *gin.Context, db *sql.DB) {
 
 	userId, err := authorization(c, db)
 	if err != nil {
@@ -388,8 +388,10 @@ func main() {
 
 	router.POST("/signup", func(c *gin.Context) { postUserSignupHandler(c, db) })
 	router.POST("/signin", func(c *gin.Context) { PostUserSigninPageHandler(c, db) })
-	router.GET("/user", func(c *gin.Context) { getUserHandler(c, db) })
-	router.GET("/user/repos", func(c *gin.Context) { getReposHandler(c, db) })
+	router.GET("/user", func(c *gin.Context) { getAuthenticatedUserHandler(c, db) })
+	router.GET("/users/:username", func(c *gin.Context) { getUserHandler(c, db) })
+	router.GET("/users/:username/repos", func(c *gin.Context) { getReposHandler(c, db) })
+	router.GET("/user/repos", func(c *gin.Context) { getAuthenticatedUserReposHandler(c, db) })
 	router.POST("/user/repos", func(c *gin.Context) { postRepoHandler(c, db) })
 	router.GET("/repos/:owner/:repo/issues", func(c *gin.Context) { getIssuesHandler(c, db) })
 	router.POST("/repos/:owner/:repo/issues", func(c *gin.Context) { postIssueHandler(c, db) })

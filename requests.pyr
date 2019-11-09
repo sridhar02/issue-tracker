@@ -137,3 +137,7 @@ delete('http://localhost:8000/repos/DONE/RepoFirst/issues/3/lock',
 	json={
 		'lock':'Unlocked',
 	})
+
+get('http://localhost:8000/users/sridhar02')
+
+get('http://localhost:8000//users/DONE/repos')
