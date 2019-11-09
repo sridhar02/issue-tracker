@@ -12,7 +12,7 @@ import TextField from "@material-ui/core/TextField";
 
 import cx from "classnames";
 
-import { Navbar } from "../../../../../../utils/utils.js";
+import { Navbar, authHeaders } from "../../../../../../utils/utils.js";
 
 const issueStyles = theme => ({
   image: {
@@ -69,58 +69,50 @@ class _Issue extends Component {
       body: ""
     };
   }
-  componentDidMount() {
-    axios
-      .get("/user", {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("secret")}`
-        }
-      })
-      .then(response =>
+
+  fetchUser = async () => {
+    try {
+      const response = await axios.get("/user", authHeaders());
+      if (response.status === 200) {
         this.setState({
           user: response.data
-        })
-      )
-      .catch(error => {
-        console.log(error);
-      });
+        });
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  componentDidMount() {
+    this.fetchUser();
   }
   handleChange = event => {
     this.setState({
       [event.target.name]: event.target.value
     });
   };
-  handleSubmit = event => {
+  handleSubmit = async event => {
     const { username, repo } = Router.router.query;
-    console.log(username);
-    console.log(repo);
-    event.preventDefault();
     const { user } = this.state;
-    axios
-      .post(
+    event.preventDefault();
+    try {
+      const response = await axios.post(
         `/repos/${username}/${repo}/issues`,
         {
           title: this.state.title,
           body: this.state.body
         },
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("secret")}`
-          }
-        }
-      )
-      .then(response => Router.push(`/user/${user.username}`))
-      .catch(error => {
-        console.log(error);
-      });
+        authHeaders()
+      );
+      if (response.status === 201) {
+        Router.push(`/user/${user.username}`);
+      }
+    } catch (error) {
+      console.log(error);
+    }
   };
   render() {
     const { classes } = this.props;
     const { user } = this.state;
-
-    if (user === undefined) {
-      return null;
-    }
 
     return (
       <Fragment>
@@ -129,7 +121,6 @@ class _Issue extends Component {
           <div className="row">
             <div className="col-12">
               <div className={classes.mainSection}>
-                <img src={user.image} className={cx(classes.image, "d-none")} />
                 <div className={classes.issue}>
                   <form onSubmit={this.handleSubmit}>
                     <div className={classes.title}>
