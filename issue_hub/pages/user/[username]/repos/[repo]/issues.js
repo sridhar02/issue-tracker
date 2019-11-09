@@ -14,7 +14,7 @@ import TextField from "@material-ui/core/TextField";
 
 import cx from "classnames";
 
-import { Navbar } from "../../../../../utils/utils.js";
+import { Navbar, authHeaders } from "../../../../../utils/utils.js";
 
 const issueStyles = theme => ({
   issue: {
@@ -57,22 +57,25 @@ class _Issues extends Component {
     };
   }
 
-  componentDidMount() {
+  fetchIssues = async () => {
     const { username, repo } = Router.router.query;
-    axios
-      .get(`/repos/${username}/${repo}/issues`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("secret")}`
-        }
-      })
-      .then(response =>
+    try {
+      const response = await axios.get(
+        `/repos/${username}/${repo}/issues`,
+        authHeaders()
+      );
+      if (response.status === 200) {
         this.setState({
           issues: response.data
-        })
-      )
-      .catch(error => {
-        console.log(error);
-      });
+        });
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  componentDidMount() {
+    this.fetchIssues();
   }
 
   render() {
