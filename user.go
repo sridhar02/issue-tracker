@@ -3,7 +3,7 @@ package main
 import (
 	"database/sql"
 	"encoding/json"
-	// "fmt"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"io/ioutil"
@@ -25,11 +25,11 @@ type User struct {
 
 func GetUserByUserName(db *sql.DB, username string) (User, error) {
 
-	var name, id, email, createdAt, updatedAt, password, image string
+	var name, id, email, createdAt, updatedAt, image string
 
 	row := db.QueryRow(`SELECT id,name, email,created_at, 
-						updated_at,password,image FROM users WHERE username = $1`, username)
-	err := row.Scan(&id, &name, &email, &createdAt, &updatedAt, &password, &image)
+						updated_at,image FROM users WHERE username = $1`, username)
+	err := row.Scan(&id, &name, &email, &createdAt, &updatedAt, &image)
 	if err != nil {
 		return User{}, err
 	}
@@ -53,7 +53,6 @@ func GetUserByUserName(db *sql.DB, username string) (User, error) {
 		Email:     email,
 		CreatedAt: CreatedAt,
 		UpdatedAt: UpdatedAt,
-		Password:  password,
 		Image:     image,
 	}
 
@@ -193,7 +192,6 @@ func deleteUserHandler(c *gin.Context, db *sql.DB) {
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
-	// c.JSON(http.StatusOK, repo)
 
 	c.Status(http.StatusNoContent)
 
@@ -233,4 +231,43 @@ func getPhoto() (string, error) {
 	}
 
 	return data[0].Photo, nil
+}
+
+func getUserHandler(c *gin.Context, db *sql.DB) {
+
+	username := c.Param("username")
+
+	var name, id, email, createdAt, updatedAt, password, image string
+
+	row := db.QueryRow(`SELECT id,name, email,created_at, 
+						updated_at,password,image FROM users WHERE username = $1`, username)
+	err := row.Scan(&id, &name, &email, &createdAt, &updatedAt, &password, &image)
+	if err != nil {
+		fmt.Println(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	CreatedAt, err := time.Parse(time.RFC3339, createdAt)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	UpdatedAt, err := time.Parse(time.RFC3339, updatedAt)
+	if err != nil {
+		return
+	}
+
+	user := User{
+		ID:        id,
+		Name:      name,
+		Username:  username,
+		Email:     email,
+		CreatedAt: CreatedAt,
+		UpdatedAt: UpdatedAt,
+		Image:     image,
+	}
+
+	c.JSON(200, user)
 }
