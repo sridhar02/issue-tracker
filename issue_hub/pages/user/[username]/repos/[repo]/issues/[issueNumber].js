@@ -199,7 +199,6 @@ class _Issue extends Component {
     super(props);
     this.state = {
       issue: undefined,
-      user: undefined,
       title: "",
       body: "",
       editTitle: false,
@@ -207,48 +206,40 @@ class _Issue extends Component {
     };
   }
 
-  fetchIssue = () => {
+  fetchIssue = async () => {
     const { username, repo, issueNumber } = Router.router.query;
-    axios
-      .get(`/repos/${username}/${repo}/issues/${issueNumber}`)
-      .then(response =>
+    try {
+      const response = await axios.get(
+        `/repos/${username}/${repo}/issues/${issueNumber}`
+      );
+      if (response.status === 200) {
         this.setState({
           issue: response.data,
           title: response.data.title
-        })
-      )
-      .catch(error => {
-        console.log(error);
-      });
+        });
+      }
+    } catch (error) {
+      console.log(error);
+    }
   };
 
-  fetchComments = () => {
+  fetchComments = async () => {
     const { username, repo, issueNumber } = Router.router.query;
-    axios
-      .get(`/repos/${username}/${repo}/issues/${issueNumber}/comments`)
-      .then(response =>
-        this.setState({
-          comments: response.data
-        })
-      )
-      .catch(error => {
-        console.log(error);
-      });
+    try {
+      const response = await axios.get(
+        `/repos/${username}/${repo}/issues/${issueNumber}/comments`
+      );
+      if (response.status === 200) {
+        this.setState({ comments: response.data });
+      }
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   componentDidMount() {
     const { username, repo, issueNumber } = Router.router.query;
     this.fetchIssue();
-    axios
-      .get("/user", authHeaders())
-      .then(response =>
-        this.setState({
-          user: response.data
-        })
-      )
-      .catch(error => {
-        console.log(error);
-      });
     this.fetchComments();
   }
 
@@ -258,97 +249,88 @@ class _Issue extends Component {
     });
   };
 
-  handleSubmit = event => {
+  handleSubmit = async event => {
     const { username, repo, issueNumber } = Router.router.query;
     event.preventDefault();
     const { user } = this.state;
-    axios
-      .post(
+    try {
+      const response = await axios.post(
         `/repos/${username}/${repo}/issues/${issueNumber}/comments`,
         {
           body: this.state.body
         },
         authHeaders()
-      )
-      .then(response => {
-        if (response.status === 201) {
-          this.fetchComments();
-          this.setState({
-            body: ""
-          });
-        }
-      })
-      .catch(error => {
-        console.log(error);
-      });
+      );
+      if (response.status === 201) {
+        this.fetchComments();
+        this.setState({
+          body: ""
+        });
+      }
+    } catch (error) {
+      console.log(error);
+    }
   };
 
-  toggleIssueStatus = event => {
+  toggleIssueStatus = async event => {
     const { username, repo, issueNumber } = Router.router.query;
     const { issue } = this.state;
     const newStatus =
       issue.status === STATUS_OPEN ? STATUS_CLOSED : STATUS_OPEN;
-
-    axios
-      .put(
+    try {
+      const response = await axios.put(
         `/repos/${username}/${repo}/issues/${issueNumber}`,
         {
           status: newStatus
         },
         authHeaders()
-      )
-      .then(response => {
-        if (response.status === 204) {
-          this.fetchIssue();
-        }
-      })
-      .catch(error => {
-        console.log(error);
-      });
+      );
+      if (response.status === 204) {
+        this.fetchIssue();
+      }
+    } catch (error) {
+      console.log(error);
+    }
   };
 
-  toggleLockIssue = event => {
+  toggleLockIssue = async event => {
     const { username, repo, issueNumber } = Router.router.query;
     const { issue } = this.state;
     const lockStatus = issue.lock === LOCK_LOCK ? LOCK_UNLOCK : LOCK_LOCK;
-    axios
-      .put(
+    try {
+      const response = await axios.put(
         `/repos/${username}/${repo}/issues/${issueNumber}/lock`,
         {
           lock: lockStatus
         },
         authHeaders()
-      )
-      .then(response => {
-        if (response.status === 204) {
-          this.fetchIssue();
-        }
-      })
-      .catch(error => {
-        console.log(error);
-      });
+      );
+      if (response.status === 204) {
+        this.fetchIssue();
+      }
+    } catch (error) {
+      console.log(error);
+    }
   };
 
-  togglePinIssue = event => {
+  togglePinIssue = async event => {
     const { username, repo, issueNumber } = Router.router.query;
     const { issue } = this.state;
     const pinStatus = issue.pinned === PIN_UNPIN ? PIN_PIN : PIN_UNPIN;
-    axios
-      .put(
+    try {
+      const response = await axios.put(
         `/repos/${username}/${repo}/issues/${issueNumber}`,
         {
           pinned: pinStatus
         },
         authHeaders()
-      )
-      .then(response => {
-        if (response.status === 204) {
-          this.fetchIssue();
-        }
-      })
-      .catch(error => {
-        console.log(error);
-      });
+      );
+      if (response.status === 204) {
+        this.fetchIssue();
+      }
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   toggleTitle = event => {
@@ -358,29 +340,27 @@ class _Issue extends Component {
     });
   };
 
-  updateIssueTitle = event => {
+  updateIssueTitle = async event => {
     event.preventDefault();
     console.log(this.state.title);
     const { username, repo, issueNumber } = Router.router.query;
-    axios
-      .put(
+    try {
+      const response = await axios.put(
         `/repos/${username}/${repo}/issues/${issueNumber}`,
         {
           title: this.state.title
         },
         authHeaders()
-      )
-      .then(response => {
-        if (response.status === 204) {
-          this.fetchIssue();
-        }
+      );
+      if (response.status === 204) {
+        this.fetchIssue();
         this.setState({
           editTitle: false
         });
-      })
-      .catch(error => {
-        console.log(error);
-      });
+      }
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   cancelIssueEdit = event => {
@@ -479,7 +459,7 @@ class _Issue extends Component {
 
     return (
       <Fragment>
-        <Navbar user={issue.user} />
+        <Navbar />
         <div className={cx(classes.container, "container")}>
           <div className="row">
             <div className="col-lg-11">
