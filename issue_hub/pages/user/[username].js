@@ -47,6 +47,9 @@ const userStyles = theme => ({
 });
 
 class _User extends Component {
+  static getInitialProps({ query }) {
+    return { query };
+  }
   constructor(props) {
     super(props);
     this.state = {
@@ -55,44 +58,42 @@ class _User extends Component {
     };
   }
 
+  fetchUser = async () => {
+    const { username } = Router.router.query;
+    try {
+      const response = await axios.get(`/users/${username}`);
+      if (response.status === 200) {
+        this.setState({ user: response.data });
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  fetchUserRepos = async () => {
+    const { username } = Router.router.query;
+    try {
+      const response = await axios.get(`/users/${username}/repos`);
+      if (response.status === 200) {
+        this.setState({ repos: response.data });
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   componentDidMount() {
-    axios
-      .get("/user", {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("secret")}`
-        }
-      })
-      .then(response =>
-        this.setState({
-          user: response.data
-        })
-      )
-      .catch(error => {
-        console.log(error);
-      });
-    axios
-      .get("/user/repos", {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("secret")}`
-        }
-      })
-      .then(response =>
-        this.setState({
-          repos: response.data
-        })
-      )
-      .catch(error => {
-        console.log(error);
-      });
+    this.fetchUser();
+    this.fetchUserRepos();
   }
 
   render() {
     const { user, repos } = this.state;
     const { classes } = this.props;
-
     if (user === undefined) {
       return null;
     }
+
     return (
       <Fragment>
         <Navbar className={classes.navbar} user={user} />
