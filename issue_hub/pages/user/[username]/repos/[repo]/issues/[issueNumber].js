@@ -3,6 +3,7 @@ import Router from "next/router";
 import Link from "next/link";
 import axios from "axios";
 import cx from "classnames";
+import { formatDistance, parseISO } from "date-fns";
 
 import { withStyles } from "@material-ui/core/styles";
 import { Button, Typography } from "@material-ui/core";
@@ -51,7 +52,10 @@ class _Comment extends Component {
               <Typography variant="body2" className={classes.username}>
                 {comment.user.username}
               </Typography>
-              <div>commented 9 days ago</div>
+              <div>
+                commented{" "}
+                {formatDistance(Date.now(), parseISO(comment.created_at))} ago
+              </div>
             </div>
             <div className={classes.body}> {comment.body}</div>
           </div>
@@ -465,82 +469,97 @@ class _Issue extends Component {
         <Navbar />
         <div className={cx(classes.container, "container")}>
           <div className="row">
-            <div className="col-lg-11">
-              <div>
-                <Button
-                  variant="contained"
-                  className={classes.editButton}
-                  onClick={this.toggleTitle}
-                >
-                  Edit
-                </Button>
-                <Link href="">
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    className={classes.newIssue}
-                  >
-                    New issue
-                  </Button>
-                </Link>
-              </div>
-              <div className={classes.issueHeading}>
-                {title}
-                <Typography variant="h5" className={classes.title}>
-                  #{issue.issue_number}
-                </Typography>
-              </div>
-              <div className={classes.issueStatus}>
-                {status}
-                <Typography variant="body2">
-                  opened this issue 9 days ago
-                </Typography>
-              </div>
-              <div>
-                <div className={classes.issueBody}>
-                  <div className={classes.username}>
-                    <img src={issue.user.image} className={cx(classes.image)} />
-                    <Typography variant="body2" className={classes.name}>
-                      {issue.user.username}
-                    </Typography>
-                    <div>commented 9 days ago</div>
-                  </div>
-                  <Typography variant="body2" className={classes.body}>
-                    {issue.body}
-                  </Typography>
-                </div>
-                <Comment comments={this.state.comments} />
-                <form onSubmit={this.handleSubmit}>
+            <div className="col-12">
+              <div className="row">
+                <div className="col-12">
                   <div>
-                    <textarea
-                      className={cx(classes.commentSection, "form-control")}
-                      name="body"
-                      value={this.state.body}
-                      onChange={this.handleChange}
-                    />
-                    {button}
                     <Button
                       variant="contained"
-                      className={classes.commentButton}
-                      type="submit"
+                      className={classes.editButton}
+                      onClick={this.toggleTitle}
                     >
-                      Comment
+                      Edit
+                    </Button>
+                    <Link href="">
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        className={classes.newIssue}
+                      >
+                        New issue
+                      </Button>
+                    </Link>
+                  </div>
+                  <div className={classes.issueHeading}>
+                    {title}
+                    <Typography variant="h5" className={classes.title}>
+                      #{issue.issue_number}
+                    </Typography>
+                  </div>
+                  <div className={classes.issueStatus}>
+                    {status}
+                    <Typography variant="body2">
+                      opened this issue{" "}
+                      {formatDistance(Date.now(), parseISO(issue.created_at))}
+                      ago
+                    </Typography>
+                  </div>
+                </div>
+              </div>
+              <div className="row">
+                <div className="col-lg-11">
+                  <div className={classes.issueBody}>
+                    <div className={classes.username}>
+                      <img
+                        src={issue.user.image}
+                        className={cx(classes.image)}
+                      />
+                      <Typography variant="body2" className={classes.name}>
+                        {issue.user.username}
+                      </Typography>
+                      <div>
+                        commented{" "}
+                        {formatDistance(Date.now(), parseISO(issue.updated_at))}{" "}
+                        ago
+                      </div>
+                    </div>
+                    <Typography variant="body2" className={classes.body}>
+                      {issue.body}
+                    </Typography>
+                  </div>
+                  <Comment comments={this.state.comments} />
+                  <form onSubmit={this.handleSubmit}>
+                    <div>
+                      <textarea
+                        className={cx(classes.commentSection, "form-control")}
+                        name="body"
+                        value={this.state.body}
+                        onChange={this.handleChange}
+                      />
+                      {button}
+                      <Button
+                        variant="contained"
+                        className={classes.commentButton}
+                        type="submit"
+                      >
+                        Comment
+                      </Button>
+                    </div>
+                  </form>
+                </div>
+                <div className="col-lg-1">
+                  <div className={classes.sidebar}>Assignee</div>
+                  <div className={classes.sidebar}>Labels</div>
+                  <div className={classes.sidebar}>Projects</div>
+                  <div className={classes.sidebar}>Milestone</div>
+                  <div className={classes.sidebar}>{lockButton}</div>
+                  <div className={classes.sidebar}>{pinButton}</div>
+                  <div className={classes.sidebar}>
+                    <Button>
+                      <DeleteIcon /> Delete Issue
                     </Button>
                   </div>
-                </form>
-              </div>
-            </div>
-            <div className="col-lg-1">
-              <div className={classes.sidebar}>Assignee</div>
-              <div className={classes.sidebar}>Labels</div>
-              <div className={classes.sidebar}>Projects</div>
-              <div className={classes.sidebar}>Milestone</div>
-              <div className={classes.sidebar}>{lockButton}</div>
-              <div className={classes.sidebar}>{pinButton}</div>
-              <div className={classes.sidebar}>
-                <Button>
-                  <DeleteIcon /> Delete Issue
-                </Button>
+                </div>
               </div>
             </div>
           </div>

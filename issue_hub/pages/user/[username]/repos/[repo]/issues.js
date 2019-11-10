@@ -1,17 +1,12 @@
 import React, { Component, Fragment } from "react";
-
 import Router from "next/router";
-
 import Link from "next/link";
-
 import axios from "axios";
+import { formatDistance, parseISO } from "date-fns";
 
 import { withStyles } from "@material-ui/core/styles";
-
 import { Button, Typography } from "@material-ui/core";
-
 import TextField from "@material-ui/core/TextField";
-
 import cx from "classnames";
 
 import { Navbar, authHeaders } from "../../../../../utils/utils.js";
@@ -37,6 +32,8 @@ const issueStyles = theme => ({
 function _Issue(props) {
   const { username, repo } = Router.router.query;
   const { classes, issue } = props;
+  console.log(issue.created_at);
+  console.log(Date.now());
   return (
     <div key={issue.id} className={classes.issue}>
       <div className={classes.issueDisplay}>
@@ -47,7 +44,10 @@ function _Issue(props) {
         </Link>
         <div>#{issue.issue_number}</div>
       </div>
-      <div> opened 3 days ago by {issue.user.username}</div>
+      <div>
+        opened {formatDistance(Date.now(), parseISO(issue.created_at))} ago by{" "}
+        {issue.user.username}
+      </div>
     </div>
   );
 }
