@@ -24,17 +24,26 @@ const userStyles = theme => ({
   container: {
     [theme.breakpoints.up("md")]: {
       margin: theme.spacing(3, 4.4375, 0)
+    },
+    marginBottom: 50
+  },
+  repoWrapper: {
+    // padding: theme.spacing(2),
+    fontWeight: "bold",
+    width: "100%",
+    "&:last-child $repo": {
+      borderBottom: "1px solid #ddd"
     }
   },
   repo: {
-    border: "1px solid #ddd",
+    borderTop: "1px solid #ddd",
+    borderLeft: "1px solid #ddd",
+    borderRight: "1px solid #ddd",
+
     padding: theme.spacing(2),
-    fontWeight: "bold",
     [theme.breakpoints.up("md")]: {
-      margin: theme.spacing(1),
-      padding: theme.spacing(2),
-      width: "100%",
-      heigth: "100%"
+      border: "1px solid #ddd",
+      marginBottom: theme.spacing(2)
     }
   },
   navbar: {
@@ -64,20 +73,11 @@ const userStyles = theme => ({
       borderBottom: "0px"
     }
   },
-  repotitle: {
-    padding: theme.spacing(2),
+  popular: {
+    padding: theme.spacing(2, 0),
     [theme.breakpoints.up("md")]: {
       borderTop: "1px solid #ddd",
       marginTop: theme.spacing(2)
-    }
-  },
-  repoDisplay: {
-    margin: theme.spacing(2, 0, 0),
-    padding: theme.spacing(0, 2, 2)
-  },
-  repoArragement: {
-    [theme.breakpoints.up("md")]: {
-      display: "flex"
     }
   }
 });
@@ -153,11 +153,16 @@ class _User extends Component {
                   </Button>
                 </Link>
               </div>
-              <div className={classes.repoDisplay}>
-                <div className={classes.repotitle}>Popular respositories</div>
-                <div className={classes.repoArragement}>
-                  {repos.map(repo => (
-                    <div key={repo.id} className={classes.repo}>
+              <div className={cx(classes.popular)}>
+                <div>Popular respositories</div>
+              </div>
+              <div className={"row"}>
+                {repos.map(repo => (
+                  <div
+                    key={repo.id}
+                    className={cx(classes.repoWrapper, "col-md-6")}
+                  >
+                    <div className={classes.repo}>
                       <Link
                         href={`/user/${user.username}/repos/${repo.name}/issues`}
                       >
@@ -166,8 +171,8 @@ class _User extends Component {
                         </a>
                       </Link>
                     </div>
-                  ))}
-                </div>
+                  </div>
+                ))}
               </div>
             </div>
           </div>

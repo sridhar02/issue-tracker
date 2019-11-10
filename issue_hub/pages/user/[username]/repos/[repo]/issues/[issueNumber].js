@@ -134,7 +134,10 @@ const issueStyles = theme => ({
     padding: theme.spacing(0.5)
   },
   container: {
-    margin: theme.spacing(1)
+    margin: theme.spacing(1),
+    [theme.breakpoints.up("md")]: {
+      margin: "25px auto"
+    }
   },
   name: {
     fontWeight: "bold",

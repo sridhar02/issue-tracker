@@ -248,6 +248,13 @@ func getIssuesHandler(c *gin.Context, db *sql.DB) {
 			c.AbortWithStatus(http.StatusInternalServerError)
 			return
 		}
+
+		user, err := GetUser(db, userId)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+
 		issue := Issue{
 			ID:          id,
 			Title:       title,
@@ -259,6 +266,7 @@ func getIssuesHandler(c *gin.Context, db *sql.DB) {
 			Lock:        lock,
 			CreatedAt:   CreatedAt,
 			UpdatedAt:   UpdatedAt,
+			User:        user,
 		}
 		issues = append(issues, issue)
 	}
