@@ -14,35 +14,71 @@ const userStyles = theme => ({
   image: {
     heigth: theme.spacing(13.75),
     width: theme.spacing(13.75),
-    margin: theme.spacing(0, 1.875, 0, 0)
+    margin: theme.spacing(0, 1.875, 0, 0),
+    [theme.breakpoints.up("md")]: {
+      heigth: theme.spacing(30.9975),
+      width: theme.spacing(30.8725)
+      // margin: theme.spacing(0, 1.875, 0, 0)
+    }
   },
   container: {
-    padding: theme.spacing(0)
+    [theme.breakpoints.up("md")]: {
+      margin: theme.spacing(3, 4.4375, 0)
+    }
   },
   repo: {
     border: "1px solid #ddd",
     padding: theme.spacing(2),
-    fontWeight: "bold"
+    fontWeight: "bold",
+    [theme.breakpoints.up("md")]: {
+      margin: theme.spacing(1),
+      padding: theme.spacing(2),
+      width: "100%",
+      heigth: "100%"
+    }
   },
   navbar: {
     marginBottom: theme.spacing(1)
   },
   userDetails: {
     display: "flex",
-    padding: theme.spacing(1.875, 1.875, 1.25)
+    padding: theme.spacing(1.875, 1.875, 1.25),
+    [theme.breakpoints.up("md")]: {
+      display: "block"
+    }
+  },
+  userName: {
+    [theme.breakpoints.up("md")]: {
+      padding: theme.spacing(2),
+      fontWeight: "bold",
+      fontSize: theme.spacing(2.5),
+      marginTop: theme.spacing(1)
+    }
   },
   userProfile: {
     padding: "0 15px 15px",
     margin: theme.spacing(1, 0, 0),
     borderBottom: "1px solid #ddd",
-    whiteSpace: "pre-wrap"
+    whiteSpace: "pre-wrap",
+    [theme.breakpoints.up("md")]: {
+      borderBottom: "0px"
+    }
   },
   repotitle: {
-    margin: "13.28px 0"
+    padding: theme.spacing(2),
+    [theme.breakpoints.up("md")]: {
+      borderTop: "1px solid #ddd",
+      marginTop: theme.spacing(2)
+    }
   },
   repoDisplay: {
     margin: theme.spacing(2, 0, 0),
     padding: theme.spacing(0, 2, 2)
+  },
+  repoArragement: {
+    [theme.breakpoints.up("md")]: {
+      display: "flex"
+    }
   }
 });
 
@@ -103,7 +139,9 @@ class _User extends Component {
               <div className={classes.userDetails}>
                 <img src={user.image} className={classes.image} />
                 <div></div>
-                <Typography variant="body2">{user.username}</Typography>
+                <Typography variant="body2" className={classes.userName}>
+                  {user.username}
+                </Typography>
               </div>
               <div className={classes.userProfile}></div>
             </div>
@@ -117,17 +155,19 @@ class _User extends Component {
               </div>
               <div className={classes.repoDisplay}>
                 <div className={classes.repotitle}>Popular respositories</div>
-                {repos.map(repo => (
-                  <div key={repo.id} className={classes.repo}>
-                    <Link
-                      href={`/user/${user.username}/repos/${repo.name}/issues`}
-                    >
-                      <a>
-                        {repo.user.username}/{repo.name}
-                      </a>
-                    </Link>
-                  </div>
-                ))}
+                <div className={classes.repoArragement}>
+                  {repos.map(repo => (
+                    <div key={repo.id} className={classes.repo}>
+                      <Link
+                        href={`/user/${user.username}/repos/${repo.name}/issues`}
+                      >
+                        <a>
+                          {repo.user.username}/{repo.name}
+                        </a>
+                      </Link>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
