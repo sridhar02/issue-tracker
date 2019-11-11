@@ -32,8 +32,6 @@ const issueStyles = theme => ({
 function _Issue(props) {
   const { username, repo } = Router.router.query;
   const { classes, issue } = props;
-  console.log(issue.created_at);
-  console.log(Date.now());
   return (
     <div key={issue.id} className={classes.issue}>
       <div className={classes.issueDisplay}>

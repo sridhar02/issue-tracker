@@ -18,7 +18,6 @@ const userStyles = theme => ({
     [theme.breakpoints.up("md")]: {
       heigth: theme.spacing(30.9975),
       width: theme.spacing(30.8725)
-      // margin: theme.spacing(0, 1.875, 0, 0)
     }
   },
   container: {
@@ -167,7 +166,10 @@ class _User extends Component {
                         href={`/user/${user.username}/repos/${repo.name}/issues`}
                       >
                         <a>
-                          {repo.user.username}/{repo.name}
+                          <span className="d-md-none">
+                            {repo.user.username}/
+                          </span>
+                          {repo.name}
                         </a>
                       </Link>
                     </div>
