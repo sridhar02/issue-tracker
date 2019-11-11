@@ -13,6 +13,8 @@ import IconButton from "@material-ui/core/IconButton";
 import InputBase from "@material-ui/core/InputBase";
 import GitHubIcon from "@material-ui/icons/GitHub";
 import NotificationsIcon from "@material-ui/icons/Notifications";
+import ArrowDropDownIcon from "@material-ui/icons/ArrowDropDown";
+import Popper from "@material-ui/core/Popper";
 
 const menuStyles = theme => ({
   dashboard: {
@@ -81,12 +83,39 @@ const navbarStyles = theme => ({
   overview: {
     display: "flex",
     justifyContent: "space-between",
-    marginTop: theme.spacing(3)
+    marginTop: theme.spacing(3),
+    [theme.breakpoints.up("md")]: {
+      display: "flex",
+      justifyContent: "space-between"
+    }
   },
   Button: {
     color: "#fff",
     padding: theme.spacing(0),
     margin: theme.spacing(0)
+  },
+  textField: {
+    paddingTop: 0,
+    paddingBottom: 0,
+    backgroundColor: "#fff",
+    borderRadius: "4px",
+    width: "30%"
+  },
+  space: {
+    width: "10%"
+  },
+  userImage: {
+    height: theme.spacing(4),
+    width: theme.spacing(4),
+    borderRadius: "4px"
+  },
+  dropDown: {
+    backgroundColor: "black",
+    color: "#fff",
+    padding: 0,
+    margin: 0,
+    border: 0
+    // width: "10%"
   }
 });
 
@@ -124,7 +153,9 @@ class _Navbar extends Component {
     const { classes } = this.props;
     const { navbar, user } = this.state;
     const menu = navbar ? <Menu user={user} /> : <div></div>;
-
+    if (user === undefined) {
+      return null;
+    }
     return (
       <AppBar position="static" className={classes.container}>
         <div className={cx(classes.container, "container")}>
@@ -133,16 +164,35 @@ class _Navbar extends Component {
               <div className={classes.navbar}>
                 <Button
                   onClick={this.handleClick}
-                  className={classes.Button}
+                  className={cx(classes.Button, "d-md-none")}
                   type="button"
                 >
                   <MenuIcon />
                 </Button>
                 <GitHubIcon />
+                <TextField
+                  className={cx(classes.textField, "d-none d-md-block")}
+                />
+                <div className="d-none d-md-block">Pull requests</div>
+                <div className="d-none d-md-block">Issues</div>
+                <div className="d-none d-md-block">Marketplace</div>
+                <div className="d-none d-md-block">Explore</div>
+                <div className={cx(classes.space, "d-none d-md-block")}></div>
                 <NotificationsIcon />
+                <div className="d-none d-md-block">
+                  <img src={user.image} className={classes.userImage} />
+                  <button type="button" className={classes.dropDown}>
+                    <ArrowDropDownIcon onClick="" />
+                  </button>
+                  {/*<Popper id={id} open={open} anchorEl={anchorEl}>
+                    <div className={classes.paper}>
+                      The content of the Popper.
+                    </div>
+                  </Popper>*/}
+                </div>
               </div>
               {menu}
-              <div className={classes.overview}>
+              <div className={cx(classes.overview, "d-md-none")}>
                 <div>Overview</div>
                 <div>Repositories</div>
                 <div>Projects</div>

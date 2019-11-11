@@ -507,7 +507,7 @@ class _Issue extends Component {
                 </div>
               </div>
               <div className="row">
-                <div className="col-lg-11">
+                <div className="col-lg-10">
                   <div className={classes.issueBody}>
                     <div className={classes.username}>
                       <img
@@ -547,7 +547,7 @@ class _Issue extends Component {
                     </div>
                   </form>
                 </div>
-                <div className="col-lg-1">
+                <div className="col-lg-2">
                   <div className={classes.sidebar}>Assignee</div>
                   <div className={classes.sidebar}>Labels</div>
                   <div className={classes.sidebar}>Projects</div>
