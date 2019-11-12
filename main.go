@@ -407,7 +407,6 @@ func main() {
 	router.PUT("/repos/:owner/:repo/issues/:issue_number", func(c *gin.Context) { putIssueHandler(c, db) })
 	router.PUT("/repos/:owner/:repo/issues/:issue_number/pin", func(c *gin.Context) { putPinHandler(c, db) })
 	router.PUT("/repos/:owner/:repo/issues/:issue_number/lock", func(c *gin.Context) { putLockHandler(c, db) })
-	router.DELETE("/repos/:owner/:repo/issues/:issue_number/lock", func(c *gin.Context) { deleteLockHandler(c, db) })
 	router.GET("/repos/:owner/:repo/issues/:issue_number/comments", func(c *gin.Context) { getCommentsHandler(c, db) })
 	router.POST("/repos/:owner/:repo/issues/:issue_number/comments", func(c *gin.Context) { postCommentHandler(c, db) })
 
