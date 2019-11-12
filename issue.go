@@ -311,45 +311,6 @@ func putLockHandler(c *gin.Context, db *sql.DB) {
 
 }
 
-func deleteLockHandler(c *gin.Context, db *sql.DB) {
-
-	_, err := authorization(c, db)
-	if err != nil {
-		return
-	}
-	username := c.Param("owner")
-	repoName := c.Param("repo")
-	issueNumber := c.Param("issue_number")
-
-	issue := Issue{}
-	err = c.BindJSON(&issue)
-	if err != nil {
-		fmt.Println(err)
-		c.AbortWithStatus(http.StatusInternalServerError)
-		return
-	}
-
-	_, err = db.Exec(`WITH repo_cte AS (
-		                     SELECT repos.id FROM repos JOIN users ON repos.user_id= users.id 
-                		     WHERE repos.name= $1 AND users.username= $2
-                		     ) , 
-                		issue_CTE AS (
-                			 SELECT id FROM issues 
-                		     WHERE repo_id in (SELECT id from repo_cte) and issue_number=$3
-                		     )
-                		UPDATE issues SET lock= $4 WHERE id in ( select id from issue_cte )`,
-		repoName, username, issueNumber, issue.Lock)
-
-	if err != nil {
-		fmt.Println(err)
-		c.AbortWithStatus(http.StatusInternalServerError)
-		return
-	}
-
-	c.Status(http.StatusNoContent)
-
-}
-
 func putPinHandler(c *gin.Context, db *sql.DB) {
 
 	_, err := authorization(c, db)
@@ -395,7 +356,7 @@ func putPinHandler(c *gin.Context, db *sql.DB) {
 	}
 
 	if count >= 3 {
-		c.Status(http.StatusNoContent)
+		c.Status(422)
 		return
 	}
 
