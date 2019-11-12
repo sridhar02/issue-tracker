@@ -141,3 +141,11 @@ delete('http://localhost:8000/repos/DONE/RepoFirst/issues/3/lock',
 get('http://localhost:8000/users/sridhar02')
 
 get('http://localhost:8000//users/DONE/repos')
+
+put('http://localhost:8000/repos/DONE/RepoFirst/issues/2/pin',
+	headers={
+	    "Authorization": "Bearer CIySftTxPpQRsGShMSQVEDYghCLxvvNJ"
+	},
+	json={
+		'pinned':'Unpinned',
+	})

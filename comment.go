@@ -126,16 +126,16 @@ func postCommentHandler(c *gin.Context, db *sql.DB) {
 	issueNumber := c.Param("issue_number")
 	var repoId string
 	var issueId int
-	row := db.QueryRow(`select repos.id FROM repos JOIN users ON repos.user_id= users.id 
-         				   WHERE repos.name= $1 AND users.username= $2`, repoName, username)
-	err = row.Scan(&repoId)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
 
-	row = db.QueryRow(`select id FROM issues WHERE repo_id= $1 AND issue_number= $2`, repoId, issueNumber)
-	err = row.Scan(&issueId)
+	row := db.QueryRow(`WITH repo_cte AS(
+							            SELECT repos.id FROM repos JOIN users ON repos.user_id= users.id 
+                                        WHERE repos.name= $1 AND users.username= $2
+                                        )
+                                        SELECT id,repo_id FROM issues 
+                                        WHERE repo_id in ( select id from repo_cte ) 
+                                        AND issue_number = $3`,
+		repoName, username, issueNumber)
+	err = row.Scan(&issueId, &repoId)
 	if err != nil {
 		fmt.Println(err)
 		return
