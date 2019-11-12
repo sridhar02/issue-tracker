@@ -115,7 +115,6 @@ const navbarStyles = theme => ({
     padding: 0,
     margin: 0,
     border: 0
-    // width: "10%"
   }
 });
 

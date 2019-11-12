@@ -28,11 +28,16 @@ type Issue struct {
 func GetIssue(db *sql.DB, Id int) (Issue, error) {
 
 	var title, body, repoId, status, createdAt, userId, updatedAt, pinned, lock string
-	var id, issueNumber int
+	var issueNumber int
 
-	row := db.QueryRow(`SELECT id,title,body,repo_id,issue_number,status,pinned,lock,user_id,created_at, 
-						updated_at FROM issues WHERE id=$1`, Id)
-	err := row.Scan(&id, &title, &body, &repoId, &issueNumber, &status, &pinned, &lock, &userId, &createdAt, &updatedAt)
+	row := db.QueryRow(`SELECT 
+		                     title,body,repo_id,issue_number,status,
+		                     pinned,lock,user_id,created_at, 
+						     updated_at 
+						     FROM 
+						     issues 
+						     WHERE id=$1`, Id)
+	err := row.Scan(&title, &body, &repoId, &issueNumber, &status, &pinned, &lock, &userId, &createdAt, &updatedAt)
 	if err != nil {
 		fmt.Println(err)
 		return Issue{}, err
@@ -57,7 +62,7 @@ func GetIssue(db *sql.DB, Id int) (Issue, error) {
 	}
 
 	issue := Issue{
-		ID:          id,
+		ID:          Id,
 		Title:       title,
 		Body:        body,
 		RepoId:      repoId,
@@ -86,8 +91,14 @@ func CreateIssue(db *sql.DB, issue Issue) (int, int, error) {
 
 	// fmt.Println(issue)
 
-	err = db.QueryRow(`INSERT INTO issues(title, user_id,body,repo_id,issue_number,status,pinned,lock,created_at, updated_at)
-						VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING id`,
+	err = db.QueryRow(`INSERT INTO 
+		                        issues ( 
+		                        title, user_id,body,repo_id,issue_number,status,
+		                        pinned,lock,created_at, updated_at
+		                        )
+						        VALUES(
+						        $1,$2,$3,$4,$5,$6,$7,$8,$9,$10
+						        ) RETURNING id`,
 		issue.Title,
 		issue.UserId,
 		issue.Body,
@@ -144,7 +155,7 @@ func postIssueHandler(c *gin.Context, db *sql.DB) {
 	repoName := c.Param("repo")
 	var repoId string
 	row := db.QueryRow(`SELECT repos.id FROM repos JOIN users ON repos.user_id= users.id 
-						   WHERE repos.name=$1 AND users.username=$2`, repoName, username)
+						       WHERE repos.name=$1 AND users.username=$2`, repoName, username)
 	err = row.Scan(&repoId)
 	if err != nil {
 		fmt.Println(err)
@@ -184,9 +195,13 @@ func putIssueHandler(c *gin.Context, db *sql.DB) {
 	issueNumber := c.Param("issue_number")
 
 	var Id int
-	row := db.QueryRow(`WITH repo_cte AS (select repos.id FROM repos JOIN users ON repos.user_id= users.id 
-                		WHERE repos.name= $1 AND users.username= $2) select id from issues where repo_id 
-                		in (select id from repo_cte) and issue_number=$3`, repoName, username, issueNumber)
+	row := db.QueryRow(`WITH repo_cte AS ( 
+		                    SELECT repos.id FROM repos JOIN users ON repos.user_id= users.id 
+                		    WHERE repos.name= $1 AND users.username= $2
+                		) 
+                		SELECT id FROM issues 
+                		WHERE  repo_id in (select id from repo_cte) AND issue_number=$3`,
+		repoName, username, issueNumber)
 	err = row.Scan(&Id)
 	if err != nil {
 		fmt.Println(err)
@@ -226,12 +241,12 @@ func putIssueHandler(c *gin.Context, db *sql.DB) {
 		return
 	}
 
-	err = UpdateIssue(db, issue)
-	if err != nil {
-		fmt.Println(err)
-		c.AbortWithStatus(http.StatusInternalServerError)
-		return
-	}
+	// err = UpdateIssue(db, issue)
+	// if err != nil {
+	// 	fmt.Println(err)
+	// 	c.AbortWithStatus(http.StatusInternalServerError)
+	// 	return
+	// }
 
 	c.Status(http.StatusNoContent)
 }
@@ -258,7 +273,7 @@ func deleteIssueHandler(c *gin.Context, db *sql.DB) {
 
 }
 
-func putLocKHandler(c *gin.Context, db *sql.DB) {
+func putLockHandler(c *gin.Context, db *sql.DB) {
 
 	_, err := authorization(c, db)
 	if err != nil {
@@ -268,16 +283,43 @@ func putLocKHandler(c *gin.Context, db *sql.DB) {
 	repoName := c.Param("repo")
 	issueNumber := c.Param("issue_number")
 
-	var Id int
-	row := db.QueryRow(`WITH repo_cte AS (select repos.id FROM repos JOIN users ON repos.user_id= users.id 
-                		WHERE repos.name= $1 AND users.username= $2) select id from issues where repo_id 
-                		in (select id from repo_cte) and issue_number=$3`, repoName, username, issueNumber)
-	err = row.Scan(&Id)
+	issue := Issue{}
+	err = c.BindJSON(&issue)
 	if err != nil {
 		fmt.Println(err)
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
+
+	_, err = db.Exec(`WITH repo_cte AS (
+		                     SELECT repos.id  FROM repos JOIN users ON repos.user_id= users.id 
+                		     WHERE repos.name= $1 AND users.username= $2
+                		     ) , 
+                		issue_CTE AS (
+                			 SELECT id FROM issues 
+                		     WHERE repo_id in (SELECT id from repo_cte) and issue_number=$3
+                		     )
+                		UPDATE issues SET lock= $4 WHERE id in ( select id from issue_cte )`,
+		repoName, username, issueNumber, issue.Lock)
+	if err != nil {
+		fmt.Println(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	c.Status(http.StatusNoContent)
+
+}
+
+func deleteLockHandler(c *gin.Context, db *sql.DB) {
+
+	_, err := authorization(c, db)
+	if err != nil {
+		return
+	}
+	username := c.Param("owner")
+	repoName := c.Param("repo")
+	issueNumber := c.Param("issue_number")
 
 	issue := Issue{}
 	err = c.BindJSON(&issue)
@@ -287,7 +329,16 @@ func putLocKHandler(c *gin.Context, db *sql.DB) {
 		return
 	}
 
-	_, err = db.Exec(`UPDATE issues SET lock = $1 WHERE id = $2`, issue.Lock, Id)
+	_, err = db.Exec(`WITH repo_cte AS (
+		                     SELECT repos.id FROM repos JOIN users ON repos.user_id= users.id 
+                		     WHERE repos.name= $1 AND users.username= $2
+                		     ) , 
+                		issue_CTE AS (
+                			 SELECT id FROM issues 
+                		     WHERE repo_id in (SELECT id from repo_cte) and issue_number=$3
+                		     )
+                		UPDATE issues SET lock= $4 WHERE id in ( select id from issue_cte )`,
+		repoName, username, issueNumber, issue.Lock)
 
 	if err != nil {
 		fmt.Println(err)
@@ -299,7 +350,7 @@ func putLocKHandler(c *gin.Context, db *sql.DB) {
 
 }
 
-func deleteLocKHandler(c *gin.Context, db *sql.DB) {
+func putPinHandler(c *gin.Context, db *sql.DB) {
 
 	_, err := authorization(c, db)
 	if err != nil {
@@ -310,10 +361,15 @@ func deleteLocKHandler(c *gin.Context, db *sql.DB) {
 	issueNumber := c.Param("issue_number")
 
 	var Id int
-	row := db.QueryRow(`WITH repo_cte AS (select repos.id FROM repos JOIN users ON repos.user_id= users.id 
-                		WHERE repos.name= $1 AND users.username= $2) select id from issues where repo_id 
-                		in (select id from repo_cte) and issue_number=$3`, repoName, username, issueNumber)
-	err = row.Scan(&Id)
+	var repoId string
+	row := db.QueryRow(`WITH repo_cte AS (
+		                    SELECT repos.id FROM repos JOIN users ON repos.user_id= users.id 
+                		    WHERE repos.name= $1 AND users.username= $2
+                	        ) 
+                	    SELECT id,repo_id FROM issues 
+                	    WHERE repo_id in (SELECT id FROM repo_cte) AND issue_number=$3`,
+		repoName, username, issueNumber)
+	err = row.Scan(&Id, &repoId)
 	if err != nil {
 		fmt.Println(err)
 		c.AbortWithStatus(http.StatusInternalServerError)
@@ -328,8 +384,22 @@ func deleteLocKHandler(c *gin.Context, db *sql.DB) {
 		return
 	}
 
-	_, err = db.Exec(`UPDATE issues SET lock = $1 WHERE id = $2`, issue.Lock, Id)
+	var count int
 
+	row = db.QueryRow(` SELECT count(*) FROM issues WHERE pinned = 'Pinned' AND repo_id = $1`, repoId)
+	err = row.Scan(&count)
+	if err != nil {
+		fmt.Println(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	if count >= 3 {
+		c.Status(http.StatusNoContent)
+		return
+	}
+
+	_, err = db.Exec(`UPDATE issues SET pinned = $1 WHERE id = $2`, issue.Pinned, Id)
 	if err != nil {
 		fmt.Println(err)
 		c.AbortWithStatus(http.StatusInternalServerError)
@@ -337,5 +407,4 @@ func deleteLocKHandler(c *gin.Context, db *sql.DB) {
 	}
 
 	c.Status(http.StatusNoContent)
-
 }
