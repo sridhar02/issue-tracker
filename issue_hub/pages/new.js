@@ -1,21 +1,13 @@
 import React, { Component, Fragment } from "react";
-
 import Router from "next/router";
-
 import Link from "next/link";
-
 import axios from "axios";
-
-import { withStyles } from "@material-ui/core/styles";
-
-import { Button, Typography } from "@material-ui/core";
-
-import TextField from "@material-ui/core/TextField";
-
 import cx from "classnames";
 
-import { Navbar } from "../utils/utils.js";
-
+import { withStyles } from "@material-ui/core/styles";
+import { Button, Typography } from "@material-ui/core";
+import TextField from "@material-ui/core/TextField";
+import Input from "@material-ui/core/Input";
 import Radio from "@material-ui/core/Radio";
 import RadioGroup from "@material-ui/core/RadioGroup";
 import FormHelperText from "@material-ui/core/FormHelperText";
@@ -23,19 +15,76 @@ import FormControlLabel from "@material-ui/core/FormControlLabel";
 import FormControl from "@material-ui/core/FormControl";
 import FormLabel from "@material-ui/core/FormLabel";
 
+import { Navbar } from "../utils/utils.js";
+
 const repoStyles = theme => ({
+  container: {
+    [theme.breakpoints.up("md")]: {
+      margin: "50px auto",
+      display: "flex",
+      justifyContent: "center"
+    }
+  },
   username: {
     border: "1px solid #ddd",
-    padding: theme.spacing(1),
-    margin: theme.spacing(2)
+    padding: theme.spacing(1)
+    // margin: theme.spacing(2)
   },
   formControl: {
     margin: theme.spacing(1)
+  },
+  formGroup: {
+    borderBottom: "1px solid #ddd",
+    padding: theme.spacing(1),
+    marginBottom: theme.spacing(2),
+    marginTop: theme.spacing(2)
   },
   image: {
     heigth: theme.spacing(4),
     width: theme.spacing(4),
     marginRight: theme.spacing(1)
+  },
+  generalDescription: {
+    paddingBottom: theme.spacing(3),
+    paddingTop: theme.spacing(2),
+    borderBottom: "1px solid #ddd"
+  },
+  user: {
+    display: "flex",
+    marginTop: theme.spacing(2)
+  },
+  name: {
+    heigth: "25px",
+    width: "100%",
+    padding: 0,
+    border: "1px solid #ddd",
+    borderRadius: "4px"
+  },
+  repositoryName: {
+    fontWeight: "bold",
+    padding: "10px"
+  },
+  owner: {
+    fontWeight: "bold",
+    padding: "10px"
+  },
+  createButton: {
+    backgroundColor: "#28A745",
+    color: "#fff"
+  },
+  description: {
+    fontWeight: "bold",
+    paddingBottom: theme.spacing(2)
+  },
+  nameProperty: {
+    paddingTop: theme.spacing(2),
+    paddingBottom: theme.spacing(2)
+  },
+  descriptionTextField: {
+    borderBottom: "1px solid #ddd",
+    marginBottom: theme.spacing(2),
+    paddingBottom: theme.spacing(2),
+    width: "100%"
   }
 });
 
@@ -104,65 +153,92 @@ class _NewRepo extends Component {
       <Fragment>
         <Navbar />
         <form onSubmit={this.handleSubmit}>
-          <div className="container">
+          <div className={cx(classes.container, "container")}>
             <div className="row">
               <div className="col-12">
                 <Typography variant="h6">Create a new repository</Typography>
-                <Typography variant="body2">
+                <Typography
+                  variant="body2"
+                  className={classes.generalDescription}
+                >
                   A repository contains all project files, including the
                   revision history. Already have a project repository elsewhere?
                 </Typography>
-                <Typography variant="h6">Owner</Typography>
-                <span className={classes.username}>
-                  <img src={user.image} className={classes.image} />
-                  {user.username}
-                </span>
-                <Typography variant="h6">Repository name</Typography>
-                <TextField
-                  variant="outlined"
-                  label="name"
-                  name="name"
-                  value={this.state.name}
-                  onChange={this.handleChange}
-                  placeholder=" Enter repo name"
-                />
-                <Typography variant="body2">
+                <div className={cx(classes.user, "row")}>
+                  <div className="col-lg-3">
+                    <Typography variant="body2" className={classes.owner}>
+                      Owner
+                    </Typography>
+                    <Button className={classes.username}>
+                      <img src={user.image} className={classes.image} />
+                      {user.username}
+                    </Button>
+                  </div>
+                  <div className="col-lg-3">
+                    <Typography
+                      variant="body2"
+                      className={classes.repositoryName}
+                    >
+                      Repository name
+                    </Typography>
+                    <Input
+                      label="name"
+                      name="name"
+                      value={this.state.name}
+                      onChange={this.handleChange}
+                      placeholder=" Enter repo name"
+                      className={classes.name}
+                      InputProps={{ classes: { underline: classes.underline } }}
+                    />
+                  </div>
+                </div>
+
+                <Typography variant="body2" className={classes.nameProperty}>
                   Great repository names are short and memorable. Need
                   inspiration? How about laughing-dollop?
                 </Typography>
-                <Typography variant="h6">Description</Typography>
+                <Typography variant="body2" className={classes.description}>
+                  Description
+                </Typography>
                 <TextField
                   variant="outlined"
                   label="description"
                   name="description"
                   value={this.state.description}
                   onChange={this.handleChange}
+                  className={classes.descriptionTextField}
                 />
-                <FormControl
-                  component="fieldset"
-                  className={classes.formControl}
-                >
-                  <FormLabel component="legend">Repo Type</FormLabel>
-                  <RadioGroup
-                    aria-label="repo type"
-                    name="type"
-                    value={this.state.type}
-                    onChange={this.handleChange}
+                <div className={classes.formGroup}>
+                  <FormControl
+                    component="fieldset"
+                    className={classes.formControl}
                   >
-                    <FormControlLabel
-                      value="public"
-                      control={<Radio />}
-                      label="Public"
-                    />
-                    <FormControlLabel
-                      value="private"
-                      control={<Radio />}
-                      label="private"
-                    />
-                  </RadioGroup>
-                </FormControl>
+                    <FormLabel component="legend">Repo Type</FormLabel>
+                    <RadioGroup
+                      aria-label="repo type"
+                      name="type"
+                      value={this.state.type}
+                      onChange={this.handleChange}
+                    >
+                      <FormControlLabel
+                        value="public"
+                        control={<Radio />}
+                        label="Public"
+                      />
+                      <FormControlLabel
+                        value="private"
+                        control={<Radio />}
+                        label="private"
+                      />
+                    </RadioGroup>
+                  </FormControl>
+                </div>
                 <div>
-                  <Button variant="contained" color="primary" type="submit">
+                  <Button
+                    variant="contained"
+                    className={classes.createButton}
+                    type="submit"
+                  >
                     Create Repository
                   </Button>
                 </div>
