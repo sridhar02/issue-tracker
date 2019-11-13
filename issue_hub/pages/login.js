@@ -1,26 +1,59 @@
 import React, { Component, Fragment } from "react";
-
 import Router from "next/router";
-
 import Link from "next/link";
-
 import axios from "axios";
+import cx from "classnames";
 
 import { withStyles } from "@material-ui/core/styles";
-
 import { Button, Typography } from "@material-ui/core";
-
 import TextField from "@material-ui/core/TextField";
-
-import cx from "classnames";
+import GitHubIcon from "@material-ui/icons/GitHub";
 
 const loginStyles = theme => ({
   mainSection: {
-    margin: theme.spacing(1)
+    margin: theme.spacing(1),
+    [theme.breakpoints.up("md")]: {
+      margin: "80px auto",
+      display: "flex",
+      justifyContent: "center"
+    }
   },
   title: {
-    paddingBottom: theme.spacing(2),
-    paddingLeft: theme.spacing(2)
+    padding: theme.spacing(2),
+    marginLeft: theme.spacing(6)
+  },
+  gitIcon: {
+    padding: theme.spacing(0.5),
+    fontSize: "55px",
+    marginLeft: theme.spacing(14)
+  },
+  inputFields: {
+    border: "1px solid #ddd",
+    padding: theme.spacing(2),
+    margin: theme.spacing(2)
+  },
+  username: {
+    fontWeight: "bold"
+  },
+  password: {
+    fontWeight: "bold"
+  },
+  signinButton: {
+    backgroundColor: "#28A745",
+    margin: "20px 0px 0px",
+    padding: "6px 12px",
+    color: "#fff",
+    width: "100%"
+  },
+  newAccount: {
+    border: "1px solid #ddd",
+    padding: theme.spacing(2),
+    margin: theme.spacing(2)
+  },
+  topHeaders: {
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "center"
   }
 });
 
@@ -58,32 +91,57 @@ class _Login extends Component {
         <form onSubmit={this.handleSubmit}>
           <div className="row">
             <div className="col-12">
-              <Typography variant="h6" className={classes.title}>
-                Sign in to GitHub
-              </Typography>
-              <Typography variant="h6">Username or email address </Typography>
-              <TextField
-                placeholder="username"
-                name="username"
-                margin="normal"
-                variant="outlined"
-                value={this.state.name}
-                onChange={this.handleChange}
-              />
-              <Typography variant="h6">Password </Typography>
-              <TextField
-                name="password"
-                placeholder="password"
-                type="password"
-                margin="normal"
-                variant="outlined"
-                value={this.state.name}
-                onChange={this.handleChange}
-              />
-              <div>
-                <Button variant="contained" color="primary" type="submit">
-                  Sign in
-                </Button>
+              <div className={classes.topHeaders}>
+                <div>
+                  <GitHubIcon className={classes.gitIcon} />
+                </div>
+                <div>
+                  <Typography variant="h6" className={classes.title}>
+                    Sign in to GitHub
+                  </Typography>
+                </div>
+              </div>
+              <div className={classes.inputFields}>
+                <Typography variant="body2" className={classes.username}>
+                  Username or email address
+                </Typography>
+                <TextField
+                  placeholder="username"
+                  name="username"
+                  margin="normal"
+                  variant="outlined"
+                  value={this.state.name}
+                  onChange={this.handleChange}
+                />
+                <Typography variant="body2" className={classes.password}>
+                  Password
+                </Typography>
+                <TextField
+                  name="password"
+                  placeholder="password"
+                  type="password"
+                  margin="normal"
+                  variant="outlined"
+                  value={this.state.name}
+                  onChange={this.handleChange}
+                />
+                <div>
+                  <Button
+                    variant="contained"
+                    className={classes.signinButton}
+                    type="submit"
+                  >
+                    Sign in
+                  </Button>
+                </div>
+              </div>
+              <div className={classes.newAccount}>
+                <Typography variant="body2">
+                  New to GitHub?{" "}
+                  <Link href="/join">
+                    <a>Create an account</a>
+                  </Link>
+                </Typography>
               </div>
             </div>
           </div>
