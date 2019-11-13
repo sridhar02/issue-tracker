@@ -1,20 +1,23 @@
 import React, { Component, Fragment } from "react";
-
+import Router from "next/router";
+import Link from "next/link";
+import cx from "classnames";
 import axios from "axios";
 
-import Router from "next/router";
-
 import { withStyles } from "@material-ui/core/styles";
-
 import { Button, Typography } from "@material-ui/core";
-
 import TextField from "@material-ui/core/TextField";
-
-import cx from "classnames";
 
 import { Navbar, authHeaders } from "../../../../../../utils/utils.js";
 
 const issueStyles = theme => ({
+  container: {
+    margin: theme.spacing(1),
+    [theme.breakpoints.up("md")]: {
+      margin: "25px auto",
+      padding: "100px auto"
+    }
+  },
   image: {
     heigth: theme.spacing(4),
     width: theme.spacing(4)
@@ -26,22 +29,20 @@ const issueStyles = theme => ({
     padding: theme.spacing(1)
   },
   write: { paddingRight: theme.spacing(1) },
-  container: {
-    margin: theme.spacing(1)
-  },
   options: {
     display: "flex",
     border: "1px solid #ddd",
-    // marginTop: theme.spacing(1),
+    borderTop: 0,
     marginBottom: theme.spacing(1),
     padding: theme.spacing(1),
     borderRadius: "3px",
     heigth: theme.spacing(4),
-    width: "97%"
+    width: "100%"
   },
   body: {
     marginTop: theme.spacing(1),
-    width: "97%",
+    padding: theme.spacing(1),
+    width: "100%",
     borderRadius: "3px",
     height: "200px",
     minHeight: "200px"
@@ -54,12 +55,26 @@ const issueStyles = theme => ({
     marginTop: theme.spacing(1),
     marginLeft: theme.spacing(2),
     backgroundColor: "#2cbe4e"
+  },
+  title: {
+    width: "100%"
+  },
+  Headers: {
+    borderBottom: "1px solid #ddd",
+    margin: theme.spacing(1),
+    padding: theme.spacing(1)
+  },
+  buttonPosition: {
+    [theme.breakpoints.up("md")]: {
+      display: "flex",
+      justifyContent: "flex-end"
+    }
   }
 });
 
 class _Issue extends Component {
   static getInitialProps({ query }) {
-    return { query };
+    return { query, username: query.username, repo: query.repo };
   }
   constructor(props) {
     super(props);
@@ -111,7 +126,7 @@ class _Issue extends Component {
     }
   };
   render() {
-    const { classes } = this.props;
+    const { classes, username, repo } = this.props;
     const { user } = this.state;
 
     return (
@@ -120,6 +135,19 @@ class _Issue extends Component {
         <div className={cx(classes.container, "container")}>
           <div className="row">
             <div className="col-12">
+              <div className={cx(classes.Headers, "d-none d-md-block")}>
+                <Typography variant="h6">
+                  <Link href={`/user/${username}`}>
+                    <a>
+                      {username}/{repo}
+                    </a>
+                  </Link>
+                </Typography>
+              </div>
+            </div>
+          </div>
+          <div className="row">
+            <div className="col-lg-9">
               <div className={classes.mainSection}>
                 <div className={classes.issue}>
                   <form onSubmit={this.handleSubmit}>
@@ -130,6 +158,7 @@ class _Issue extends Component {
                         name="title"
                         value={this.state.title}
                         onChange={this.handleChange}
+                        className={classes.title}
                       />
                       <div className={classes.options}>
                         <div className={classes.write}>
@@ -145,21 +174,7 @@ class _Issue extends Component {
                         value={this.state.body}
                         onChange={this.handleChange}
                       />
-                      <div>
-                        <div className={classes.issueOptions}>
-                          <Typography variant="body2">Assignees</Typography>
-                        </div>
-                        <div className={classes.issueOptions}>
-                          <Typography variant="body2">Lables</Typography>
-                        </div>
-                        <div className={classes.issueOptions}>
-                          <Typography variant="body2">Projects</Typography>
-                        </div>
-                        <div className={classes.issueOptions}>
-                          <Typography variant="body2">MileStone</Typography>
-                        </div>
-                      </div>
-                      <div>
+                      <div className={classes.buttonPosition}>
                         <Button
                           className={classes.button}
                           color="primary"
@@ -172,6 +187,20 @@ class _Issue extends Component {
                     </div>
                   </form>
                 </div>
+              </div>
+            </div>
+            <div className="col-lg-3">
+              <div className={classes.issueOptions}>
+                <Typography variant="body2">Assignees</Typography>
+              </div>
+              <div className={classes.issueOptions}>
+                <Typography variant="body2">Lables</Typography>
+              </div>
+              <div className={classes.issueOptions}>
+                <Typography variant="body2">Projects</Typography>
+              </div>
+              <div className={classes.issueOptions}>
+                <Typography variant="body2">MileStone</Typography>
               </div>
             </div>
           </div>
