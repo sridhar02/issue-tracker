@@ -76,7 +76,17 @@ const userStyles = theme => ({
     padding: theme.spacing(2, 0),
     [theme.breakpoints.up("md")]: {
       borderTop: "1px solid #ddd",
-      marginTop: theme.spacing(2)
+      marginTop: theme.spacing(2),
+      display: "flex",
+      justifyContent: "space-between"
+    }
+  },
+  newRepo: {
+    backgroundColor: "#2cbe4e",
+    color: "#fff",
+    fontWeight: "bold",
+    "&:hover": {
+      backgroundColor: "green"
     }
   }
 });
@@ -145,15 +155,15 @@ class _User extends Component {
               <div className={classes.userProfile}></div>
             </div>
             <div className="col-lg-9">
-              <div className="d-none">
-                <Link href="/new">
-                  <Button color="primary" variant="contained">
-                    <a>New</a>
-                  </Button>
-                </Link>
-              </div>
               <div className={cx(classes.popular)}>
                 <div>Popular respositories</div>
+                <div className="d-none d-md-block">
+                  <Link href="/new">
+                    <Button className={classes.newRepo} variant="contained">
+                      <a>New Respository</a>
+                    </Button>
+                  </Link>
+                </div>
               </div>
               <div className={"row"}>
                 {repos.map(repo => (
