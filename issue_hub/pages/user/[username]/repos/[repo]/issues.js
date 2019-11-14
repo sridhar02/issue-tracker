@@ -1,33 +1,33 @@
-import React, { Component, Fragment } from "react";
-import Router from "next/router";
-import Link from "next/link";
-import axios from "axios";
-import { formatDistance, parseISO } from "date-fns";
+import React, { Component, Fragment } from 'react';
+import Router from 'next/router';
+import Link from 'next/link';
+import axios from 'axios';
+import { formatDistance, parseISO } from 'date-fns';
 
-import { withStyles } from "@material-ui/core/styles";
-import { Button, Typography } from "@material-ui/core";
-import TextField from "@material-ui/core/TextField";
-import cx from "classnames";
+import { withStyles } from '@material-ui/core/styles';
+import { Button, Typography } from '@material-ui/core';
+import TextField from '@material-ui/core/TextField';
+import cx from 'classnames';
 
-import { TextInput, ButtonPrimary } from "@primer/components";
+import { TextInput, ButtonPrimary } from '@primer/components';
 
-import { Navbar, authHeaders } from "../../../../../utils/utils.js";
+import { Navbar, authHeaders } from '../../../../../utils/utils.js';
 
 const issueStyles = theme => ({
   issueDisplay: {
-    display: "flex",
-    justifyContent: "space-between"
+    display: 'flex',
+    justifyContent: 'space-between'
   },
   issue: {
-    borderTop: "1px solid #ddd",
+    borderTop: '1px solid #ddd',
     padding: theme.spacing(2),
-    [theme.breakpoints.up("md")]: {
-      border: "1px solid #ddd",
+    [theme.breakpoints.up('md')]: {
+      border: '1px solid #ddd',
       marginBottom: 0
     }
   },
   title: {
-    fontWeight: "bold"
+    fontWeight: 'bold'
   }
 });
 
@@ -45,7 +45,7 @@ function _Issue(props) {
         <div>#{issue.issue_number}</div>
       </div>
       <div>
-        opened {formatDistance(Date.now(), parseISO(issue.created_at))} ago by{" "}
+        opened {formatDistance(Date.now(), parseISO(issue.created_at))} ago by{' '}
         {issue.user.username}
       </div>
     </div>
@@ -57,9 +57,9 @@ const Issue = withStyles(issueStyles)(_Issue);
 const issuesStyles = theme => ({
   mainSection: {
     marginTop: theme.spacing(4),
-    padding: "0px",
-    [theme.breakpoints.up("md")]: {
-      margin: "25px auto"
+    padding: '0px',
+    [theme.breakpoints.up('md')]: {
+      margin: '25px auto'
     }
   },
   button: {
@@ -67,30 +67,30 @@ const issuesStyles = theme => ({
   },
 
   issueStatus: {
-    display: "flex"
+    display: 'flex'
   },
   status: {
     padding: theme.spacing(2)
   },
   newIssue: {
-    fontWeight: "bold",
-    [theme.breakpoints.up("md")]: {
-      "&:hover": {
-        backgroundColor: "green"
+    fontWeight: 'bold',
+    [theme.breakpoints.up('md')]: {
+      '&:hover': {
+        backgroundColor: 'green'
       },
-      backgroundColor: "#2cbe4e",
+      backgroundColor: '#2cbe4e',
       padding: theme.spacing(1)
     }
   },
   newIssueButton: {
-    [theme.breakpoints.up("md")]: {
-      display: "flex",
-      justifyContent: "flex-end",
+    [theme.breakpoints.up('md')]: {
+      display: 'flex',
+      justifyContent: 'flex-end',
       marginBottom: theme.spacing(2.5)
     }
   },
   pinnedTitle: {
-    [theme.breakpoints.up("md")]: {
+    [theme.breakpoints.up('md')]: {
       padding: theme.spacing(1.5)
     }
   }
@@ -138,7 +138,7 @@ class _Issues extends Component {
     return (
       <Fragment>
         <Navbar user={issues.user} />
-        <div className={cx(classes.mainSection, "container")}>
+        <div className={cx(classes.mainSection, 'container')}>
           <div className="row">
             <div className="col-12">
               <div>
@@ -157,7 +157,7 @@ class _Issues extends Component {
                   </div>
                 </Link>
               </div>
-              <div className={cx(classes.issueStatus, " d-md-none")}>
+              <div className={cx(classes.issueStatus, ' d-md-none')}>
                 <a className={classes.status}>Open</a>
                 <a className={classes.status}>Closed</a>
                 <a className={classes.status}>Yours</a>

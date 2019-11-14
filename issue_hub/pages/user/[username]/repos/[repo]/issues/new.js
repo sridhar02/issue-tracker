@@ -1,21 +1,21 @@
-import React, { Component, Fragment } from "react";
-import Router from "next/router";
-import Link from "next/link";
-import cx from "classnames";
-import axios from "axios";
+import React, { Component, Fragment } from 'react';
+import Router from 'next/router';
+import Link from 'next/link';
+import cx from 'classnames';
+import axios from 'axios';
 
-import { withStyles } from "@material-ui/core/styles";
-import { Button, Typography } from "@material-ui/core";
-import TextField from "@material-ui/core/TextField";
+import { withStyles } from '@material-ui/core/styles';
+import { Button, Typography } from '@material-ui/core';
+import TextField from '@material-ui/core/TextField';
 
-import { Navbar, authHeaders } from "../../../../../../utils/utils.js";
+import { Navbar, authHeaders } from '../../../../../../utils/utils.js';
 
 const issueStyles = theme => ({
   container: {
     margin: theme.spacing(1),
-    [theme.breakpoints.up("md")]: {
-      margin: "25px auto",
-      padding: "100px auto"
+    [theme.breakpoints.up('md')]: {
+      margin: '25px auto',
+      padding: '100px auto'
     }
   },
   image: {
@@ -23,51 +23,51 @@ const issueStyles = theme => ({
     width: theme.spacing(4)
   },
   issue: {
-    border: "1px solid #ddd",
+    border: '1px solid #ddd',
     heigth: theme.spacing(20),
     margin: theme.spacing(1),
     padding: theme.spacing(1)
   },
   write: { paddingRight: theme.spacing(1) },
   options: {
-    display: "flex",
-    border: "1px solid #ddd",
+    display: 'flex',
+    border: '1px solid #ddd',
     borderTop: 0,
     marginBottom: theme.spacing(1),
     padding: theme.spacing(1),
-    borderRadius: "3px",
+    borderRadius: '3px',
     heigth: theme.spacing(4),
-    width: "100%"
+    width: '100%'
   },
   body: {
     marginTop: theme.spacing(1),
     padding: theme.spacing(1),
-    width: "100%",
-    borderRadius: "3px",
-    height: "200px",
-    minHeight: "200px"
+    width: '100%',
+    borderRadius: '3px',
+    height: '200px',
+    minHeight: '200px'
   },
   issueOptions: {
     padding: theme.spacing(2),
-    borderBottom: "1px solid #ddd"
+    borderBottom: '1px solid #ddd'
   },
   button: {
     marginTop: theme.spacing(1),
     marginLeft: theme.spacing(2),
-    backgroundColor: "#2cbe4e"
+    backgroundColor: '#2cbe4e'
   },
   title: {
-    width: "100%"
+    width: '100%'
   },
   Headers: {
-    borderBottom: "1px solid #ddd",
+    borderBottom: '1px solid #ddd',
     margin: theme.spacing(1),
     padding: theme.spacing(1)
   },
   buttonPosition: {
-    [theme.breakpoints.up("md")]: {
-      display: "flex",
-      justifyContent: "flex-end"
+    [theme.breakpoints.up('md')]: {
+      display: 'flex',
+      justifyContent: 'flex-end'
     }
   }
 });
@@ -80,14 +80,14 @@ class _Issue extends Component {
     super(props);
     this.state = {
       user: undefined,
-      title: "",
-      body: ""
+      title: '',
+      body: ''
     };
   }
 
   fetchUser = async () => {
     try {
-      const response = await axios.get("/user", authHeaders());
+      const response = await axios.get('/user', authHeaders());
       if (response.status === 200) {
         this.setState({
           user: response.data
@@ -132,10 +132,10 @@ class _Issue extends Component {
     return (
       <Fragment>
         <Navbar />
-        <div className={cx(classes.container, "container")}>
+        <div className={cx(classes.container, 'container')}>
           <div className="row">
             <div className="col-12">
-              <div className={cx(classes.Headers, "d-none d-md-block")}>
+              <div className={cx(classes.Headers, 'd-none d-md-block')}>
                 <Typography variant="h6">
                   <Link href={`/user/${username}`}>
                     <a>

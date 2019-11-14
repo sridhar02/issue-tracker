@@ -1,42 +1,42 @@
-import React, { Component } from "react";
-import Link from "next/link";
-import Router from "next/router";
-import cx from "classnames";
-import axios from "axios";
+import React, { Component } from 'react';
+import Link from 'next/link';
+import Router from 'next/router';
+import cx from 'classnames';
+import axios from 'axios';
 
-import { Button, TextField, Typography } from "@material-ui/core";
-import { withStyles } from "@material-ui/core/styles";
-import MenuIcon from "@material-ui/icons/Menu";
-import AppBar from "@material-ui/core/AppBar";
-import Toolbar from "@material-ui/core/Toolbar";
-import IconButton from "@material-ui/core/IconButton";
-import InputBase from "@material-ui/core/InputBase";
-import GitHubIcon from "@material-ui/icons/GitHub";
-import NotificationsIcon from "@material-ui/icons/Notifications";
-import ArrowDropDownIcon from "@material-ui/icons/ArrowDropDown";
-import Popper from "@material-ui/core/Popper";
-import Fade from "@material-ui/core/Fade";
-import Paper from "@material-ui/core/Paper";
-import PropTypes from "prop-types";
+import { Button, TextField, Typography } from '@material-ui/core';
+import { withStyles } from '@material-ui/core/styles';
+import MenuIcon from '@material-ui/icons/Menu';
+import AppBar from '@material-ui/core/AppBar';
+import Toolbar from '@material-ui/core/Toolbar';
+import IconButton from '@material-ui/core/IconButton';
+import InputBase from '@material-ui/core/InputBase';
+import GitHubIcon from '@material-ui/icons/GitHub';
+import NotificationsIcon from '@material-ui/icons/Notifications';
+import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
+import Popper from '@material-ui/core/Popper';
+import Fade from '@material-ui/core/Fade';
+import Paper from '@material-ui/core/Paper';
+import PropTypes from 'prop-types';
 
-import { TextInput } from "@primer/components";
+import { TextInput } from '@primer/components';
 
 const menuStyles = theme => ({
   dashboard: {
     padding: theme.spacing(1),
     margin: theme.spacing(1),
-    borderBottom: "1px solid #ddd"
+    borderBottom: '1px solid #ddd'
   },
   issues: {
     padding: theme.spacing(1),
     margin: theme.spacing(1),
-    borderBottom: "1px solid #ddd"
+    borderBottom: '1px solid #ddd'
   },
   userDetails: {
-    display: "flex",
+    display: 'flex',
     padding: theme.spacing(1),
     margin: theme.spacing(1),
-    borderBottom: "1px solid #ddd"
+    borderBottom: '1px solid #ddd'
   },
   userImage: {
     heigth: theme.spacing(3),
@@ -44,7 +44,7 @@ const menuStyles = theme => ({
     margin: theme.spacing(0, 1, 0, 0)
   },
   signout: {
-    color: "#fff",
+    color: '#fff',
     padding: theme.spacing(1),
     margin: theme.spacing(1)
   }
@@ -52,8 +52,8 @@ const menuStyles = theme => ({
 
 function _Menu({ classes, user }) {
   const handleSignout = () => {
-    localStorage.removeItem("secret");
-    Router.push("/login");
+    localStorage.removeItem('secret');
+    Router.push('/login');
   };
   return (
     <div>
@@ -78,64 +78,64 @@ const Menu = withStyles(menuStyles)(_Menu);
 
 const navbarStyles = theme => ({
   container: {
-    backgroundColor: "black",
+    backgroundColor: 'black',
     padding: theme.spacing(1)
   },
   navbar: {
-    display: "flex",
-    justifyContent: "space-between"
+    display: 'flex',
+    justifyContent: 'space-between'
   },
   overview: {
-    display: "flex",
-    justifyContent: "space-between",
+    display: 'flex',
+    justifyContent: 'space-between',
     marginTop: theme.spacing(3),
-    [theme.breakpoints.up("md")]: {
-      display: "flex",
-      justifyContent: "space-between"
+    [theme.breakpoints.up('md')]: {
+      display: 'flex',
+      justifyContent: 'space-between'
     }
   },
   Button: {
-    color: "#fff",
+    color: '#fff',
     padding: theme.spacing(0),
     margin: theme.spacing(0)
   },
   textField: {
     paddingTop: 0,
     paddingBottom: 0,
-    backgroundColor: "#fff",
-    borderRadius: "4px",
-    width: "30%"
+    backgroundColor: '#fff',
+    borderRadius: '4px',
+    width: '30%'
   },
   space: {
-    width: "10%"
+    width: '10%'
   },
   userImage: {
     height: theme.spacing(4),
     width: theme.spacing(4),
-    borderRadius: "4px"
+    borderRadius: '4px'
   },
   dropDown: {
-    backgroundColor: "black",
-    color: "#fff",
+    backgroundColor: 'black',
+    color: '#fff',
     padding: 0,
     margin: 0,
     border: 0
   },
   popper: {
-    padding: "10px",
-    display: "flex",
-    flexDirection: "column"
+    padding: '10px',
+    display: 'flex',
+    flexDirection: 'column'
   },
   usernamePopper: {
     padding: theme.spacing(1),
-    borderBottom: "1px solid #ddd"
+    borderBottom: '1px solid #ddd'
   },
   typography: {
     padding: theme.spacing(1)
   },
   yourGists: {
     padding: theme.spacing(1),
-    borderBottom: "1px solid #ddd"
+    borderBottom: '1px solid #ddd'
   }
 });
 
@@ -152,7 +152,7 @@ class _Navbar extends Component {
 
   fetchUser = async () => {
     try {
-      const response = await axios.get("/user", authHeaders());
+      const response = await axios.get('/user', authHeaders());
       if (response.status === 200) {
         this.setState({ user: response.data });
       }
@@ -180,25 +180,25 @@ class _Navbar extends Component {
   };
 
   handleSignout = () => {
-    localStorage.removeItem("secret");
-    Router.push("/login");
+    localStorage.removeItem('secret');
+    Router.push('/login');
   };
   render() {
     const { classes } = this.props;
     const { navbar, user } = this.state;
     const menu = navbar ? <Menu user={user} /> : <div></div>;
     const { anchorEl, open } = this.state;
-    const id = open ? "simple-popper" : null;
+    const id = open ? 'simple-popper' : null;
 
     return (
       <AppBar position="static" className={classes.container}>
-        <div className={cx(classes.container, "container")}>
+        <div className={cx(classes.container, 'container')}>
           <div className="row">
             <div className="col-12">
               <div className={classes.navbar}>
                 <Button
                   onClick={this.handleClick}
-                  className={cx(classes.Button, "d-md-none")}
+                  className={cx(classes.Button, 'd-md-none')}
                   type="button"
                 >
                   <MenuIcon />
@@ -209,13 +209,13 @@ class _Navbar extends Component {
                   </Link>
                 )}
                 <TextInput
-                  className={cx(classes.textField, "d-none d-md-block")}
+                  className={cx(classes.textField, 'd-none d-md-block')}
                 />
                 <div className="d-none d-md-block">Pull requests</div>
                 <div className="d-none d-md-block">Issues</div>
                 <div className="d-none d-md-block">Marketplace</div>
                 <div className="d-none d-md-block">Explore</div>
-                <div className={cx(classes.space, "d-none d-md-block")}></div>
+                <div className={cx(classes.space, 'd-none d-md-block')}></div>
                 <NotificationsIcon />
                 {user && (
                   <div className="d-none d-md-block">
@@ -267,7 +267,7 @@ class _Navbar extends Component {
                 )}
               </div>
               {menu}
-              <div className={cx(classes.overview, "d-md-none")}>
+              <div className={cx(classes.overview, 'd-md-none')}>
                 <div>Overview</div>
                 <div>Repositories</div>
                 <div>Projects</div>
@@ -289,7 +289,7 @@ export const Navbar = withStyles(navbarStyles)(_Navbar);
 export function authHeaders() {
   return {
     headers: {
-      Authorization: `Bearer ${localStorage.getItem("secret")}`
+      Authorization: `Bearer ${localStorage.getItem('secret')}`
     }
   };
 }

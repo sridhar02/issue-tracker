@@ -1,42 +1,42 @@
-import React, { Component, Fragment } from "react";
-import Router from "next/router";
-import Link from "next/link";
-import cx from "classnames";
-import axios from "axios";
+import React, { Component, Fragment } from 'react';
+import Router from 'next/router';
+import Link from 'next/link';
+import cx from 'classnames';
+import axios from 'axios';
 
-import TextField from "@material-ui/core/TextField";
-import { withStyles } from "@material-ui/core/styles";
-import { Button, Typography } from "@material-ui/core";
-import GitHubIcon from "@material-ui/icons/GitHub";
+import TextField from '@material-ui/core/TextField';
+import { withStyles } from '@material-ui/core/styles';
+import { Button, Typography } from '@material-ui/core';
+import GitHubIcon from '@material-ui/icons/GitHub';
 
-import { TextInput, ButtonPrimary } from "@primer/components";
+import { TextInput, ButtonPrimary } from '@primer/components';
 
 const navbarStyles = theme => ({
   navbar: {
-    display: "flex",
-    backgroundColor: "black",
-    justifyContent: "space-between",
-    color: "#fff",
+    display: 'flex',
+    backgroundColor: 'black',
+    justifyContent: 'space-between',
+    color: '#fff',
     padding: theme.spacing(2)
   },
   signup: {
-    color: "#fff",
-    border: "1px solid #fff"
+    color: '#fff',
+    border: '1px solid #fff'
   },
   signin: {
-    color: "#fff"
+    color: '#fff'
   },
   searchbar: {
-    backgroundColor: "#fff",
-    borderRadius: "4px",
+    backgroundColor: '#fff',
+    borderRadius: '4px',
     margin: theme.spacing(1),
-    height: "30px"
+    height: '30px'
   }
 });
 
 function _Navbar({ classes }) {
   return (
-    <div className={cx(classes.navbar, "d-none d-md-flex")}>
+    <div className={cx(classes.navbar, 'd-none d-md-flex')}>
       <GitHubIcon />
       <div>Why Github</div>
       <div>Enterprise</div>
@@ -56,33 +56,33 @@ const Navbar = withStyles(navbarStyles)(_Navbar);
 
 const signupStyles = theme => ({
   container: {
-    backgroundColor: "#2b3137",
-    color: "#fff",
-    padding: "20px",
+    backgroundColor: '#2b3137',
+    color: '#fff',
+    padding: '20px',
     margin: 0,
-    [theme.breakpoints.up("md")]: {
-      padding: "100px",
-      paddingRight: "150px",
-      maxWidth: "1368px",
+    [theme.breakpoints.up('md')]: {
+      padding: '100px',
+      paddingRight: '150px',
+      maxWidth: '1368px',
       margin: 0,
-      display: "flex"
+      display: 'flex'
     }
   },
   signup: {
-    backgroundColor: "#28A745",
-    margin: "20px 0px 0px",
-    padding: "25px",
-    color: "#fff",
-    width: "100%"
+    backgroundColor: '#28A745',
+    margin: '20px 0px 0px',
+    padding: '25px',
+    color: '#fff',
+    width: '100%'
   },
   sidebar: {
-    borderRadius: "4px",
+    borderRadius: '4px',
     padding: theme.spacing(2),
-    backgroundColor: "#fff",
-    color: "black",
-    display: "flex",
-    flexDirection: "column",
-    justifyContent: "center"
+    backgroundColor: '#fff',
+    color: 'black',
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center'
   },
   Input: {
     marginTop: theme.spacing(1)
@@ -93,10 +93,10 @@ class _Signup extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      name: "",
-      username: "",
-      email: "",
-      password: ""
+      name: '',
+      username: '',
+      email: '',
+      password: ''
     };
   }
 
@@ -109,14 +109,14 @@ class _Signup extends Component {
   handleSubmit = async event => {
     event.preventDefault();
     try {
-      const response = await axios.post("/signup", {
+      const response = await axios.post('/signup', {
         name: this.state.name,
         username: this.state.username,
         email: this.state.email,
         password: this.state.password
       });
       if (response.status === 201) {
-        Router.push("/login");
+        Router.push('/login');
       }
     } catch (error) {
       console.log(error);
@@ -128,7 +128,7 @@ class _Signup extends Component {
     return (
       <Fragment>
         <Navbar />
-        <div className={cx(classes.container, "container")}>
+        <div className={cx(classes.container, 'container')}>
           <form onSubmit={this.handleSubmit}>
             <div className="row">
               <div className="col-lg-7 d-none d-md-block">
@@ -140,7 +140,7 @@ class _Signup extends Component {
                   developers.
                 </Typography>
               </div>
-              <div className={cx(classes.sidebar, "col-lg-5")}>
+              <div className={cx(classes.sidebar, 'col-lg-5')}>
                 <div>
                   <Typography variant="h5">Create your account</Typography>
                 </div>

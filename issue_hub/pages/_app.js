@@ -1,19 +1,19 @@
-import React from "react";
-import App from "next/app";
+import React from 'react';
+import App from 'next/app';
 
-import { ThemeProvider } from "@material-ui/styles";
+import { ThemeProvider } from '@material-ui/styles';
 
-import { createMuiTheme } from "@material-ui/core/styles";
-import blue from "@material-ui/core/colors/blue";
+import { createMuiTheme } from '@material-ui/core/styles';
+import blue from '@material-ui/core/colors/blue';
 
-import axios from "axios";
+import axios from 'axios';
 
 axios.defaults.baseURL = process.env.API_URL;
 
 export const theme = createMuiTheme({
   palette: {
     primary: {
-      main: "#00F"
+      main: '#00F'
     }
   }
 });
