@@ -40,32 +40,247 @@ const commentStyles = theme => ({
   }
 });
 
-class _Comment extends Component {
-  render() {
-    const { comments, classes } = this.props;
-    return (
-      <div>
-        {comments.map(comment => (
-          <div key={comment.id} className={classes.comment}>
-            <div className={classes.commentUser}>
-              <img src={comment.user.image} className={cx(classes.image)} />
-              <Typography variant="body2" className={classes.username}>
-                {comment.user.username}
-              </Typography>
-              <div>
-                commented{" "}
-                {formatDistance(Date.now(), parseISO(comment.created_at))} ago
-              </div>
+function _Comment({ comments, classes }) {
+  return (
+    <div>
+      {comments.map(comment => (
+        <div key={comment.id} className={classes.comment}>
+          <div className={classes.commentUser}>
+            <img src={comment.user.image} className={cx(classes.image)} />
+            <Typography variant="body2" className={classes.username}>
+              {comment.user.username}
+            </Typography>
+            <div>
+              commented{" "}
+              {formatDistance(Date.now(), parseISO(comment.created_at))} ago
             </div>
-            <div className={classes.body}> {comment.body}</div>
           </div>
-        ))}
-      </div>
-    );
-  }
+          <div className={classes.body}> {comment.body}</div>
+        </div>
+      ))}
+    </div>
+  );
 }
 
 const Comment = withStyles(commentStyles)(_Comment);
+
+const sidebarStyles = theme => ({
+  sidebar: {
+    padding: theme.spacing(1),
+    margin: theme.spacing(1),
+    borderBottom: "1px solid #ddd"
+  }
+});
+function _Sidebar({ classes, lockButton, pinButton }) {
+  return (
+    <Fragment>
+      <div className={classes.sidebar}>Assignee</div>
+      <div className={classes.sidebar}>Labels</div>
+      <div className={classes.sidebar}>Projects</div>
+      <div className={classes.sidebar}>Milestone</div>
+      <div className={classes.sidebar}>{lockButton}</div>
+      <div className={classes.sidebar}>{pinButton}</div>
+      <div className={classes.sidebar}>
+        <Button>
+          <DeleteIcon /> Delete Issue
+        </Button>
+      </div>
+    </Fragment>
+  );
+}
+
+const Sidebar = withStyles(sidebarStyles)(_Sidebar);
+
+const issueHeaderStyles = theme => ({
+  issueHeading: {
+    display: "flex"
+  },
+  title: {
+    margin: theme.spacing(1)
+  },
+  issueStatus: {
+    display: "flex",
+    paddingBottom: theme.spacing(2.5),
+    marginBottom: theme.spacing(2.5),
+    borderBottom: "1px solid #ddd",
+    [theme.breakpoints.up("md")]: {
+      order: 1
+    }
+  },
+  issueTitle: {
+    marginTop: theme.spacing(1)
+  },
+  titleEditButtons: {
+    display: "flex"
+  },
+  save: {
+    backgroundColor: "#2cbe4e",
+    marginBottom: theme.spacing(1),
+    marginTop: theme.spacing(1)
+  },
+  cancel: {
+    margin: theme.spacing(1, 0, 1, 1)
+  },
+  editButton: {
+    fontSize: theme.spacing(1.5),
+    padding: theme.spacing(0.5),
+    backgroundColor: "#eff3f6",
+    marginRight: theme.spacing(1)
+  },
+  newIssue: {
+    color: "#fff",
+    backgroundColor: "#2cbe4e",
+    fontSize: theme.spacing(1.5),
+    padding: theme.spacing(0.5),
+    fontWeight: "bold",
+    "&:hover": {
+      backgroundColor: "green"
+    }
+  },
+  headerTop: {
+    [theme.breakpoints.up("md")]: {
+      display: "flex",
+      justifyContent: "space-between"
+    }
+  },
+  buttonsHeader: {
+    [theme.breakpoints.up("md")]: {
+      order: 2
+    }
+  }
+});
+
+class _IssueHeader extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      editTitle: false,
+      title: ""
+    };
+  }
+
+  toggleTitle = event => {
+    event.preventDefault();
+    this.setState({
+      editTitle: !this.state.editTitle
+    });
+  };
+
+  cancelIssueEdit = event => {
+    this.setState({
+      editTitle: false
+    });
+  };
+
+  handleChange = event => {
+    this.setState({
+      [event.target.name]: event.target.value
+    });
+  };
+
+  updateIssueTitle = async event => {
+    event.preventDefault();
+    console.log(this.state.title);
+    const { username, repo, issueNumber } = Router.router.query;
+    try {
+      const response = await axios.put(
+        `/repos/${username}/${repo}/issues/${issueNumber}`,
+        {
+          title: this.state.title
+        },
+        authHeaders()
+      );
+      if (response.status === 204) {
+        this.fetchIssue();
+        this.setState({
+          editTitle: false
+        });
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  render() {
+    const { classes, issue, status, updateIssueTitle, fetchIssue } = this.props;
+    const { username, repo, issueNumber } = Router.router.query;
+    const { editTitle } = this.state;
+    const title =
+      editTitle === true ? (
+        <div>
+          <form onSubmit={this.updateIssueTitle}>
+            <TextField
+              name="title"
+              variant="outlined"
+              placeholder={issue.title}
+              value={this.state.title}
+              onChange={this.handleChange}
+              className={classes.issueTitle}
+            />
+            <div className={classes.titleEditButtons}>
+              <Button
+                className={classes.save}
+                variant="contained"
+                type="submit"
+              >
+                Save
+              </Button>
+              <Button
+                className={classes.cancel}
+                variant="contained"
+                onClick={this.cancelIssueEdit}
+              >
+                Cancel
+              </Button>
+            </div>
+          </form>
+        </div>
+      ) : (
+        <Typography variant="h5" className={classes.title}>
+          {issue.title}
+        </Typography>
+      );
+    return (
+      <Fragment>
+        <div className={classes.headerTop}>
+          <div className={classes.buttonsHeader}>
+            <Button
+              variant="contained"
+              className={classes.editButton}
+              onClick={this.toggleTitle}
+            >
+              Edit
+            </Button>
+            <Link href={`/user/${username}/repos/${repo}/issues/new`}>
+              <Button
+                variant="contained"
+                color="primary"
+                className={classes.newIssue}
+              >
+                New issue
+              </Button>
+            </Link>
+          </div>
+          <div className={classes.issueHeading}>
+            {title}
+            <Typography variant="h5" className={classes.title}>
+              #{issue.issue_number}
+            </Typography>
+          </div>
+        </div>
+        <div className={classes.issueStatus}>
+          {status}
+          <Typography variant="body2">
+            opened this issue{" "}
+            {formatDistance(Date.now(), parseISO(issue.created_at))}
+            ago
+          </Typography>
+        </div>
+      </Fragment>
+    );
+  }
+}
+const IssueHeader = withStyles(issueHeaderStyles)(_IssueHeader);
 
 const STATUS_OPEN = "Open";
 const STATUS_CLOSED = "Closed";
@@ -81,16 +296,16 @@ const issueStyles = theme => ({
     padding: theme.spacing(1),
     margin: theme.spacing(1)
   },
-  title: {
-    margin: theme.spacing(1)
-  },
   statusOpen: {
     marginRight: theme.spacing(1),
     fontSize: theme.spacing(1.5),
     padding: theme.spacing(0.5),
     backgroundColor: "#2cbe4e",
     color: "#fff",
-    fontWeight: "bold"
+    fontWeight: "bold",
+    "&:hover": {
+      backgroundColor: "#2cbe4e"
+    }
   },
   statusClose: {
     marginRight: theme.spacing(1),
@@ -98,7 +313,10 @@ const issueStyles = theme => ({
     padding: theme.spacing(0.5),
     backgroundColor: "#CB2431",
     color: "#fff",
-    fontWeight: "bold"
+    fontWeight: "bold",
+    "&:hover": {
+      backgroundColor: "#CB2431"
+    }
   },
   image: {
     height: theme.spacing(3),
@@ -125,18 +343,6 @@ const issueStyles = theme => ({
     padding: theme.spacing(1),
     resize: "vertical"
   },
-  editButton: {
-    fontSize: theme.spacing(1.5),
-    padding: theme.spacing(0.5),
-    backgroundColor: "#eff3f6",
-    marginRight: theme.spacing(1)
-  },
-  newIssue: {
-    color: "#fff",
-    backgroundColor: "#2cbe4e",
-    fontSize: theme.spacing(1.5),
-    padding: theme.spacing(0.5)
-  },
   container: {
     margin: theme.spacing(1),
     [theme.breakpoints.up("md")]: {
@@ -147,20 +353,12 @@ const issueStyles = theme => ({
     fontWeight: "bold",
     marginRight: theme.spacing(1)
   },
-  sidebar: {
-    padding: theme.spacing(1),
-    margin: theme.spacing(1),
-    borderBottom: "1px solid #ddd"
-  },
-  issueStatus: {
-    display: "flex",
-    paddingBottom: theme.spacing(2.5),
-    marginBottom: theme.spacing(2.5),
-    borderBottom: "1px solid #ddd"
-  },
   commentButton: {
     color: "#fff",
-    backgroundColor: "#2cbe4e"
+    backgroundColor: "#2cbe4e",
+    "&:hover": {
+      backgroundColor: "green"
+    }
   },
   commentClose: {
     marginRight: theme.spacing(1),
@@ -179,22 +377,8 @@ const issueStyles = theme => ({
   statusCloseIcon: {
     color: "#CB2431"
   },
-  issueHeading: {
-    display: "flex"
-  },
   issueTitle: {
     marginTop: theme.spacing(1)
-  },
-  save: {
-    backgroundColor: "#2cbe4e",
-    marginBottom: theme.spacing(1),
-    marginTop: theme.spacing(1)
-  },
-  cancel: {
-    margin: theme.spacing(1, 0, 1, 1)
-  },
-  titleEditButtons: {
-    display: "flex"
   }
 });
 
@@ -326,7 +510,7 @@ class _Issue extends Component {
     const pinStatus = issue.pinned === PIN_UNPIN ? PIN_PIN : PIN_UNPIN;
     try {
       const response = await axios.put(
-        `/repos/${username}/${repo}/issues/${issueNumber}`,
+        `/repos/${username}/${repo}/issues/${issueNumber}/pin`,
         {
           pinned: pinStatus
         },
@@ -338,42 +522,6 @@ class _Issue extends Component {
     } catch (error) {
       console.log(error);
     }
-  };
-
-  toggleTitle = event => {
-    event.preventDefault();
-    this.setState({
-      editTitle: !this.state.editTitle
-    });
-  };
-
-  updateIssueTitle = async event => {
-    event.preventDefault();
-    console.log(this.state.title);
-    const { username, repo, issueNumber } = Router.router.query;
-    try {
-      const response = await axios.put(
-        `/repos/${username}/${repo}/issues/${issueNumber}`,
-        {
-          title: this.state.title
-        },
-        authHeaders()
-      );
-      if (response.status === 204) {
-        this.fetchIssue();
-        this.setState({
-          editTitle: false
-        });
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  cancelIssueEdit = event => {
-    this.setState({
-      editTitle: false
-    });
   };
 
   render() {
@@ -394,10 +542,8 @@ class _Issue extends Component {
             : classes.commentClose
         }
       >
-        {issue.status === STATUS_OPEN ? (
+        {issue.status === STATUS_OPEN && (
           <ErrorOutlineIcon className={classes.statusCloseIcon} />
-        ) : (
-          ""
         )}
         {issue.status === STATUS_OPEN ? "Close" : "Reopen"} issue
       </Button>
@@ -428,42 +574,6 @@ class _Issue extends Component {
       </Button>
     );
 
-    const title =
-      editTitle === true ? (
-        <div>
-          <form onSubmit={this.updateIssueTitle}>
-            <TextField
-              name="title"
-              variant="outlined"
-              placeholder={issue.title}
-              value={this.state.title}
-              onChange={this.handleChange}
-              className={classes.issueTitle}
-            />
-            <div className={classes.titleEditButtons}>
-              <Button
-                className={classes.save}
-                variant="contained"
-                type="submit"
-              >
-                Save
-              </Button>
-              <Button
-                className={classes.cancel}
-                variant="contained"
-                onClick={this.cancelIssueEdit}
-              >
-                Cancel
-              </Button>
-            </div>
-          </form>
-        </div>
-      ) : (
-        <Typography variant="h5" className={classes.title}>
-          {issue.title}
-        </Typography>
-      );
-
     return (
       <Fragment>
         <Navbar />
@@ -472,38 +582,12 @@ class _Issue extends Component {
             <div className="col-12">
               <div className="row">
                 <div className="col-12">
-                  <div>
-                    <Button
-                      variant="contained"
-                      className={classes.editButton}
-                      onClick={this.toggleTitle}
-                    >
-                      Edit
-                    </Button>
-                    <Link href="">
-                      <Button
-                        variant="contained"
-                        color="primary"
-                        className={classes.newIssue}
-                      >
-                        New issue
-                      </Button>
-                    </Link>
-                  </div>
-                  <div className={classes.issueHeading}>
-                    {title}
-                    <Typography variant="h5" className={classes.title}>
-                      #{issue.issue_number}
-                    </Typography>
-                  </div>
-                  <div className={classes.issueStatus}>
-                    {status}
-                    <Typography variant="body2">
-                      opened this issue{" "}
-                      {formatDistance(Date.now(), parseISO(issue.created_at))}
-                      ago
-                    </Typography>
-                  </div>
+                  <IssueHeader
+                    issue={issue}
+                    status={status}
+                    updateIssueTitle={this.updateIssueTitle}
+                    fetchIssue={this.fetchIssue}
+                  />
                 </div>
               </div>
               <div className="row">
@@ -548,17 +632,7 @@ class _Issue extends Component {
                   </form>
                 </div>
                 <div className="col-lg-2">
-                  <div className={classes.sidebar}>Assignee</div>
-                  <div className={classes.sidebar}>Labels</div>
-                  <div className={classes.sidebar}>Projects</div>
-                  <div className={classes.sidebar}>Milestone</div>
-                  <div className={classes.sidebar}>{lockButton}</div>
-                  <div className={classes.sidebar}>{pinButton}</div>
-                  <div className={classes.sidebar}>
-                    <Button>
-                      <DeleteIcon /> Delete Issue
-                    </Button>
-                  </div>
+                  <Sidebar lockButton={lockButton} pinButton={pinButton} />
                 </div>
               </div>
             </div>

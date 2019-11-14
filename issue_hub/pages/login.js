@@ -9,6 +9,8 @@ import { Button, Typography } from "@material-ui/core";
 import TextField from "@material-ui/core/TextField";
 import GitHubIcon from "@material-ui/icons/GitHub";
 
+import { TextInput, ButtonPrimary } from "@primer/components";
+
 const loginStyles = theme => ({
   mainSection: {
     margin: theme.spacing(1),
@@ -54,6 +56,9 @@ const loginStyles = theme => ({
     display: "flex",
     flexDirection: "column",
     justifyContent: "center"
+  },
+  Input: {
+    marginTop: theme.spacing(1)
   }
 });
 
@@ -108,24 +113,26 @@ class _Login extends Component {
                 <Typography variant="body2" className={classes.username}>
                   Username or email address
                 </Typography>
-                <TextField
+                <TextInput
                   placeholder="username"
                   name="username"
                   margin="normal"
                   variant="outlined"
                   value={this.state.name}
                   onChange={this.handleChange}
+                  className={classes.Input}
                 />
                 <Typography variant="body2" className={classes.password}>
                   Password
                 </Typography>
-                <TextField
+                <TextInput
                   name="password"
                   placeholder="password"
                   type="password"
                   margin="normal"
                   variant="outlined"
                   value={this.state.name}
+                  className={classes.Input}
                   onChange={this.handleChange}
                 />
                 <div>
