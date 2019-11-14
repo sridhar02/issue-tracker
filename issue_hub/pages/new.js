@@ -15,7 +15,7 @@ import FormControlLabel from "@material-ui/core/FormControlLabel";
 import FormControl from "@material-ui/core/FormControl";
 import FormLabel from "@material-ui/core/FormLabel";
 
-import { Navbar } from "../utils/utils.js";
+import { Navbar, authHeaders } from "../utils/utils.js";
 
 const repoStyles = theme => ({
   container: {
@@ -36,8 +36,7 @@ const repoStyles = theme => ({
   formGroup: {
     borderBottom: "1px solid #ddd",
     padding: theme.spacing(1),
-    marginBottom: theme.spacing(2),
-    marginTop: theme.spacing(2)
+    marginBottom: theme.spacing(2)
   },
   image: {
     heigth: theme.spacing(4),
@@ -98,48 +97,46 @@ class _NewRepo extends Component {
       description: ""
     };
   }
-  componentDidMount() {
-    axios
-      .get("/user", {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("secret")}`
-        }
-      })
-      .then(response =>
+
+  fetchUser = async () => {
+    try {
+      const response = await axios.get("/user", authHeaders());
+      if (response.status === 200) {
         this.setState({
           user: response.data
-        })
-      )
-      .catch(error => {
-        console.log(error);
-      });
+        });
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  componentDidMount() {
+    this.fetchUser();
   }
   handleChange = event => {
     this.setState({
       [event.target.name]: event.target.value
     });
   };
-  handleSubmit = event => {
+  handleSubmit = async event => {
     event.preventDefault();
     const { user } = this.state;
-    axios
-      .post(
+    try {
+      const response = await axios.post(
         "/user/repos",
         {
           name: this.state.name,
           type: this.state.type,
           description: this.state.description
         },
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("secret")}`
-          }
-        }
-      )
-      .then(response => Router.push(`/user/${user.username}`))
-      .catch(error => {
-        console.log(error);
-      });
+        authHeaders()
+      );
+      if (response.status === 201) {
+        Router.push(`/user/${user.username}`);
+      }
+    } catch (error) {
+      console.log(error);
+    }
   };
   render() {
     const { classes } = this.props;
@@ -202,7 +199,6 @@ class _NewRepo extends Component {
                 </Typography>
                 <TextField
                   variant="outlined"
-                  label="description"
                   name="description"
                   value={this.state.description}
                   onChange={this.handleChange}
