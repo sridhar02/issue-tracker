@@ -15,6 +15,8 @@ import FormControlLabel from "@material-ui/core/FormControlLabel";
 import FormControl from "@material-ui/core/FormControl";
 import FormLabel from "@material-ui/core/FormLabel";
 
+import { TextInput } from "@primer/components";
+
 import { Navbar, authHeaders } from "../utils/utils.js";
 
 const repoStyles = theme => ({
@@ -39,8 +41,8 @@ const repoStyles = theme => ({
     marginBottom: theme.spacing(2)
   },
   image: {
-    heigth: theme.spacing(4),
-    width: theme.spacing(4),
+    heigth: theme.spacing(3),
+    width: theme.spacing(3),
     marginRight: theme.spacing(1)
   },
   generalDescription: {
@@ -53,7 +55,7 @@ const repoStyles = theme => ({
     marginTop: theme.spacing(2)
   },
   name: {
-    heigth: "25px",
+    heigth: "50px",
     width: "100%",
     padding: 0,
     border: "1px solid #ddd",
@@ -178,7 +180,7 @@ class _NewRepo extends Component {
                     >
                       Repository name
                     </Typography>
-                    <Input
+                    <TextInput
                       label="name"
                       name="name"
                       value={this.state.name}

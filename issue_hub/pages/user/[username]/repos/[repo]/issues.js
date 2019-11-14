@@ -9,6 +9,8 @@ import { Button, Typography } from "@material-ui/core";
 import TextField from "@material-ui/core/TextField";
 import cx from "classnames";
 
+import { TextInput, ButtonPrimary } from "@primer/components";
+
 import { Navbar, authHeaders } from "../../../../../utils/utils.js";
 
 const issueStyles = theme => ({
@@ -71,9 +73,10 @@ const issuesStyles = theme => ({
     padding: theme.spacing(2)
   },
   newIssue: {
+    fontWeight: "bold",
     [theme.breakpoints.up("md")]: {
       "&:hover": {
-        backgroundColor: "red"
+        backgroundColor: "green"
       },
       backgroundColor: "#2cbe4e",
       padding: theme.spacing(1)

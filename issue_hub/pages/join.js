@@ -9,6 +9,8 @@ import { withStyles } from "@material-ui/core/styles";
 import { Button, Typography } from "@material-ui/core";
 import GitHubIcon from "@material-ui/icons/GitHub";
 
+import { TextInput, ButtonPrimary } from "@primer/components";
+
 const navbarStyles = theme => ({
   navbar: {
     display: "flex",
@@ -81,6 +83,9 @@ const signupStyles = theme => ({
     display: "flex",
     flexDirection: "column",
     justifyContent: "center"
+  },
+  Input: {
+    marginTop: theme.spacing(1)
   }
 });
 
@@ -140,38 +145,42 @@ class _Signup extends Component {
                   <Typography variant="h5">Create your account</Typography>
                 </div>
                 <Typography variant="body2">Name</Typography>
-                <TextField
+                <TextInput
                   type="text"
                   name="name"
                   margin="normal"
                   variant="outlined"
                   value={this.state.name}
                   onChange={this.handleChange}
+                  className={classes.Input}
                 />
                 <Typography variant="body2">Username</Typography>
-                <TextField
+                <TextInput
                   type="text"
                   name="username"
                   margin="normal"
                   variant="outlined"
+                  className={classes.Input}
                   value={this.state.username}
                   onChange={this.handleChange}
                 />
                 <Typography variant="body2">Email</Typography>
-                <TextField
+                <TextInput
                   type="text"
                   name="email"
                   margin="normal"
                   variant="outlined"
+                  className={classes.Input}
                   value={this.state.email}
                   onChange={this.handleChange}
                 />
                 <Typography variant="body2">Password</Typography>
-                <TextField
+                <TextInput
                   type="password"
                   name="password"
                   margin="normal"
                   variant="outlined"
+                  className={classes.Input}
                   value={this.state.password}
                   onChange={this.handleChange}
                 />

@@ -19,6 +19,8 @@ import Fade from "@material-ui/core/Fade";
 import Paper from "@material-ui/core/Paper";
 import PropTypes from "prop-types";
 
+import { TextInput } from "@primer/components";
+
 const menuStyles = theme => ({
   dashboard: {
     padding: theme.spacing(1),
@@ -206,7 +208,7 @@ class _Navbar extends Component {
                     <GitHubIcon />
                   </Link>
                 )}
-                <TextField
+                <TextInput
                   className={cx(classes.textField, "d-none d-md-block")}
                 />
                 <div className="d-none d-md-block">Pull requests</div>
