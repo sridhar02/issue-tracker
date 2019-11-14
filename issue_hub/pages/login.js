@@ -1,23 +1,23 @@
-import React, { Component, Fragment } from "react";
-import Router from "next/router";
-import Link from "next/link";
-import axios from "axios";
-import cx from "classnames";
+import React, { Component, Fragment } from 'react';
+import Router from 'next/router';
+import Link from 'next/link';
+import axios from 'axios';
+import cx from 'classnames';
 
-import { withStyles } from "@material-ui/core/styles";
-import { Button, Typography } from "@material-ui/core";
-import TextField from "@material-ui/core/TextField";
-import GitHubIcon from "@material-ui/icons/GitHub";
+import { withStyles } from '@material-ui/core/styles';
+import { Button, Typography } from '@material-ui/core';
+import TextField from '@material-ui/core/TextField';
+import GitHubIcon from '@material-ui/icons/GitHub';
 
-import { TextInput, ButtonPrimary } from "@primer/components";
+import { TextInput, ButtonPrimary } from '@primer/components';
 
 const loginStyles = theme => ({
   mainSection: {
     margin: theme.spacing(1),
-    [theme.breakpoints.up("md")]: {
-      margin: "80px auto",
-      display: "flex",
-      justifyContent: "center"
+    [theme.breakpoints.up('md')]: {
+      margin: '80px auto',
+      display: 'flex',
+      justifyContent: 'center'
     }
   },
   title: {
@@ -26,36 +26,36 @@ const loginStyles = theme => ({
   },
   gitIcon: {
     padding: theme.spacing(0.5),
-    fontSize: "55px",
+    fontSize: '55px',
     marginLeft: theme.spacing(14)
   },
   inputFields: {
-    border: "1px solid #ddd",
+    border: '1px solid #ddd',
     padding: theme.spacing(2),
     margin: theme.spacing(2)
   },
   username: {
-    fontWeight: "bold"
+    fontWeight: 'bold'
   },
   password: {
-    fontWeight: "bold"
+    fontWeight: 'bold'
   },
   signinButton: {
-    backgroundColor: "#28A745",
-    margin: "20px 0px 0px",
-    padding: "6px 12px",
-    color: "#fff",
-    width: "100%"
+    backgroundColor: '#28A745',
+    margin: '20px 0px 0px',
+    padding: '6px 12px',
+    color: '#fff',
+    width: '100%'
   },
   newAccount: {
-    border: "1px solid #ddd",
+    border: '1px solid #ddd',
     padding: theme.spacing(2),
     margin: theme.spacing(2)
   },
   topHeaders: {
-    display: "flex",
-    flexDirection: "column",
-    justifyContent: "center"
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center'
   },
   Input: {
     marginTop: theme.spacing(1)
@@ -66,8 +66,8 @@ class _Login extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      username: "",
-      password: ""
+      username: '',
+      password: ''
     };
   }
 
@@ -80,12 +80,12 @@ class _Login extends Component {
   handleSubmit = async event => {
     event.preventDefault();
     try {
-      const response = await axios.post("/signin", {
+      const response = await axios.post('/signin', {
         username: this.state.username,
         password: this.state.password
       });
       if (response.status === 201) {
-        localStorage.setItem("secret", response.data.secret);
+        localStorage.setItem('secret', response.data.secret);
         Router.push(`/user/${this.state.username}`);
       }
     } catch (error) {
@@ -95,7 +95,7 @@ class _Login extends Component {
   render() {
     const { classes } = this.props;
     return (
-      <div className={cx(classes.mainSection, "container")}>
+      <div className={cx(classes.mainSection, 'container')}>
         <form onSubmit={this.handleSubmit}>
           <div className="row">
             <div className="col-12">
@@ -147,7 +147,7 @@ class _Login extends Component {
               </div>
               <div className={classes.newAccount}>
                 <Typography variant="body2">
-                  New to GitHub?{" "}
+                  New to GitHub?{' '}
                   <Link href="/join">
                     <a>Create an account</a>
                   </Link>

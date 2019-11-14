@@ -1,34 +1,34 @@
-import React, { Component, Fragment } from "react";
-import Router from "next/router";
-import Link from "next/link";
-import axios from "axios";
-import cx from "classnames";
+import React, { Component, Fragment } from 'react';
+import Router from 'next/router';
+import Link from 'next/link';
+import axios from 'axios';
+import cx from 'classnames';
 
-import { withStyles } from "@material-ui/core/styles";
-import { Button, Typography } from "@material-ui/core";
-import TextField from "@material-ui/core/TextField";
-import Input from "@material-ui/core/Input";
-import Radio from "@material-ui/core/Radio";
-import RadioGroup from "@material-ui/core/RadioGroup";
-import FormHelperText from "@material-ui/core/FormHelperText";
-import FormControlLabel from "@material-ui/core/FormControlLabel";
-import FormControl from "@material-ui/core/FormControl";
-import FormLabel from "@material-ui/core/FormLabel";
+import { withStyles } from '@material-ui/core/styles';
+import { Button, Typography } from '@material-ui/core';
+import TextField from '@material-ui/core/TextField';
+import Input from '@material-ui/core/Input';
+import Radio from '@material-ui/core/Radio';
+import RadioGroup from '@material-ui/core/RadioGroup';
+import FormHelperText from '@material-ui/core/FormHelperText';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+import FormControl from '@material-ui/core/FormControl';
+import FormLabel from '@material-ui/core/FormLabel';
 
-import { TextInput } from "@primer/components";
+import { TextInput } from '@primer/components';
 
-import { Navbar, authHeaders } from "../utils/utils.js";
+import { Navbar, authHeaders } from '../utils/utils.js';
 
 const repoStyles = theme => ({
   container: {
-    [theme.breakpoints.up("md")]: {
-      margin: "50px auto",
-      display: "flex",
-      justifyContent: "center"
+    [theme.breakpoints.up('md')]: {
+      margin: '50px auto',
+      display: 'flex',
+      justifyContent: 'center'
     }
   },
   username: {
-    border: "1px solid #ddd",
+    border: '1px solid #ddd',
     padding: theme.spacing(1)
     // margin: theme.spacing(2)
   },
@@ -36,7 +36,7 @@ const repoStyles = theme => ({
     margin: theme.spacing(1)
   },
   formGroup: {
-    borderBottom: "1px solid #ddd",
+    borderBottom: '1px solid #ddd',
     padding: theme.spacing(1),
     marginBottom: theme.spacing(2)
   },
@@ -48,33 +48,33 @@ const repoStyles = theme => ({
   generalDescription: {
     paddingBottom: theme.spacing(3),
     paddingTop: theme.spacing(2),
-    borderBottom: "1px solid #ddd"
+    borderBottom: '1px solid #ddd'
   },
   user: {
-    display: "flex",
+    display: 'flex',
     marginTop: theme.spacing(2)
   },
   name: {
-    heigth: "50px",
-    width: "100%",
+    heigth: '50px',
+    width: '100%',
     padding: 0,
-    border: "1px solid #ddd",
-    borderRadius: "4px"
+    border: '1px solid #ddd',
+    borderRadius: '4px'
   },
   repositoryName: {
-    fontWeight: "bold",
-    padding: "10px"
+    fontWeight: 'bold',
+    padding: '10px'
   },
   owner: {
-    fontWeight: "bold",
-    padding: "10px"
+    fontWeight: 'bold',
+    padding: '10px'
   },
   createButton: {
-    backgroundColor: "#28A745",
-    color: "#fff"
+    backgroundColor: '#28A745',
+    color: '#fff'
   },
   description: {
-    fontWeight: "bold",
+    fontWeight: 'bold',
     paddingBottom: theme.spacing(2)
   },
   nameProperty: {
@@ -82,10 +82,10 @@ const repoStyles = theme => ({
     paddingBottom: theme.spacing(2)
   },
   descriptionTextField: {
-    borderBottom: "1px solid #ddd",
+    borderBottom: '1px solid #ddd',
     marginBottom: theme.spacing(2),
     paddingBottom: theme.spacing(2),
-    width: "100%"
+    width: '100%'
   }
 });
 
@@ -94,15 +94,15 @@ class _NewRepo extends Component {
     super(props);
     this.state = {
       user: undefined,
-      name: "",
-      type: "",
-      description: ""
+      name: '',
+      type: '',
+      description: ''
     };
   }
 
   fetchUser = async () => {
     try {
-      const response = await axios.get("/user", authHeaders());
+      const response = await axios.get('/user', authHeaders());
       if (response.status === 200) {
         this.setState({
           user: response.data
@@ -125,7 +125,7 @@ class _NewRepo extends Component {
     const { user } = this.state;
     try {
       const response = await axios.post(
-        "/user/repos",
+        '/user/repos',
         {
           name: this.state.name,
           type: this.state.type,
@@ -152,7 +152,7 @@ class _NewRepo extends Component {
       <Fragment>
         <Navbar />
         <form onSubmit={this.handleSubmit}>
-          <div className={cx(classes.container, "container")}>
+          <div className={cx(classes.container, 'container')}>
             <div className="row">
               <div className="col-12">
                 <Typography variant="h6">Create a new repository</Typography>
@@ -163,7 +163,7 @@ class _NewRepo extends Component {
                   A repository contains all project files, including the
                   revision history. Already have a project repository elsewhere?
                 </Typography>
-                <div className={cx(classes.user, "row")}>
+                <div className={cx(classes.user, 'row')}>
                   <div className="col-lg-3">
                     <Typography variant="body2" className={classes.owner}>
                       Owner

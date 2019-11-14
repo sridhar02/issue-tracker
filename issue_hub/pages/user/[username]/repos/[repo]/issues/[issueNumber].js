@@ -1,18 +1,18 @@
-import React, { Component, Fragment } from "react";
-import Router from "next/router";
-import Link from "next/link";
-import axios from "axios";
-import cx from "classnames";
-import { formatDistance, parseISO } from "date-fns";
+import React, { Component, Fragment } from 'react';
+import Router from 'next/router';
+import Link from 'next/link';
+import axios from 'axios';
+import cx from 'classnames';
+import { formatDistance, parseISO } from 'date-fns';
 
-import { withStyles } from "@material-ui/core/styles";
-import { Button, Typography } from "@material-ui/core";
-import TextField from "@material-ui/core/TextField";
-import LockIcon from "@material-ui/icons/Lock";
-import DeleteIcon from "@material-ui/icons/Delete";
-import ErrorOutlineIcon from "@material-ui/icons/ErrorOutline";
+import { withStyles } from '@material-ui/core/styles';
+import { Button, Typography } from '@material-ui/core';
+import TextField from '@material-ui/core/TextField';
+import LockIcon from '@material-ui/icons/Lock';
+import DeleteIcon from '@material-ui/icons/Delete';
+import ErrorOutlineIcon from '@material-ui/icons/ErrorOutline';
 
-import { Navbar, authHeaders } from "../../../../../../utils/utils.js";
+import { Navbar, authHeaders } from '../../../../../../utils/utils.js';
 
 const commentStyles = theme => ({
   image: {
@@ -21,21 +21,21 @@ const commentStyles = theme => ({
     marginRight: theme.spacing(1)
   },
   comment: {
-    border: "1px solid #ddd",
+    border: '1px solid #ddd',
     marginBottom: theme.spacing(1),
     marginTop: theme.spacing(1)
   },
   commentUser: {
-    display: "flex",
-    backgroundColor: "#f6f8fa",
-    borderBottom: "1px solid #ddd"
+    display: 'flex',
+    backgroundColor: '#f6f8fa',
+    borderBottom: '1px solid #ddd'
   },
   body: {
     margin: theme.spacing(1),
     padding: theme.spacing(1)
   },
   username: {
-    fontWeight: "bold",
+    fontWeight: 'bold',
     marginRight: theme.spacing(1)
   }
 });
@@ -51,7 +51,7 @@ function _Comment({ comments, classes }) {
               {comment.user.username}
             </Typography>
             <div>
-              commented{" "}
+              commented{' '}
               {formatDistance(Date.now(), parseISO(comment.created_at))} ago
             </div>
           </div>
@@ -68,7 +68,7 @@ const sidebarStyles = theme => ({
   sidebar: {
     padding: theme.spacing(1),
     margin: theme.spacing(1),
-    borderBottom: "1px solid #ddd"
+    borderBottom: '1px solid #ddd'
   }
 });
 function _Sidebar({ classes, lockButton, pinButton }) {
@@ -93,17 +93,17 @@ const Sidebar = withStyles(sidebarStyles)(_Sidebar);
 
 const issueHeaderStyles = theme => ({
   issueHeading: {
-    display: "flex"
+    display: 'flex'
   },
   title: {
     margin: theme.spacing(1)
   },
   issueStatus: {
-    display: "flex",
+    display: 'flex',
     paddingBottom: theme.spacing(2.5),
     marginBottom: theme.spacing(2.5),
-    borderBottom: "1px solid #ddd",
-    [theme.breakpoints.up("md")]: {
+    borderBottom: '1px solid #ddd',
+    [theme.breakpoints.up('md')]: {
       order: 1
     }
   },
@@ -111,10 +111,10 @@ const issueHeaderStyles = theme => ({
     marginTop: theme.spacing(1)
   },
   titleEditButtons: {
-    display: "flex"
+    display: 'flex'
   },
   save: {
-    backgroundColor: "#2cbe4e",
+    backgroundColor: '#2cbe4e',
     marginBottom: theme.spacing(1),
     marginTop: theme.spacing(1)
   },
@@ -124,27 +124,27 @@ const issueHeaderStyles = theme => ({
   editButton: {
     fontSize: theme.spacing(1.5),
     padding: theme.spacing(0.5),
-    backgroundColor: "#eff3f6",
+    backgroundColor: '#eff3f6',
     marginRight: theme.spacing(1)
   },
   newIssue: {
-    color: "#fff",
-    backgroundColor: "#2cbe4e",
+    color: '#fff',
+    backgroundColor: '#2cbe4e',
     fontSize: theme.spacing(1.5),
     padding: theme.spacing(0.5),
-    fontWeight: "bold",
-    "&:hover": {
-      backgroundColor: "green"
+    fontWeight: 'bold',
+    '&:hover': {
+      backgroundColor: 'green'
     }
   },
   headerTop: {
-    [theme.breakpoints.up("md")]: {
-      display: "flex",
-      justifyContent: "space-between"
+    [theme.breakpoints.up('md')]: {
+      display: 'flex',
+      justifyContent: 'space-between'
     }
   },
   buttonsHeader: {
-    [theme.breakpoints.up("md")]: {
+    [theme.breakpoints.up('md')]: {
       order: 2
     }
   }
@@ -155,7 +155,7 @@ class _IssueHeader extends Component {
     super(props);
     this.state = {
       editTitle: false,
-      title: ""
+      title: ''
     };
   }
 
@@ -271,7 +271,7 @@ class _IssueHeader extends Component {
         <div className={classes.issueStatus}>
           {status}
           <Typography variant="body2">
-            opened this issue{" "}
+            opened this issue{' '}
             {formatDistance(Date.now(), parseISO(issue.created_at))}
             ago
           </Typography>
@@ -282,14 +282,14 @@ class _IssueHeader extends Component {
 }
 const IssueHeader = withStyles(issueHeaderStyles)(_IssueHeader);
 
-const STATUS_OPEN = "Open";
-const STATUS_CLOSED = "Closed";
+const STATUS_OPEN = 'Open';
+const STATUS_CLOSED = 'Closed';
 
-const LOCK_LOCK = "Locked";
-const LOCK_UNLOCK = "Unlocked";
+const LOCK_LOCK = 'Locked';
+const LOCK_UNLOCK = 'Unlocked';
 
-const PIN_PIN = "Pinned";
-const PIN_UNPIN = "Unpinned";
+const PIN_PIN = 'Pinned';
+const PIN_UNPIN = 'Unpinned';
 
 const issueStyles = theme => ({
   body: {
@@ -300,22 +300,22 @@ const issueStyles = theme => ({
     marginRight: theme.spacing(1),
     fontSize: theme.spacing(1.5),
     padding: theme.spacing(0.5),
-    backgroundColor: "#2cbe4e",
-    color: "#fff",
-    fontWeight: "bold",
-    "&:hover": {
-      backgroundColor: "#2cbe4e"
+    backgroundColor: '#2cbe4e',
+    color: '#fff',
+    fontWeight: 'bold',
+    '&:hover': {
+      backgroundColor: '#2cbe4e'
     }
   },
   statusClose: {
     marginRight: theme.spacing(1),
     fontSize: theme.spacing(1.5),
     padding: theme.spacing(0.5),
-    backgroundColor: "#CB2431",
-    color: "#fff",
-    fontWeight: "bold",
-    "&:hover": {
-      backgroundColor: "#CB2431"
+    backgroundColor: '#CB2431',
+    color: '#fff',
+    fontWeight: 'bold',
+    '&:hover': {
+      backgroundColor: '#CB2431'
     }
   },
   image: {
@@ -324,58 +324,58 @@ const issueStyles = theme => ({
     marginRight: theme.spacing(1)
   },
   issueBody: {
-    border: "1px solid #ddd",
+    border: '1px solid #ddd',
     marginBottom: theme.spacing(1),
     marginTop: theme.spacing(1)
   },
   username: {
-    display: "flex",
-    borderBottom: "1px solid #ddd",
+    display: 'flex',
+    borderBottom: '1px solid #ddd',
     padding: theme.spacing(1),
-    backgroundColor: "#f6f8fa"
+    backgroundColor: '#f6f8fa'
   },
   commentSection: {
-    display: "block",
-    width: "100%",
-    minHeight: "100px",
-    maxHeight: "500px",
+    display: 'block',
+    width: '100%',
+    minHeight: '100px',
+    maxHeight: '500px',
     marginBottom: theme.spacing(1),
     padding: theme.spacing(1),
-    resize: "vertical"
+    resize: 'vertical'
   },
   container: {
     margin: theme.spacing(1),
-    [theme.breakpoints.up("md")]: {
-      margin: "25px auto"
+    [theme.breakpoints.up('md')]: {
+      margin: '25px auto'
     }
   },
   name: {
-    fontWeight: "bold",
+    fontWeight: 'bold',
     marginRight: theme.spacing(1)
   },
   commentButton: {
-    color: "#fff",
-    backgroundColor: "#2cbe4e",
-    "&:hover": {
-      backgroundColor: "green"
+    color: '#fff',
+    backgroundColor: '#2cbe4e',
+    '&:hover': {
+      backgroundColor: 'green'
     }
   },
   commentClose: {
     marginRight: theme.spacing(1),
-    backgroundColor: "#eff3f6"
+    backgroundColor: '#eff3f6'
   },
   commentOpen: {
     marginRight: theme.spacing(1),
-    backgroundColor: "#eff3f6"
+    backgroundColor: '#eff3f6'
   },
   statusIcon: {
     marginRight: theme.spacing(0.5)
   },
   lockButton: {
-    fontSize: ""
+    fontSize: ''
   },
   statusCloseIcon: {
-    color: "#CB2431"
+    color: '#CB2431'
   },
   issueTitle: {
     marginTop: theme.spacing(1)
@@ -390,8 +390,8 @@ class _Issue extends Component {
     super(props);
     this.state = {
       issue: undefined,
-      title: "",
-      body: "",
+      title: '',
+      body: '',
       editTitle: false,
       comments: []
     };
@@ -455,7 +455,7 @@ class _Issue extends Component {
       if (response.status === 201) {
         this.fetchComments();
         this.setState({
-          body: ""
+          body: ''
         });
       }
     } catch (error) {
@@ -545,7 +545,7 @@ class _Issue extends Component {
         {issue.status === STATUS_OPEN && (
           <ErrorOutlineIcon className={classes.statusCloseIcon} />
         )}
-        {issue.status === STATUS_OPEN ? "Close" : "Reopen"} issue
+        {issue.status === STATUS_OPEN ? 'Close' : 'Reopen'} issue
       </Button>
     );
 
@@ -564,20 +564,20 @@ class _Issue extends Component {
 
     const lockButton = (
       <Button onClick={this.toggleLockIssue} className={classes.lockButton}>
-        <LockIcon /> {issue.lock === LOCK_UNLOCK ? "Lock" : "Unlock"}
+        <LockIcon /> {issue.lock === LOCK_UNLOCK ? 'Lock' : 'Unlock'}
         conversation
       </Button>
     );
     const pinButton = (
       <Button onClick={this.togglePinIssue}>
-        {issue.pinned === PIN_PIN ? "Unpin" : "Pin"} Issue
+        {issue.pinned === PIN_PIN ? 'Unpin' : 'Pin'} Issue
       </Button>
     );
 
     return (
       <Fragment>
         <Navbar />
-        <div className={cx(classes.container, "container")}>
+        <div className={cx(classes.container, 'container')}>
           <div className="row">
             <div className="col-12">
               <div className="row">
@@ -602,8 +602,8 @@ class _Issue extends Component {
                         {issue.user.username}
                       </Typography>
                       <div>
-                        commented{" "}
-                        {formatDistance(Date.now(), parseISO(issue.updated_at))}{" "}
+                        commented{' '}
+                        {formatDistance(Date.now(), parseISO(issue.updated_at))}{' '}
                         ago
                       </div>
                     </div>
@@ -615,7 +615,7 @@ class _Issue extends Component {
                   <form onSubmit={this.handleSubmit}>
                     <div>
                       <textarea
-                        className={cx(classes.commentSection, "form-control")}
+                        className={cx(classes.commentSection, 'form-control')}
                         name="body"
                         value={this.state.body}
                         onChange={this.handleChange}
