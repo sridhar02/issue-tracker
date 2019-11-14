@@ -216,10 +216,13 @@ func getIssuesHandler(c *gin.Context, db *sql.DB) {
 	username := c.Param("owner")
 	repoName := c.Param("repo")
 
-	rows, err := db.Query(`WITH repoCTE AS(SELECT repos.id FROM repos JOIN users ON repos.user_id= users.id 
-						   WHERE repos.name=$1 AND users.username=$2) select id,title,user_id ,body, 
-						   created_at, updated_at,issue_number,pinned, status, lock from issues where repo_id 
-						   in (select id from repoCTE)`, repoName, username)
+	rows, err := db.Query(`WITH repoCTE AS (
+							     SELECT repos.id FROM repos JOIN users ON repos.user_id= users.id 
+						         WHERE repos.name=$1 AND users.username=$2
+						         ) 
+						    SELECT id,title,user_id ,body, created_at, updated_at,issue_number,pinned,
+						    status, lock FROM issues WHERE repo_id IN 
+						    (SELECT id FROM repoCTE) ORDER BY id DESC`, repoName, username)
 	if err != nil {
 		fmt.Println(err)
 		c.AbortWithStatus(http.StatusInternalServerError)
@@ -279,9 +282,12 @@ func getIssueHandler(c *gin.Context, db *sql.DB) {
 	issueNumber := c.Param("issue_number")
 
 	var Id int
-	row := db.QueryRow(`WITH repo_cte AS (select repos.id FROM repos JOIN users ON repos.user_id= users.id 
-                		WHERE repos.name= $1 AND users.username= $2) select id from issues where repo_id 
-                		in (select id from repo_cte) and issue_number=$3 `, repoName, username, issueNumber)
+	row := db.QueryRow(`WITH repo_cte AS (
+		                     SELECT repos.id FROM repos JOIN users ON repos.user_id= users.id 
+                		     WHERE repos.name= $1 AND users.username= $2
+                		     ) 
+                		SELECT id from issues WHERE repo_id 
+                		IN (SELECT id FROM repo_cte) and issue_number=$3 `, repoName, username, issueNumber)
 	err := row.Scan(&Id)
 	if err != nil {
 		fmt.Println(err)
@@ -304,10 +310,16 @@ func getCommentsHandler(c *gin.Context, db *sql.DB) {
 	repoName := c.Param("repo")
 	issueNumber := c.Param("issue_number")
 
-	rows, err := db.Query(`WITH repo_cte AS (select repos.id FROM repos JOIN users ON repos.user_id= users.id 
-         				   WHERE repos.name= $1 AND users.username= $2),issue_cte AS (select id from issues where repo_id in 
-         				   (select id from repo_cte) AND issue_number=$3) select id ,user_id,body,created_at,updated_at from 
-         				   comments where issue_id in (select id from issue_cte)`, repoName, username, issueNumber)
+	rows, err := db.Query(`WITH repo_cte AS ( 
+		                        SELECT repos.id FROM repos JOIN users ON repos.user_id= users.id 
+         				        WHERE repos.name= $1 AND users.username= $2
+         				        ),
+         				    issue_cte AS (
+         				    	      SELECT id FROM issues WHERE repo_id IN 
+         				             (select id from repo_cte) AND issue_number=$3
+         				             ) 
+         				        SELECT id ,user_id,body,created_at,updated_at FROM comments 
+         				        WHERE issue_id in (select id from issue_cte)`, repoName, username, issueNumber)
 	if err != nil {
 		fmt.Println(err)
 		c.AbortWithStatus(http.StatusInternalServerError)
