@@ -101,19 +101,21 @@ class _Signup extends Component {
     });
   };
 
-  handleSubmit = event => {
+  handleSubmit = async event => {
     event.preventDefault();
-    axios
-      .post("/signup", {
+    try {
+      const response = await axios.post("/signup", {
         name: this.state.name,
         username: this.state.username,
         email: this.state.email,
         password: this.state.password
-      })
-      .then(response => Router.push("/login"))
-      .catch(error => {
-        console.log(error);
       });
+      if (response.status === 201) {
+        Router.push("/login");
+      }
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   render() {

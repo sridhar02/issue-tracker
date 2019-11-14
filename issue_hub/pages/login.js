@@ -72,17 +72,20 @@ class _Login extends Component {
     });
   };
 
-  handleSubmit = event => {
+  handleSubmit = async event => {
     event.preventDefault();
-    axios
-      .post("/signin", {
+    try {
+      const response = await axios.post("/signin", {
         username: this.state.username,
         password: this.state.password
-      })
-      .then(response => {
+      });
+      if (response.status === 201) {
         localStorage.setItem("secret", response.data.secret);
         Router.push(`/user/${this.state.username}`);
-      });
+      }
+    } catch (error) {
+      console.log(error);
+    }
   };
   render() {
     const { classes } = this.props;
