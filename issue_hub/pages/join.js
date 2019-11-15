@@ -16,6 +16,7 @@ const navbarStyles = theme => ({
     display: 'flex',
     backgroundColor: 'black',
     justifyContent: 'space-between',
+    alignItems:'center',
     color: '#fff',
     padding: theme.spacing(2)
   },
@@ -30,7 +31,8 @@ const navbarStyles = theme => ({
     backgroundColor: '#fff',
     borderRadius: '4px',
     margin: theme.spacing(1),
-    height: '30px'
+    height: '30px',
+    width:"30%"
   }
 });
 
@@ -44,7 +46,7 @@ function _Navbar({ classes }) {
       <div>Marketplace</div>
       <div>Pricing</div>
       <div></div>
-      <TextField variant="outlined" className={classes.searchbar} />
+      <TextInput  className={classes.searchbar} />
       <Link href="/login">
         <Button className={classes.signin}>Sign in</Button>
       </Link>
@@ -63,7 +65,8 @@ const signupStyles = theme => ({
     [theme.breakpoints.up('md')]: {
       padding: '100px',
       paddingRight: '150px',
-      maxWidth: '1368px',
+      maxWidth: '2500px',
+      height:'1080px',
       margin: 0,
       display: 'flex'
     }
@@ -77,7 +80,7 @@ const signupStyles = theme => ({
   },
   sidebar: {
     borderRadius: '4px',
-    padding: theme.spacing(2),
+    padding: theme.spacing(3),
     backgroundColor: '#fff',
     color: 'black',
     display: 'flex',
@@ -85,7 +88,7 @@ const signupStyles = theme => ({
     justifyContent: 'center'
   },
   Input: {
-    marginTop: theme.spacing(1)
+    width:"100%"
   }
 });
 
@@ -131,7 +134,7 @@ class _Signup extends Component {
         <div className={cx(classes.container, 'container')}>
           <form onSubmit={this.handleSubmit}>
             <div className="row">
-              <div className="col-lg-7 d-none d-md-block">
+              <div className="col-lg-8 d-none d-md-block">
                 <Typography variant="h2">Built for developers</Typography>
                 <Typography variant="h6">
                   GitHub is a development platform inspired by the way you work.
@@ -140,7 +143,7 @@ class _Signup extends Component {
                   developers.
                 </Typography>
               </div>
-              <div className={cx(classes.sidebar, 'col-lg-5')}>
+              <div className={cx(classes.sidebar, 'col-lg-3')}>
                 <div>
                   <Typography variant="h5">Create your account</Typography>
                 </div>
