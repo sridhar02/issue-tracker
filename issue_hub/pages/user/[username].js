@@ -15,6 +15,7 @@ const userStyles = theme => ({
     heigth: theme.spacing(13.75),
     width: theme.spacing(13.75),
     margin: theme.spacing(0, 1.875, 0, 0),
+    borderRadius:"4px",
     [theme.breakpoints.up('md')]: {
       heigth: theme.spacing(30.9975),
       width: theme.spacing(30.8725)
@@ -22,7 +23,7 @@ const userStyles = theme => ({
   },
   container: {
     [theme.breakpoints.up('md')]: {
-      margin: theme.spacing(3, 4.4375, 0)
+      margin: "50px auto"
     },
     marginBottom: 50
   },

@@ -158,7 +158,7 @@ func getAuthenticatedUserReposHandler(c *gin.Context, db *sql.DB) {
 		return
 	}
 
-	rows, err := db.Query(`SELECT id,name,issue_count,created_at,updated_at,description,type FROM repos 
+	rows, err := db.Query(`SELECT id,name,issue_count,created_at,updated_at,description,type FROM repos
 						  where user_id=$1 ORDER BY id ASC`, userId)
 	if err != nil {
 		fmt.Println(err)
@@ -217,11 +217,11 @@ func getIssuesHandler(c *gin.Context, db *sql.DB) {
 	repoName := c.Param("repo")
 
 	rows, err := db.Query(`WITH repoCTE AS (
-							     SELECT repos.id FROM repos JOIN users ON repos.user_id= users.id 
+							     SELECT repos.id FROM repos JOIN users ON repos.user_id= users.id
 						         WHERE repos.name=$1 AND users.username=$2
-						         ) 
+						         )
 						    SELECT id,title,user_id ,body, created_at, updated_at,issue_number,pinned,
-						    status, lock FROM issues WHERE repo_id IN 
+						    status, lock FROM issues WHERE repo_id IN
 						    (SELECT id FROM repoCTE) ORDER BY id DESC`, repoName, username)
 	if err != nil {
 		fmt.Println(err)
@@ -283,10 +283,10 @@ func getIssueHandler(c *gin.Context, db *sql.DB) {
 
 	var Id int
 	row := db.QueryRow(`WITH repo_cte AS (
-		                     SELECT repos.id FROM repos JOIN users ON repos.user_id= users.id 
+		                     SELECT repos.id FROM repos JOIN users ON repos.user_id= users.id
                 		     WHERE repos.name= $1 AND users.username= $2
-                		     ) 
-                		SELECT id from issues WHERE repo_id 
+                		     )
+                		SELECT id from issues WHERE repo_id
                 		IN (SELECT id FROM repo_cte) and issue_number=$3 `, repoName, username, issueNumber)
 	err := row.Scan(&Id)
 	if err != nil {
@@ -310,15 +310,15 @@ func getCommentsHandler(c *gin.Context, db *sql.DB) {
 	repoName := c.Param("repo")
 	issueNumber := c.Param("issue_number")
 
-	rows, err := db.Query(`WITH repo_cte AS ( 
-		                        SELECT repos.id FROM repos JOIN users ON repos.user_id= users.id 
+	rows, err := db.Query(`WITH repo_cte AS (
+		                        SELECT repos.id FROM repos JOIN users ON repos.user_id= users.id
          				        WHERE repos.name= $1 AND users.username= $2
          				        ),
          				    issue_cte AS (
-         				    	      SELECT id FROM issues WHERE repo_id IN 
+         				    	      SELECT id FROM issues WHERE repo_id IN
          				             (select id from repo_cte) AND issue_number=$3
-         				             ) 
-         				        SELECT id ,user_id,body,created_at,updated_at FROM comments 
+         				             )
+         				        SELECT id ,user_id,body,created_at,updated_at FROM comments
          				        WHERE issue_id in (select id from issue_cte)`, repoName, username, issueNumber)
 	if err != nil {
 		fmt.Println(err)
