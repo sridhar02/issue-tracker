@@ -8,6 +8,8 @@ import { withStyles } from '@material-ui/core/styles';
 import { Button, Typography } from '@material-ui/core';
 import TextField from '@material-ui/core/TextField';
 
+import { TabNav } from '@primer/components';
+
 import { Navbar } from '../../utils/utils.js';
 
 const userStyles = theme => ({
@@ -15,7 +17,7 @@ const userStyles = theme => ({
     heigth: theme.spacing(13.75),
     width: theme.spacing(13.75),
     margin: theme.spacing(0, 1.875, 0, 0),
-    borderRadius:"4px",
+    borderRadius: '4px',
     [theme.breakpoints.up('md')]: {
       heigth: theme.spacing(30.9975),
       width: theme.spacing(30.8725)
@@ -23,7 +25,7 @@ const userStyles = theme => ({
   },
   container: {
     [theme.breakpoints.up('md')]: {
-      margin: "50px auto"
+      margin: '50px auto'
     },
     marginBottom: 50
   },
@@ -76,7 +78,6 @@ const userStyles = theme => ({
   popular: {
     padding: theme.spacing(2, 0),
     [theme.breakpoints.up('md')]: {
-      borderTop: '1px solid #ddd',
       marginTop: theme.spacing(2),
       display: 'flex',
       justifyContent: 'space-between'
@@ -156,6 +157,19 @@ class _User extends Component {
               <div className={classes.userProfile}></div>
             </div>
             <div className="col-lg-9">
+              <div className="d-none d-md-block">
+                <TabNav arial-label="main">
+                  <TabNav.Link href="#home" >
+                    Overview
+                  </TabNav.Link>
+                  <TabNav.Link href="#Repos">Respositories</TabNav.Link>
+                  <TabNav.Link href="#Projects">Projects</TabNav.Link>
+                  <TabNav.Link href="#Packages">Packages</TabNav.Link>
+                  <TabNav.Link href="#Stars">Stars</TabNav.Link>
+                  <TabNav.Link href="Followers">Followers</TabNav.Link>
+                  <TabNav.Link href="#Following">Following</TabNav.Link>
+                </TabNav>
+              </div>
               <div className={cx(classes.popular)}>
                 <div>Popular respositories</div>
                 <div className="d-none d-md-block">
