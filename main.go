@@ -369,6 +369,51 @@ func getCommentsHandler(c *gin.Context, db *sql.DB) {
 	c.JSON(200, comments)
 }
 
+func postCollaborator(c *gin.Context, db *sql.DB) {
+
+	_, err := authorization(c, db)
+	if err != nil {
+		return
+	}
+
+	username := c.Param("owner")
+	currentUsername := c.Param("username")
+	repoName := c.Param(" repo")
+
+	IsRepoOwner := currentUsername == username
+	if !IsRepoOwner {
+		c.Status(204)
+		return
+	}
+
+	currentUser, err := GetUserByUserName(db, currentUsername)
+	if err != nil {
+		fmt.Println(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	var repoId string
+
+	row := db.QueryRow(`SELECT repos.id FROM repos JOIN users ON repos.user_id= users.id
+                		        WHERE repos.name= $1 AND users.username= $2`, repoName, username)
+	err = row.Scan(&repoId)
+	if err != nil {
+		fmt.Println(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	_, err = db.Exec(`INSERT INTO collaborators ( repo_id , user_id ) VALUES ( $1 , $2) `, repoId, currentUser.ID)
+	if err != nil {
+		fmt.Println(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	c.Status(201)
+
+}
+
 func main() {
 	rand.Seed(time.Now().UTC().UnixNano())
 	err := godotenv.Load()
@@ -414,6 +459,7 @@ func main() {
 	router.POST("/user/repos", func(c *gin.Context) { postRepoHandler(c, db) })
 	router.GET("/repos/:owner/:repo/issues", func(c *gin.Context) { getIssuesHandler(c, db) })
 	router.POST("/repos/:owner/:repo/issues", func(c *gin.Context) { postIssueHandler(c, db) })
+	router.POST("repos/:owner/:repo/collaborators/:username", func(c *gin.Context) { postCollaborator(c, db) })
 	router.GET("/repos/:owner/:repo/issues/:issue_number", func(c *gin.Context) { getIssueHandler(c, db) })
 	router.PUT("/repos/:owner/:repo/issues/:issue_number", func(c *gin.Context) { putIssueHandler(c, db) })
 	router.PUT("/repos/:owner/:repo/issues/:issue_number/pin", func(c *gin.Context) { putPinHandler(c, db) })
