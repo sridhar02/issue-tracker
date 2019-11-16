@@ -52,6 +52,26 @@ function _Issue(props) {
   );
 }
 
+function Pagination({ postsPerPage, totalPosts, paginate }) {
+  const pageNumbers = [];
+  for (let i = 1; i <= Math.ceil(totalPosts / postsPerPage); i++) {
+    pageNumbers.push(i);
+  }
+  return (
+    <nav>
+      <ul className="pagination">
+        {pageNumbers.map(number => (
+          <li key={number} className="page-item">
+            <Button onClick={() => paginate(number)}  className="page-link">
+              {number}
+            </Button>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  );
+}
+
 const Issue = withStyles(issueStyles)(_Issue);
 
 const issuesStyles = theme => ({
@@ -93,6 +113,9 @@ const issuesStyles = theme => ({
     [theme.breakpoints.up('md')]: {
       padding: theme.spacing(1.5)
     }
+  },
+  pagination: {
+    margin: theme.spacing(1)
   }
 });
 
@@ -104,7 +127,9 @@ class _Issues extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      issues: []
+      issues: [],
+      currentPage: 1,
+      postsPerPage: 5
     };
   }
 
@@ -131,10 +156,14 @@ class _Issues extends Component {
 
   render() {
     const { classes, username, repo } = this.props;
-    const { issues } = this.state;
+    const { issues, currentPage, postsPerPage } = this.state;
     if (issues === undefined) {
       return null;
     }
+    const indexOfLastPost = currentPage * postsPerPage;
+    const indexOfFirstPost = indexOfLastPost - postsPerPage;
+    const currentIssues = issues.slice(indexOfFirstPost, indexOfLastPost);
+    const paginate = pageNumber => this.setState({currentPage:pageNumber});
     return (
       <Fragment>
         <Navbar user={issues.user} />
@@ -162,9 +191,15 @@ class _Issues extends Component {
                 <a className={classes.status}>Closed</a>
                 <a className={classes.status}>Yours</a>
               </div>
-              {issues.map(issue => (
+              {currentIssues.map(issue => (
                 <Issue key={issue.id} issue={issue} />
               ))}
+              <Pagination
+                postsPerPage={postsPerPage}
+                totalPosts={issues.length}
+                paginate={paginate}
+                className={classes.pagination}
+              />
             </div>
           </div>
         </div>
