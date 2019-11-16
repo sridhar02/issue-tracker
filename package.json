@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "server": "nodemon -e go,html --exec \"go run .\"",
     "dev": "next dev",
     "build": "next build",
     "start": "next start"
@@ -15,6 +16,7 @@
     "date-fns": "^2.7.0",
     "dotenv": "^8.2.0",
     "next": "9.1.1",
+    "nodemon": "^1.19.4",
     "react": "16.10.2",
     "react-dom": "16.10.2",
     "react-router-dom": "^5.1.2",
