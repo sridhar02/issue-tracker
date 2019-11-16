@@ -21,5 +21,8 @@
     "react-dom": "16.10.2",
     "react-router-dom": "^5.1.2",
     "styled-components": "^4.4.0"
+  },
+  "engines": {
+    "node": ">=10.0.0"
   }
 }
