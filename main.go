@@ -396,7 +396,6 @@ func main() {
 	}
 
 	router := gin.Default()
-	router.LoadHTMLGlob("./templates/*")
 	router.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"*"},
 		AllowMethods:     []string{"PUT", "GET", "DELETE", "POST", "PATCH"},
