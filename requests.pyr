@@ -149,3 +149,13 @@ put('http://localhost:8000/repos/DONE/RepoFirst/issues/2/pin',
 	json={
 		'pinned':'Unpinned',
 	})
+
+
+post('http://localhost:8000/repos/DONE/RepoFirst/collaborators/sridhar02',
+	headers={
+	    "Authorization": "Bearer CIySftTxPpQRsGShMSQVEDYghCLxvvNJ"
+	}
+	)
+
+
+
