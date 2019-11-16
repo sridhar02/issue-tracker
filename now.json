@@ -1,0 +1,12 @@
+{
+  "version": 2,
+  "build": {
+    "env": {
+      "API_URL": "@ih_api_url"
+    }
+  },
+  "builds": [{ "src": "package.json", "use": "@now/next" }],
+  "env": {
+    "API_URL": "@ih_api_url"
+  }
+}
