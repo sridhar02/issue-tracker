@@ -2,11 +2,11 @@
   "version": 2,
   "build": {
     "env": {
-      "API_URL": "@ih_api_url"
+      "API_URL": "@issue_hub"
     }
   },
   "builds": [{ "src": "package.json", "use": "@now/next" }],
   "env": {
-    "API_URL": "@ih_api_url"
+    "API_URL": "@issue_hub"
   }
 }
