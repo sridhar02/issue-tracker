@@ -27,7 +27,7 @@ func GetUserByUserName(db *sql.DB, username string) (User, error) {
 
 	var name, id, email, createdAt, updatedAt, image string
 
-	row := db.QueryRow(`SELECT id,name, email,created_at, 
+	row := db.QueryRow(`SELECT id,name, email,created_at,
 						updated_at,image FROM users WHERE username = $1`, username)
 	err := row.Scan(&id, &name, &email, &createdAt, &updatedAt, &image)
 	if err != nil {
@@ -61,11 +61,11 @@ func GetUserByUserName(db *sql.DB, username string) (User, error) {
 
 func GetUser(db *sql.DB, id string) (User, error) {
 
-	var name, username, email, createdAt, updatedAt, password, image string
+	var name, username, email, createdAt, updatedAt, image string
 
-	row := db.QueryRow(`SELECT id,name, username, email,created_at, 
-						updated_at,password,image FROM users WHERE id = $1`, id)
-	err := row.Scan(&id, &name, &username, &email, &createdAt, &updatedAt, &password, &image)
+	row := db.QueryRow(`SELECT id,name, username, email,created_at,
+						updated_at,image FROM users WHERE id = $1`, id)
+	err := row.Scan(&id, &name, &username, &email, &createdAt, &updatedAt, &image)
 	if err != nil {
 		return User{}, err
 	}
@@ -89,7 +89,6 @@ func GetUser(db *sql.DB, id string) (User, error) {
 		Email:     email,
 		CreatedAt: CreatedAt,
 		UpdatedAt: UpdatedAt,
-		Password:  password,
 		Image:     image,
 	}
 
@@ -237,11 +236,11 @@ func getUserHandler(c *gin.Context, db *sql.DB) {
 
 	username := c.Param("username")
 
-	var name, id, email, createdAt, updatedAt, password, image string
+	var name, id, email, createdAt, updatedAt, image string
 
-	row := db.QueryRow(`SELECT id,name, email,created_at, 
-						updated_at,password,image FROM users WHERE username = $1`, username)
-	err := row.Scan(&id, &name, &email, &createdAt, &updatedAt, &password, &image)
+	row := db.QueryRow(`SELECT id,name, email,created_at,
+						updated_at,image FROM users WHERE username = $1`, username)
+	err := row.Scan(&id, &name, &email, &createdAt, &updatedAt, &image)
 	if err != nil {
 		fmt.Println(err)
 		c.AbortWithStatus(http.StatusInternalServerError)
