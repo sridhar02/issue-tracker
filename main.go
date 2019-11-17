@@ -369,6 +369,81 @@ func getCommentsHandler(c *gin.Context, db *sql.DB) {
 	c.JSON(200, comments)
 }
 
+type CurrentRepo struct {
+	UserId string
+	RepoId string
+}
+
+func getCurrentRepo(db *sql.DB, username string, repoName string) (CurrentRepo, error) {
+
+	var userId, repoId string
+	row := db.QueryRow(`SELECT users.id,repos.id FROM repos JOIN users ON
+                             repos.user_id = users.id WHERE users.username= $1 AND repos.name = $2`, username, repoName)
+	err := row.Scan(&userId, &repoId)
+	if err != nil {
+		return CurrentRepo{}, err
+	}
+	currentRepo := CurrentRepo{
+		UserId: userId,
+		RepoId: repoId,
+	}
+
+	return currentRepo, nil
+
+}
+
+type Collaborator struct {
+	Username  string
+	UserImage string
+	Name      string
+}
+
+func getCollaborators(c *gin.Context, db *sql.DB) {
+
+	_, err := authorization(c, db)
+	if err != nil {
+		return
+	}
+
+	username := c.Param("owner")
+	repoName := c.Param("repo")
+
+	currentRepo, err := getCurrentRepo(db, username, repoName)
+	if err != nil {
+		fmt.Println(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	rows, err := db.Query(`SELECT users.username,users.image,users.name FROM users JOIN collaborators
+                                ON users.id = collaborators.user_id  WHERE collaborators.repo_id = $1;`, currentRepo.RepoId)
+	if err != nil {
+		fmt.Println(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	collaborators := []Collaborator{}
+
+	for rows.Next() {
+		var UserName, image, name string
+		err = rows.Scan(&UserName, &image, &name)
+		if err != nil {
+			fmt.Println(err)
+			c.AbortWithStatus(http.StatusInternalServerError)
+			return
+		}
+		collaborator := Collaborator{
+			Username:  UserName,
+			UserImage: image,
+			Name:      name,
+		}
+		collaborators = append(collaborators, collaborator)
+	}
+
+	c.Status(201)
+
+}
 func postCollaborator(c *gin.Context, db *sql.DB) {
 
 	_, err := authorization(c, db)
@@ -377,16 +452,16 @@ func postCollaborator(c *gin.Context, db *sql.DB) {
 	}
 
 	username := c.Param("owner")
-	currentUsername := c.Param("username")
+	collaboratorUsername := c.Param("username")
 	repoName := c.Param(" repo")
 
-	IsRepoOwner := currentUsername == username
+	IsRepoOwner := collaboratorUsername == username
 	if !IsRepoOwner {
 		c.Status(204)
 		return
 	}
 
-	currentUser, err := GetUserByUserName(db, currentUsername)
+	collaboratorUser, err := GetUserByUserName(db, collaboratorUsername)
 	if err != nil {
 		fmt.Println(err)
 		c.AbortWithStatus(http.StatusInternalServerError)
@@ -404,7 +479,7 @@ func postCollaborator(c *gin.Context, db *sql.DB) {
 		return
 	}
 
-	_, err = db.Exec(`INSERT INTO collaborators ( repo_id , user_id ) VALUES ( $1 , $2) `, repoId, currentUser.ID)
+	_, err = db.Exec(`INSERT INTO collaborators ( repo_id , user_id ) VALUES ( $1 , $2) `, repoId, collaboratorUser.ID)
 	if err != nil {
 		fmt.Println(err)
 		c.AbortWithStatus(http.StatusInternalServerError)
@@ -459,6 +534,7 @@ func main() {
 	router.POST("/user/repos", func(c *gin.Context) { postRepoHandler(c, db) })
 	router.GET("/repos/:owner/:repo/issues", func(c *gin.Context) { getIssuesHandler(c, db) })
 	router.POST("/repos/:owner/:repo/issues", func(c *gin.Context) { postIssueHandler(c, db) })
+	router.GET("/repos/:owner/:repo/collaborators", func(c *gin.Context) { getCollaborators(c, db) })
 	router.POST("repos/:owner/:repo/collaborators/:username", func(c *gin.Context) { postCollaborator(c, db) })
 	router.GET("/repos/:owner/:repo/issues/:issue_number", func(c *gin.Context) { getIssueHandler(c, db) })
 	router.PUT("/repos/:owner/:repo/issues/:issue_number", func(c *gin.Context) { putIssueHandler(c, db) })
