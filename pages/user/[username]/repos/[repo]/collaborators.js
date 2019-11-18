@@ -5,8 +5,7 @@ import axios from 'axios';
 import { formatDistance, parseISO } from 'date-fns';
 
 import { withStyles } from '@material-ui/core/styles';
-import { Button, Typography } from '@material-ui/core';
-import TextField from '@material-ui/core/TextField';
+import { TextField, Button, Typography } from '@material-ui/core';
 import cx from 'classnames';
 
 import { TextInput, ButtonPrimary } from '@primer/components';
@@ -107,7 +106,7 @@ class _Collaborators extends Component {
       );
       if (response.status === 201) {
         this.setState({ collaboratorName: '' });
-        this.fetchCollaborator()
+        this.fetchCollaborator();
       }
     } catch (error) {
       console.log(error);
