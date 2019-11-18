@@ -461,16 +461,16 @@ func postCollaborator(c *gin.Context, db *sql.DB) {
 		return
 	}
 
-	var repoId, userID string
+	var repoId, repoOwnerId string
 	row := db.QueryRow(`SELECT repos.id,repos.user_id FROM repos JOIN users ON repos.user_id= users.id
                 		        WHERE repos.name= $1 AND users.username= $2`, repoName, username)
-	err = row.Scan(&repoId, &userID)
+	err = row.Scan(&repoId, &repoOwnerId)
 	if err != nil {
 		fmt.Println(err)
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
-	if userId == userID {
+	if userId == repoOwnerId {
 		_, err = db.Exec(`INSERT INTO collaborators ( repo_id , user_id ) VALUES ( $1 , $2) `, repoId, collaboratorUser.ID)
 		if err != nil {
 			fmt.Println(err)
