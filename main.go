@@ -445,7 +445,7 @@ func getCollaborators(c *gin.Context, db *sql.DB) {
 
 }
 func postCollaborator(c *gin.Context, db *sql.DB) {
-	_, err := authorization(c, db)
+	userId, err := authorization(c, db)
 	if err != nil {
 		return
 	}
@@ -460,24 +460,27 @@ func postCollaborator(c *gin.Context, db *sql.DB) {
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
-	var repoId string
 
-	row := db.QueryRow(`SELECT repos.id FROM repos JOIN users ON repos.user_id= users.id
+	var repoId, userID string
+	row := db.QueryRow(`SELECT repos.id,repos.user_id FROM repos JOIN users ON repos.user_id= users.id
                 		        WHERE repos.name= $1 AND users.username= $2`, repoName, username)
-	err = row.Scan(&repoId)
+	err = row.Scan(&repoId, &userID)
 	if err != nil {
 		fmt.Println(err)
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
-	_, err = db.Exec(`INSERT INTO collaborators ( repo_id , user_id ) VALUES ( $1 , $2) `, repoId, collaboratorUser.ID)
-	if err != nil {
-		fmt.Println(err)
-		c.AbortWithStatus(http.StatusInternalServerError)
-		return
+	if userId == userID {
+		_, err = db.Exec(`INSERT INTO collaborators ( repo_id , user_id ) VALUES ( $1 , $2) `, repoId, collaboratorUser.ID)
+		if err != nil {
+			fmt.Println(err)
+			c.AbortWithStatus(http.StatusInternalServerError)
+			return
+		}
+		c.Status(201)
+	} else {
+		c.Status(401)
 	}
-	c.Status(201)
-
 }
 
 type Assignee struct {
