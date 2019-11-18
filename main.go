@@ -441,11 +441,10 @@ func getCollaborators(c *gin.Context, db *sql.DB) {
 		collaborators = append(collaborators, collaborator)
 	}
 
-	c.Status(201)
+	c.JSON(200,collaborators)
 
 }
 func postCollaborator(c *gin.Context, db *sql.DB) {
-
 	_, err := authorization(c, db)
 	if err != nil {
 		return
@@ -453,13 +452,7 @@ func postCollaborator(c *gin.Context, db *sql.DB) {
 
 	username := c.Param("owner")
 	collaboratorUsername := c.Param("username")
-	repoName := c.Param(" repo")
-
-	IsRepoOwner := collaboratorUsername == username
-	if !IsRepoOwner {
-		c.Status(204)
-		return
-	}
+	repoName := c.Param("repo")
 
 	collaboratorUser, err := GetUserByUserName(db, collaboratorUsername)
 	if err != nil {
@@ -467,7 +460,6 @@ func postCollaborator(c *gin.Context, db *sql.DB) {
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
-
 	var repoId string
 
 	row := db.QueryRow(`SELECT repos.id FROM repos JOIN users ON repos.user_id= users.id
@@ -478,7 +470,6 @@ func postCollaborator(c *gin.Context, db *sql.DB) {
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
-
 	_, err = db.Exec(`INSERT INTO collaborators ( repo_id , user_id ) VALUES ( $1 , $2) `, repoId, collaboratorUser.ID)
 	if err != nil {
 		fmt.Println(err)

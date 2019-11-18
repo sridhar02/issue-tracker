@@ -158,4 +158,12 @@ post('http://localhost:8000/repos/DONE/RepoFirst/collaborators/sridhar02',
 	)
 
 
+post('http://localhost:8000/repos/sridhar02/repo2/collaborators/DONE',
+	headers={
+	    "Authorization": "Bearer GmnJxKMfWFuikbCFzSETAXqOZxTSLShj"
+	})
 
+get('http://localhost:8000/repos/sridhar02/repo2/collaborators',
+	headers={
+	    "Authorization": "Bearer GmnJxKMfWFuikbCFzSETAXqOZxTSLShj"
+	})
