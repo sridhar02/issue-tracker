@@ -487,6 +487,9 @@ type Assignee struct {
 	Username string
 }
 
+func getAssignees(c *gin.Context, db *sql.DB) {
+
+}
 func postAssignee(c *gin.Context, db *sql.DB) {
 
 	_, err := authorization(c, db)
@@ -591,6 +594,7 @@ func main() {
 	router.POST("/repos/:owner/:repo/issues", func(c *gin.Context) { postIssueHandler(c, db) })
 	router.GET("/repos/:owner/:repo/collaborators", func(c *gin.Context) { getCollaborators(c, db) })
 	router.POST("repos/:owner/:repo/collaborators/:username", func(c *gin.Context) { postCollaborator(c, db) })
+	router.GET("/repos/:owner/:repo/assignees", func(c *gin.Context) { getAssignees(c, db) })
 	router.POST("/repos/:owner/:repo/issues/:issue_number/assignees", func(c *gin.Context) { postAssignee(c, db) })
 	router.GET("/repos/:owner/:repo/issues/:issue_number", func(c *gin.Context) { getIssueHandler(c, db) })
 	router.PUT("/repos/:owner/:repo/issues/:issue_number", func(c *gin.Context) { putIssueHandler(c, db) })

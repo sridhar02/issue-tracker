@@ -5,12 +5,17 @@ import axios from 'axios';
 import cx from 'classnames';
 import { formatDistance, parseISO } from 'date-fns';
 
+import SettingsIcon from '@material-ui/icons/Settings';
 import { withStyles } from '@material-ui/core/styles';
 import { Button, Typography } from '@material-ui/core';
 import TextField from '@material-ui/core/TextField';
 import LockIcon from '@material-ui/icons/Lock';
 import DeleteIcon from '@material-ui/icons/Delete';
 import ErrorOutlineIcon from '@material-ui/icons/ErrorOutline';
+import Popper from '@material-ui/core/Popper';
+import Paper from '@material-ui/core/Paper';
+
+import { TextInput } from '@primer/components';
 
 import { Navbar, authHeaders } from '../../../../../../utils/utils.js';
 
@@ -69,26 +74,63 @@ const sidebarStyles = theme => ({
     padding: theme.spacing(1),
     margin: theme.spacing(1),
     borderBottom: '1px solid #ddd'
+  },
+  popper: {
+    padding: theme.spacing(2)
   }
 });
-function _Sidebar({ classes, lockButton, pinButton }) {
-  return (
-    <Fragment>
-      <div className={classes.sidebar}>Assignee</div>
-      <div className={classes.sidebar}>Labels</div>
-      <div className={classes.sidebar}>Projects</div>
-      <div className={classes.sidebar}>Milestone</div>
-      <div className={classes.sidebar}>{lockButton}</div>
-      <div className={classes.sidebar}>{pinButton}</div>
-      <div className={classes.sidebar}>
-        <Button>
-          <DeleteIcon /> Delete Issue
-        </Button>
-      </div>
-    </Fragment>
-  );
-}
+class _Sidebar extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      anchorEl: null,
+      open: false
+    };
+  }
 
+  handleClickPoper = event => {
+    const { currentTarget } = event;
+    this.setState(state => ({
+      anchorEl: currentTarget,
+      open: !state.open
+    }));
+  };
+
+  render() {
+    const { classes, lockButton, pinButton } = this.props;
+    const { anchorEl, open } = this.state;
+    const id = open ? 'simple-popper' : null;
+    return (
+      <Fragment>
+        <div className={classes.sidebar}>
+          <button
+            type="button"
+            aria-describedby={id}
+            onClick={this.handleClickPoper}
+          >
+            Assignee <SettingsIcon />
+          </button>
+
+          <Popper id={id} open={open} anchorEl={anchorEl}>
+            <Paper className={classes.popper}>
+              <TextInput /> 
+            </Paper>
+          </Popper>
+        </div>
+        <div className={classes.sidebar}>Labels</div>
+        <div className={classes.sidebar}>Projects</div>
+        <div className={classes.sidebar}>Milestone</div>
+        <div className={classes.sidebar}>{lockButton}</div>
+        <div className={classes.sidebar}>{pinButton}</div>
+        <div className={classes.sidebar}>
+          <Button>
+            <DeleteIcon /> Delete Issue
+          </Button>
+        </div>
+      </Fragment>
+    );
+  }
+}
 const Sidebar = withStyles(sidebarStyles)(_Sidebar);
 
 const issueHeaderStyles = theme => ({
