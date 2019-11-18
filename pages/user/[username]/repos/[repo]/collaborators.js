@@ -107,7 +107,7 @@ class _Collaborators extends Component {
       );
       if (response.status === 201) {
         this.setState({ collaboratorName: '' });
-        this.fetchCollaborator();
+        this.fetchCollaborator()
       }
     } catch (error) {
       console.log(error);
