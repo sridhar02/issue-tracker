@@ -167,3 +167,10 @@ get('http://localhost:8000/repos/sridhar02/repo2/collaborators',
 	headers={
 	    "Authorization": "Bearer GmnJxKMfWFuikbCFzSETAXqOZxTSLShj"
 	})
+post("http://localhost:8000/repos/sridhar02/repo2/issues/3/assignees",
+	headers={
+	    "Authorization": "Bearer GmnJxKMfWFuikbCFzSETAXqOZxTSLShj"
+	},
+	json={
+		'username':'dp21'
+	})

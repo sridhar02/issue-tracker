@@ -441,7 +441,7 @@ func getCollaborators(c *gin.Context, db *sql.DB) {
 		collaborators = append(collaborators, collaborator)
 	}
 
-	c.JSON(200,collaborators)
+	c.JSON(200, collaborators)
 
 }
 func postCollaborator(c *gin.Context, db *sql.DB) {
@@ -478,6 +478,67 @@ func postCollaborator(c *gin.Context, db *sql.DB) {
 	}
 	c.Status(201)
 
+}
+
+type Assignee struct {
+	Username string
+}
+
+func postAssignee(c *gin.Context, db *sql.DB) {
+
+	_, err := authorization(c, db)
+	if err != nil {
+		return
+	}
+	username := c.Param("owner")
+	repoName := c.Param("repo")
+	issueNumber := c.Param("issue_number")
+
+	var Id int
+	var repoId string
+	row := db.QueryRow(`WITH repo_cte AS (
+		                     SELECT repos.id FROM repos JOIN users ON repos.user_id= users.id
+                		     WHERE repos.name= $1 AND users.username= $2
+                		     )
+                		SELECT id,repo_id from issues WHERE repo_id
+                		IN (SELECT id FROM repo_cte) and issue_number=$3 `, repoName, username, issueNumber)
+	err = row.Scan(&Id, &repoId)
+	if err != nil {
+		fmt.Println(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	assignee := Assignee{}
+	err = c.BindJSON(&assignee)
+	if err != nil {
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	assigneeUser, err := GetUserByUserName(db, assignee.Username)
+	if err != nil {
+		fmt.Println(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	var userId string
+	row = db.QueryRow(`SELECT user_id FROM collaborators WHERE repo_id = $1 AND user_id = $2`, repoId, assigneeUser.ID)
+	err = row.Scan(&userId)
+	if err != nil {
+		fmt.Println(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	_, err = db.Exec(`INSERT INTO assignees ( issue_id , user_id ) VALUES ( $1 , $2) `, Id, userId)
+	if err != nil {
+		fmt.Println(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	c.Status(201)
 }
 
 func main() {
@@ -527,6 +588,7 @@ func main() {
 	router.POST("/repos/:owner/:repo/issues", func(c *gin.Context) { postIssueHandler(c, db) })
 	router.GET("/repos/:owner/:repo/collaborators", func(c *gin.Context) { getCollaborators(c, db) })
 	router.POST("repos/:owner/:repo/collaborators/:username", func(c *gin.Context) { postCollaborator(c, db) })
+	router.POST("/repos/:owner/:repo/issues/:issue_number/assignees", func(c *gin.Context) { postAssignee(c, db) })
 	router.GET("/repos/:owner/:repo/issues/:issue_number", func(c *gin.Context) { getIssueHandler(c, db) })
 	router.PUT("/repos/:owner/:repo/issues/:issue_number", func(c *gin.Context) { putIssueHandler(c, db) })
 	router.PUT("/repos/:owner/:repo/issues/:issue_number/pin", func(c *gin.Context) { putPinHandler(c, db) })
