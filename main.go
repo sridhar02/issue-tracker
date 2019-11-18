@@ -416,7 +416,7 @@ func getCollaborators(c *gin.Context, db *sql.DB) {
 	}
 
 	rows, err := db.Query(`SELECT users.username,users.image,users.name FROM users JOIN collaborators
-                                ON users.id = collaborators.user_id  WHERE collaborators.repo_id = $1;`, currentRepo.RepoId)
+                                ON users.id = collaborators.user_id  WHERE collaborators.repo_id = $1`, currentRepo.RepoId)
 	if err != nil {
 		fmt.Println(err)
 		c.AbortWithStatus(http.StatusInternalServerError)
@@ -485,11 +485,14 @@ func postCollaborator(c *gin.Context, db *sql.DB) {
 
 type Assignee struct {
 	Username string
+	Image    string
+	User     User
 }
 
 func getAssignees(c *gin.Context, db *sql.DB) {
 
 }
+
 func postAssignee(c *gin.Context, db *sql.DB) {
 
 	_, err := authorization(c, db)

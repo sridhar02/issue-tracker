@@ -77,6 +77,27 @@ const sidebarStyles = theme => ({
   },
   popper: {
     padding: theme.spacing(2)
+  },
+
+  collaboratorDetails: {
+    display: 'flex',
+    margin: theme.spacing(0.5)
+  },
+  collaboratorImage: {
+    height: theme.spacing(3),
+    width: theme.spacing(3),
+    marginRight: theme.spacing(1)
+  },
+  assigneeImage: {
+    height: theme.spacing(3),
+    width: theme.spacing(3),
+    marginBottom: theme.spacing(1),
+    marginRight: theme.spacing(2)
+  },
+  assigneeButton: {
+    backgroundColor: '#fff',
+    border: 0,
+    marginBottom: theme.spacing(1)
   }
 });
 class _Sidebar extends Component {
@@ -84,7 +105,8 @@ class _Sidebar extends Component {
     super(props);
     this.state = {
       anchorEl: null,
-      open: false
+      open: false,
+      collaborators: []
     };
   }
 
@@ -96,9 +118,46 @@ class _Sidebar extends Component {
     }));
   };
 
+  fetchCollaborator = async () => {
+    const { username, repo } = Router.router.query;
+    try {
+      const response = await axios.get(
+        `/repos/${username}/${repo}/collaborators`,
+        authHeaders()
+      );
+      if (response.status === 200) {
+        this.setState({ collaborators: response.data });
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  componentDidMount() {
+    this.fetchCollaborator();
+  }
+
+  postAssignee = async collaborator => {
+    event.preventDefault();
+    const { username, repo, issueNumber } = Router.router.query;
+    try {
+      const response = await axios.post(
+        `/repos/${username}/${repo}/issues/${issueNumber}/assignees`,
+        {
+          username: collaborator.Username
+        },
+        authHeaders()
+      );
+      if (response.status === 201) {
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   render() {
-    const { classes, lockButton, pinButton } = this.props;
-    const { anchorEl, open } = this.state;
+    const { classes, lockButton, pinButton, issue } = this.props;
+    const { anchorEl, open, collaborators } = this.state;
     const id = open ? 'simple-popper' : null;
     return (
       <Fragment>
@@ -107,13 +166,37 @@ class _Sidebar extends Component {
             type="button"
             aria-describedby={id}
             onClick={this.handleClickPoper}
+            className={classes.assigneeButton}
           >
             Assignee <SettingsIcon />
           </button>
-
+          <div>
+            {issue.assignees.map(assignee => (
+              <div key={assignee.User.id}>
+                <img
+                  src={assignee.User.image}
+                  className={classes.assigneeImage}
+                />
+                {assignee.User.username}
+              </div>
+            ))}
+          </div>
           <Popper id={id} open={open} anchorEl={anchorEl}>
             <Paper className={classes.popper}>
-              <TextInput /> 
+              {collaborators.map(collaborator => (
+                <Button
+                  key={collaborator.Username}
+                  className={classes.collaboratorDetails}
+                  onClick={() => this.postAssignee(collaborator)}
+                >
+                  <img
+                    key={collaborator.UserImage}
+                    src={collaborator.UserImage}
+                    className={classes.collaboratorImage}
+                  />
+                  <div key={collaborator.Username}>{collaborator.Username}</div>
+                </Button>
+              ))}
             </Paper>
           </Popper>
         </div>
@@ -674,7 +757,11 @@ class _Issue extends Component {
                   </form>
                 </div>
                 <div className="col-lg-2">
-                  <Sidebar lockButton={lockButton} pinButton={pinButton} />
+                  <Sidebar
+                    issue={issue}
+                    lockButton={lockButton}
+                    pinButton={pinButton}
+                  />
                 </div>
               </div>
             </div>

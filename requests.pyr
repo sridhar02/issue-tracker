@@ -94,7 +94,7 @@ post('http://localhost:8000/repos/DONE/test123/issues',
 		'title': '2nd issue is updated',
 		'body': 'a new issue is updated in a new repo',
 	})
-get('http://localhost:8000/repos/DONE/RepoFirst/issues/3')
+get('http://localhost:8000/repos/sridhar02/repo2/issues/5')
 get('http://localhost:8000/repos/DONE/RepoFirst/issues/2/comments')
 
 post('http://localhost:8000/repos/DONE/RepoFirst/issues/2/comments',
