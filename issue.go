@@ -11,18 +11,19 @@ import (
 )
 
 type Issue struct {
-	ID          int       `json:"id,omitempty"`
-	Title       string    `json:"title,omitempty"`
-	UserId      string    `json:"user_id,omitempty"`
-	Body        string    `json:"body,omitempty"`
-	RepoId      string    `json:"repo_id,omitempty"`
-	IssueNumber int       `json:"issue_number,omitempty"`
-	Status      string    `json:"status,omitempty"`
-	Pinned      string    `json:"pinned,omitempty"`
-	Lock        string    `json:"lock,omitempty"`
-	User        User      `json:"user,omitempty"`
-	CreatedAt   time.Time `json:"created_at,omitempty"`
-	UpdatedAt   time.Time `json:"updated_at,omitempty"`
+	ID          int        `json:"id,omitempty"`
+	Title       string     `json:"title,omitempty"`
+	UserId      string     `json:"user_id,omitempty"`
+	Body        string     `json:"body,omitempty"`
+	RepoId      string     `json:"repo_id,omitempty"`
+	IssueNumber int        `json:"issue_number,omitempty"`
+	Status      string     `json:"status,omitempty"`
+	Pinned      string     `json:"pinned,omitempty"`
+	Lock        string     `json:"lock,omitempty"`
+	User        User       `json:"user,omitempty"`
+	CreatedAt   time.Time  `json:"created_at,omitempty"`
+	UpdatedAt   time.Time  `json:"updated_at,omitempty"`
+	Assignees   []Assignee `json:"assignees,omitempty"`
 }
 
 func GetIssue(db *sql.DB, Id int) (Issue, error) {
@@ -30,12 +31,12 @@ func GetIssue(db *sql.DB, Id int) (Issue, error) {
 	var title, body, repoId, status, createdAt, userId, updatedAt, pinned, lock string
 	var issueNumber int
 
-	row := db.QueryRow(`SELECT 
+	row := db.QueryRow(`SELECT
 		                     title,body,repo_id,issue_number,status,
-		                     pinned,lock,user_id,created_at, 
-						     updated_at 
-						     FROM 
-						     issues 
+		                     pinned,lock,user_id,created_at,
+						     updated_at
+						     FROM
+						     issues
 						     WHERE id=$1`, Id)
 	err := row.Scan(&title, &body, &repoId, &issueNumber, &status, &pinned, &lock, &userId, &createdAt, &updatedAt)
 	if err != nil {
@@ -61,6 +62,32 @@ func GetIssue(db *sql.DB, Id int) (Issue, error) {
 		return Issue{}, err
 	}
 
+	rows, err := db.Query("SELECT user_id FROM assignees WHERE issue_id=$1", Id)
+	if err != nil {
+		fmt.Println(err)
+		return Issue{}, err
+	}
+
+	assignees := []Assignee{}
+
+	for rows.Next() {
+		var userID string
+		err = rows.Scan(&userID)
+		if err != nil {
+			fmt.Println(err)
+			return Issue{}, err
+		}
+		user, err := GetUser(db, userID)
+		if err != nil {
+			fmt.Println(err)
+			return Issue{}, err
+
+		}
+		assignee := Assignee{
+			User: user,
+		}
+		assignees = append(assignees, assignee)
+	}
 	issue := Issue{
 		ID:          Id,
 		Title:       title,
@@ -73,6 +100,7 @@ func GetIssue(db *sql.DB, Id int) (Issue, error) {
 		Pinned:      pinned,
 		Lock:        lock,
 		User:        user,
+		Assignees:   assignees,
 	}
 
 	return issue, nil
@@ -91,8 +119,8 @@ func CreateIssue(db *sql.DB, issue Issue) (int, int, error) {
 
 	// fmt.Println(issue)
 
-	err = db.QueryRow(`INSERT INTO 
-		                        issues ( 
+	err = db.QueryRow(`INSERT INTO
+		                        issues (
 		                        title, user_id,body,repo_id,issue_number,status,
 		                        pinned,lock,created_at, updated_at
 		                        )
@@ -154,7 +182,7 @@ func postIssueHandler(c *gin.Context, db *sql.DB) {
 	username := c.Param("owner")
 	repoName := c.Param("repo")
 	var repoId string
-	row := db.QueryRow(`SELECT repos.id FROM repos JOIN users ON repos.user_id= users.id 
+	row := db.QueryRow(`SELECT repos.id FROM repos JOIN users ON repos.user_id= users.id
 						       WHERE repos.name=$1 AND users.username=$2`, repoName, username)
 	err = row.Scan(&repoId)
 	if err != nil {
@@ -195,11 +223,11 @@ func putIssueHandler(c *gin.Context, db *sql.DB) {
 	issueNumber := c.Param("issue_number")
 
 	var Id int
-	row := db.QueryRow(`WITH repo_cte AS ( 
-		                    SELECT repos.id FROM repos JOIN users ON repos.user_id= users.id 
+	row := db.QueryRow(`WITH repo_cte AS (
+		                    SELECT repos.id FROM repos JOIN users ON repos.user_id= users.id
                 		    WHERE repos.name= $1 AND users.username= $2
-                		) 
-                		SELECT id FROM issues 
+                		)
+                		SELECT id FROM issues
                 		WHERE  repo_id in (select id from repo_cte) AND issue_number=$3`,
 		repoName, username, issueNumber)
 	err = row.Scan(&Id)
@@ -292,11 +320,11 @@ func putLockHandler(c *gin.Context, db *sql.DB) {
 	}
 
 	_, err = db.Exec(`WITH repo_cte AS (
-		                     SELECT repos.id  FROM repos JOIN users ON repos.user_id= users.id 
+		                     SELECT repos.id  FROM repos JOIN users ON repos.user_id= users.id
                 		     WHERE repos.name= $1 AND users.username= $2
-                		     ) , 
+                		     ) ,
                 		issue_CTE AS (
-                			 SELECT id FROM issues 
+                			 SELECT id FROM issues
                 		     WHERE repo_id in (SELECT id from repo_cte) and issue_number=$3
                 		     )
                 		UPDATE issues SET lock= $4 WHERE id in ( select id from issue_cte )`,
@@ -324,10 +352,10 @@ func putPinHandler(c *gin.Context, db *sql.DB) {
 	var Id int
 	var repoId string
 	row := db.QueryRow(`WITH repo_cte AS (
-		                    SELECT repos.id FROM repos JOIN users ON repos.user_id= users.id 
+		                    SELECT repos.id FROM repos JOIN users ON repos.user_id= users.id
                 		    WHERE repos.name= $1 AND users.username= $2
-                	        ) 
-                	    SELECT id,repo_id FROM issues 
+                	        )
+                	    SELECT id,repo_id FROM issues
                 	    WHERE repo_id in (SELECT id FROM repo_cte) AND issue_number=$3`,
 		repoName, username, issueNumber)
 	err = row.Scan(&Id, &repoId)
