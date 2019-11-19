@@ -304,6 +304,7 @@ class _IssueHeader extends Component {
   };
 
   updateIssueTitle = async event => {
+    const { fetchIssue } = this.props;
     event.preventDefault();
     console.log(this.state.title);
     const { username, repo, issueNumber } = Router.router.query;
@@ -316,7 +317,7 @@ class _IssueHeader extends Component {
         authHeaders()
       );
       if (response.status === 204) {
-        this.fetchIssue();
+        fetchIssue();
         this.setState({
           editTitle: false
         });
@@ -327,7 +328,7 @@ class _IssueHeader extends Component {
   };
 
   render() {
-    const { classes, issue, status, updateIssueTitle, fetchIssue } = this.props;
+    const { classes, issue, status, fetchIssue } = this.props;
     const { username, repo, issueNumber } = Router.router.query;
     const { editTitle } = this.state;
     const title =
