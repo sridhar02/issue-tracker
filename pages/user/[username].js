@@ -8,7 +8,7 @@ import { withStyles } from '@material-ui/core/styles';
 import { Button, Typography } from '@material-ui/core';
 import TextField from '@material-ui/core/TextField';
 
-import { TabNav } from '@primer/components';
+import { TabNav, UnderlineNav } from '@primer/components';
 
 import { Navbar } from '../../utils/utils.js';
 
@@ -158,17 +158,15 @@ class _User extends Component {
             </div>
             <div className="col-lg-9">
               <div className="d-none d-md-block">
-                <TabNav arial-label="main">
-                  <TabNav.Link href="#home" >
-                    Overview
-                  </TabNav.Link>
-                  <TabNav.Link href="#Repos">Respositories</TabNav.Link>
-                  <TabNav.Link href="#Projects">Projects</TabNav.Link>
-                  <TabNav.Link href="#Packages">Packages</TabNav.Link>
-                  <TabNav.Link href="#Stars">Stars</TabNav.Link>
-                  <TabNav.Link href="Followers">Followers</TabNav.Link>
-                  <TabNav.Link href="#Following">Following</TabNav.Link>
-                </TabNav>
+                <UnderlineNav arial-label="main">
+                  <UnderlineNav.Link href="#home">Overview</UnderlineNav.Link>
+                  <UnderlineNav.Link href="/new">
+                    Respositories
+                  </UnderlineNav.Link>
+                  <UnderlineNav.Link href="#Projects">
+                    Projects
+                  </UnderlineNav.Link>
+                </UnderlineNav>
               </div>
               <div className={cx(classes.popular)}>
                 <div>Popular respositories</div>
