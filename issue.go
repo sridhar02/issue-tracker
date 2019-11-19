@@ -23,7 +23,7 @@ type Issue struct {
 	User        User       `json:"user,omitempty"`
 	CreatedAt   time.Time  `json:"created_at,omitempty"`
 	UpdatedAt   time.Time  `json:"updated_at,omitempty"`
-	Assignees   []Assignee `json:"assignees,omitempty"`
+	Assignees   []Assignee `json:"assignees"`
 }
 
 func GetIssue(db *sql.DB, Id int) (Issue, error) {
