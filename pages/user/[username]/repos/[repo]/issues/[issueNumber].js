@@ -70,6 +70,50 @@ function _Comment({ comments, classes }) {
 
 const Comment = withStyles(commentStyles)(_Comment);
 
+const postCommentStyles = theme => ({
+  commentSection: {
+    display: 'block',
+    width: '100%',
+    minHeight: '100px',
+    maxHeight: '500px',
+    marginBottom: theme.spacing(1),
+    padding: theme.spacing(1),
+    resize: 'vertical'
+  },
+  commentButton: {
+    color: '#fff',
+    backgroundColor: '#2cbe4e',
+    '&:hover': {
+      backgroundColor: 'green'
+    }
+  }
+});
+
+function _PostComments({ classes, handleSubmit, body, handleChange, button }) {
+  return (
+    <form onSubmit={handleSubmit}>
+      <div>
+        <textarea
+          className={cx(classes.commentSection, 'form-control')}
+          name="body"
+          value={body}
+          onChange={handleChange}
+        />
+        {button}
+        <Button
+          variant="contained"
+          className={classes.commentButton}
+          type="submit"
+        >
+          Comment
+        </Button>
+      </div>
+    </form>
+  );
+}
+
+const PostComments = withStyles(postCommentStyles)(_PostComments);
+
 const assigneePopperStyles = theme => ({
   popper: {
     padding: theme.spacing(2),
@@ -187,7 +231,7 @@ class _Sidebar extends Component {
       const response = await axios.post(
         `/repos/${username}/${repo}/issues/${issueNumber}/assignees`,
         {
-          username: collaborator.Username
+          username: collaborator.username
         },
         authHeaders()
       );
@@ -493,15 +537,6 @@ const issueStyles = theme => ({
     padding: theme.spacing(1),
     backgroundColor: '#f6f8fa'
   },
-  commentSection: {
-    display: 'block',
-    width: '100%',
-    minHeight: '100px',
-    maxHeight: '500px',
-    marginBottom: theme.spacing(1),
-    padding: theme.spacing(1),
-    resize: 'vertical'
-  },
   container: {
     margin: theme.spacing(1),
     [theme.breakpoints.up('md')]: {
@@ -511,13 +546,6 @@ const issueStyles = theme => ({
   name: {
     fontWeight: 'bold',
     marginRight: theme.spacing(1)
-  },
-  commentButton: {
-    color: '#fff',
-    backgroundColor: '#2cbe4e',
-    '&:hover': {
-      backgroundColor: 'green'
-    }
   },
   commentClose: {
     marginRight: theme.spacing(1),
@@ -771,24 +799,12 @@ class _Issue extends Component {
                     </Typography>
                   </div>
                   <Comment comments={this.state.comments} />
-                  <form onSubmit={this.handleSubmit}>
-                    <div>
-                      <textarea
-                        className={cx(classes.commentSection, 'form-control')}
-                        name="body"
-                        value={this.state.body}
-                        onChange={this.handleChange}
-                      />
-                      {button}
-                      <Button
-                        variant="contained"
-                        className={classes.commentButton}
-                        type="submit"
-                      >
-                        Comment
-                      </Button>
-                    </div>
-                  </form>
+                  <PostComments
+                    handleSubmit={this.handleSubmit}
+                    body={this.state.body}
+                    handleChange={this.handleChange}
+                    button={button}
+                  />
                 </div>
                 <div className="col-lg-2">
                   <Sidebar
