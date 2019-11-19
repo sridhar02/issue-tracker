@@ -174,3 +174,16 @@ post("http://localhost:8000/repos/sridhar02/repo2/issues/3/assignees",
 	json={
 		'username':'dp21'
 	})
+
+delete('http://localhost:8000/repos/sridhar02/repo2/collaborators/dp21',
+	headers={
+	    "Authorization": "Bearer GmnJxKMfWFuikbCFzSETAXqOZxTSLShj"
+	})
+
+delete("http://localhost:8000/repos/sridhar02/repo2/issues/3/assignees",
+	headers={
+	    "Authorization": "Bearer GmnJxKMfWFuikbCFzSETAXqOZxTSLShj"
+	},
+	json={
+		'username':'dp21'
+	})
