@@ -123,12 +123,12 @@ class _Collaborators extends Component {
         </Typography>
       ) : (
         collaborators.map(collaborator => (
-          <div key={collaborator.Name} className={classes.collaboratorDetails}>
+          <div key={collaborator.name} className={classes.collaboratorDetails}>
             <img
-              src={collaborator.UserImage}
+              src={collaborator.userImage}
               className={classes.collaboratorImage}
             />
-            <div>{collaborator.Username}</div>
+            <div>{collaborator.username}</div>
           </div>
         ))
       );
