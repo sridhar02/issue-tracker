@@ -393,9 +393,9 @@ func getCurrentRepo(db *sql.DB, username string, repoName string) (CurrentRepo, 
 }
 
 type Collaborator struct {
-	Username  string
-	UserImage string
-	Name      string
+	Username  string `json:"username"`
+	UserImage string `json:"userImage"`
+	Name      string `json:"name"`
 }
 
 func getCollaborators(c *gin.Context, db *sql.DB) {
@@ -484,9 +484,9 @@ func postCollaborator(c *gin.Context, db *sql.DB) {
 }
 
 type Assignee struct {
-	Username string
-	Image    string
-	User     User
+	Username string `json:"username"`
+	Image    string `json:"image"`
+	User     User   `json:"user"`
 }
 
 func getAssignees(c *gin.Context, db *sql.DB) {
@@ -578,7 +578,7 @@ func deleteCollaborator(c *gin.Context, db *sql.DB) {
 		return
 	}
 	if userId == repoOwnerId {
-		_, err = db.Exec(`DELETE FROM collaborators WHERE repo_id = $1,user_id= $2 `, repoId, collaboratorUser.ID)
+		_, err = db.Exec(`DELETE FROM collaborators WHERE repo_id = $1 AND user_id= $2 `, repoId, collaboratorUser.ID)
 		if err != nil {
 			fmt.Println(err)
 			c.AbortWithStatus(http.StatusInternalServerError)
@@ -638,7 +638,7 @@ func deleteAssignee(c *gin.Context, db *sql.DB) {
 		return
 	}
 
-	_, err = db.Exec(`DELETE FROM assignees WHERE issue_id = $1,user_id= $2 `, issueId, assigneeUser.ID)
+	_, err = db.Exec(`DELETE FROM assignees WHERE issue_id = $1 AND user_id= $2 `, issueId, assigneeUser.ID)
 	if err != nil {
 		fmt.Println(err)
 		c.AbortWithStatus(http.StatusInternalServerError)
