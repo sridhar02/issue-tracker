@@ -16,9 +16,6 @@ const collaboratorsStyles = theme => ({
   container: {
     margin: '50px auto'
   },
-  addCollaborator: {
-    display: 'flex'
-  },
   mainSection: {
     border: '1px solid #ddd',
     borderRadius: '3px'
@@ -31,20 +28,31 @@ const collaboratorsStyles = theme => ({
   descripition: {
     padding: theme.spacing(4),
     borderBottom: '1px solid #ddd'
-  },
-  search: {
-    padding: theme.spacing(1),
-    fontWeight: 'bold'
-  },
-  searchText: {
-    padding: theme.spacing(1)
-  },
+  }
+});
+
+const sidebarStyles = theme => ({
   sideSection: {
     display: 'flex',
     flexDirection: 'column',
     border: '1px solid #ddd',
     padding: theme.spacing(1)
-  },
+  }
+});
+
+function _Sidebar({ classes }) {
+  return (
+    <div className={classes.sideSection}>
+      <a>Options</a>
+      <a>Collaborators</a>
+      <a>Options</a>
+      <a>Options</a>
+    </div>
+  );
+}
+const Sidebar = withStyles(sidebarStyles)(_Sidebar);
+
+const listCollaboratorsStyles = theme => ({
   collaboratorDetails: {
     display: 'flex',
     margin: theme.spacing(1),
@@ -60,6 +68,76 @@ const collaboratorsStyles = theme => ({
     backgroundColor: '#fff'
   }
 });
+
+function _ListOfCollaborators({ collaborator, removeCollaborator, classes }) {
+  return (
+    <div key={collaborator.name} className={classes.collaboratorDetails}>
+      <div key={collaborator.userImage}>
+        <img
+          src={collaborator.userImage}
+          className={classes.collaboratorImage}
+        />
+        <div>{collaborator.username}</div>
+      </div>
+      <button
+        key={collaborator.username}
+        className={classes.closeButton}
+        onClick={() => removeCollaborator(collaborator)}
+      >
+        <CloseIcon />
+      </button>
+    </div>
+  );
+}
+
+const ListOfCollaborators = withStyles(listCollaboratorsStyles)(
+  _ListOfCollaborators
+);
+
+const addCollaboratorStyles = theme => ({
+  search: {
+    padding: theme.spacing(1),
+    fontWeight: 'bold'
+  },
+  searchText: {
+    padding: theme.spacing(1)
+  },
+  addCollaborator: {
+    display: 'flex'
+  }
+});
+
+function _AddCollaborator({
+  classes,
+  handleSubmit,
+  handleChange,
+  collaboratorName
+}) {
+  return (
+    <div>
+      <Typography variant="body2" className={classes.search}>
+        Search by username, full name or email address
+      </Typography>
+      <Typography variant="body2" className={classes.searchText}>
+        You’ll only be able to find a GitHub user by their email address if
+        they’ve chosen to list it publicly. Otherwise, use their username instea
+      </Typography>
+      <form onSubmit={handleSubmit}>
+        <div className={classes.addCollaborator}>
+          <TextInput
+            name="collaboratorName"
+            value={collaboratorName}
+            onChange={handleChange}
+            className={classes.textInput}
+          />
+          <Button type="submit">Add collaborator</Button>
+        </div>
+      </form>
+    </div>
+  );
+}
+
+const AddCollaborator = withStyles(addCollaboratorStyles)(_AddCollaborator);
 
 class _Collaborators extends Component {
   static getInitialProps({ query }) {
@@ -144,22 +222,10 @@ class _Collaborators extends Component {
         </Typography>
       ) : (
         collaborators.map(collaborator => (
-          <div key={collaborator.name} className={classes.collaboratorDetails}>
-            <div key={collaborator.userImage}>
-              <img
-                src={collaborator.userImage}
-                className={classes.collaboratorImage}
-              />
-              <div>{collaborator.username}</div>
-            </div>
-            <button
-              key={collaborator.username}
-              className={classes.closeButton}
-              onClick={() => this.removeCollaborator(collaborator)}
-            >
-              <CloseIcon />
-            </button>
-          </div>
+          <ListOfCollaborators
+            collaborator={collaborator}
+            removeCollaborator={this.removeCollaborator}
+          />
         ))
       );
     return (
@@ -168,12 +234,7 @@ class _Collaborators extends Component {
         <div className={cx(classes.container, 'container')}>
           <div className="row">
             <div className="col-3">
-              <div className={classes.sideSection}>
-                <a>Options</a>
-                <a>Collaborators</a>
-                <a>Options</a>
-                <a>Options</a>
-              </div>
+              <Sidebar />
             </div>
             <div className="col-9">
               <div className={classes.mainSection}>
@@ -183,27 +244,11 @@ class _Collaborators extends Component {
                 <div className={classes.descripition}>
                   {collaboratorDetails}
                 </div>
-                <div>
-                  <Typography variant="body2" className={classes.search}>
-                    Search by username, full name or email address
-                  </Typography>
-                  <Typography variant="body2" className={classes.searchText}>
-                    You’ll only be able to find a GitHub user by their email
-                    address if they’ve chosen to list it publicly. Otherwise,
-                    use their username instea
-                  </Typography>
-                  <form onSubmit={this.handleSubmit}>
-                    <div className={classes.addCollaborator}>
-                      <TextInput
-                        name="collaboratorName"
-                        value={this.state.collaboratorName}
-                        onChange={this.handleChange}
-                        className={classes.textInput}
-                      />
-                      <Button type="submit">Add collaborator</Button>
-                    </div>
-                  </form>
-                </div>
+                <AddCollaborator
+                  handleChange={this.handleChange}
+                  handleSubmit={this.handleSubmit}
+                  collaboratorName={this.state.collaboratorName}
+                />
               </div>
             </div>
           </div>
