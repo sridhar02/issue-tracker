@@ -14,6 +14,7 @@ import DeleteIcon from '@material-ui/icons/Delete';
 import ErrorOutlineIcon from '@material-ui/icons/ErrorOutline';
 import Popper from '@material-ui/core/Popper';
 import Paper from '@material-ui/core/Paper';
+import CheckIcon from '@material-ui/icons/Check';
 
 import { TextInput } from '@primer/components';
 
@@ -69,14 +70,10 @@ function _Comment({ comments, classes }) {
 
 const Comment = withStyles(commentStyles)(_Comment);
 
-const sidebarStyles = theme => ({
-  sidebar: {
-    padding: theme.spacing(1),
-    margin: theme.spacing(1),
-    borderBottom: '1px solid #ddd'
-  },
+const assigneePopperStyles = theme => ({
   popper: {
-    padding: theme.spacing(2)
+    padding: theme.spacing(2),
+    width: '250px'
   },
 
   collaboratorDetails: {
@@ -87,6 +84,50 @@ const sidebarStyles = theme => ({
     height: theme.spacing(3),
     width: theme.spacing(3),
     marginRight: theme.spacing(1)
+  }
+});
+
+function _AssigneePopper({
+  classes,
+  id,
+  open,
+  anchorEl,
+  collaborators,
+  issue,
+  postAssignee
+}) {
+  return (
+    <Popper id={id} open={open} anchorEl={anchorEl}>
+      <Paper className={classes.popper}>
+        {collaborators.map(collaborator => (
+          <Button
+            key={collaborator.username}
+            className={classes.collaboratorDetails}
+            onClick={() => postAssignee(collaborator)}
+          >
+            {issue.assignees.some(
+              assignee => assignee.user.username === collaborator.username
+            ) && <CheckIcon />}
+            <img
+              key={collaborator.userImage}
+              src={collaborator.userImage}
+              className={classes.collaboratorImage}
+            />
+            <div key={collaborator.username}>{collaborator.username}</div>
+          </Button>
+        ))}
+      </Paper>
+    </Popper>
+  );
+}
+
+const AssigneePopper = withStyles(assigneePopperStyles)(_AssigneePopper);
+
+const sidebarStyles = theme => ({
+  sidebar: {
+    padding: theme.spacing(1),
+    margin: theme.spacing(1),
+    borderBottom: '1px solid #ddd'
   },
   assigneeImage: {
     height: theme.spacing(3),
@@ -100,13 +141,15 @@ const sidebarStyles = theme => ({
     marginBottom: theme.spacing(1)
   }
 });
+
 class _Sidebar extends Component {
   constructor(props) {
     super(props);
     this.state = {
       anchorEl: null,
       open: false,
-      collaborators: []
+      collaborators: [],
+      assigneed: false
     };
   }
 
@@ -157,7 +200,7 @@ class _Sidebar extends Component {
 
   render() {
     const { classes, lockButton, pinButton, issue } = this.props;
-    const { anchorEl, open, collaborators } = this.state;
+    const { anchorEl, open, collaborators, assigneed } = this.state;
     const id = open ? 'simple-popper' : null;
     return (
       <Fragment>
@@ -181,24 +224,14 @@ class _Sidebar extends Component {
               </div>
             ))}
           </div>
-          <Popper id={id} open={open} anchorEl={anchorEl}>
-            <Paper className={classes.popper}>
-              {collaborators.map(collaborator => (
-                <Button
-                  key={collaborator.username}
-                  className={classes.collaboratorDetails}
-                  onClick={() => this.postAssignee(collaborator)}
-                >
-                  <img
-                    key={collaborator.userImage}
-                    src={collaborator.userImage}
-                    className={classes.collaboratorImage}
-                  />
-                  <div key={collaborator.username}>{collaborator.username}</div>
-                </Button>
-              ))}
-            </Paper>
-          </Popper>
+          <AssigneePopper
+            id={id}
+            open={open}
+            anchorEl={anchorEl}
+            collaborators={collaborators}
+            issue={issue}
+            postAssignee={this.postAssignee}
+          />
         </div>
         <div className={classes.sidebar}>Labels</div>
         <div className={classes.sidebar}>Projects</div>
