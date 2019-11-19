@@ -117,9 +117,9 @@ const PostComments = withStyles(postCommentStyles)(_PostComments);
 const assigneePopperStyles = theme => ({
   popper: {
     padding: theme.spacing(2),
-    width: '250px'
+    width: '250px',
+    backgroundColor: '#F6F8FA'
   },
-
   collaboratorDetails: {
     display: 'flex',
     margin: theme.spacing(0.5)
@@ -128,6 +128,12 @@ const assigneePopperStyles = theme => ({
     height: theme.spacing(3),
     width: theme.spacing(3),
     marginRight: theme.spacing(1)
+  },
+  paperBottom: {
+    backgroundColor: '#fff'
+  },
+  assigneeText: {
+    fontWeight: 'bold'
   }
 });
 
@@ -143,23 +149,31 @@ function _AssigneePopper({
   return (
     <Popper id={id} open={open} anchorEl={anchorEl}>
       <Paper className={classes.popper}>
-        {collaborators.map(collaborator => (
-          <Button
-            key={collaborator.username}
-            className={classes.collaboratorDetails}
-            onClick={() => postAssignee(collaborator)}
-          >
-            {issue.assignees.some(
-              assignee => assignee.user.username === collaborator.username
-            ) && <CheckIcon />}
-            <img
-              key={collaborator.userImage}
-              src={collaborator.userImage}
-              className={classes.collaboratorImage}
-            />
-            <div key={collaborator.username}>{collaborator.username}</div>
-          </Button>
-        ))}
+        <div className={classes.paperTop}>
+          <Typography variant="body2" className={classes.assigneeText}>
+            Assign up to 10 people to this issue
+          </Typography>
+          <TextInput />
+        </div>
+        <div className={classes.paperBottom}>
+          {collaborators.map(collaborator => (
+            <Button
+              key={collaborator.username}
+              className={classes.collaboratorDetails}
+              onClick={() => postAssignee(collaborator)}
+            >
+              {issue.assignees.some(
+                assignee => assignee.user.username === collaborator.username
+              ) && <CheckIcon />}
+              <img
+                key={collaborator.userImage}
+                src={collaborator.userImage}
+                className={classes.collaboratorImage}
+              />
+              <div key={collaborator.username}>{collaborator.username}</div>
+            </Button>
+          ))}
+        </div>
       </Paper>
     </Popper>
   );
@@ -225,6 +239,7 @@ class _Sidebar extends Component {
   }
 
   postAssignee = async collaborator => {
+    const { fetchIssue } = this.props;
     event.preventDefault();
     const { username, repo, issueNumber } = Router.router.query;
     try {
@@ -236,6 +251,8 @@ class _Sidebar extends Component {
         authHeaders()
       );
       if (response.status === 201) {
+        fetchIssue();
+        this.fetchCollaborator();
       }
     } catch (error) {
       console.log(error);
@@ -811,6 +828,7 @@ class _Issue extends Component {
                     issue={issue}
                     lockButton={lockButton}
                     pinButton={pinButton}
+                    fetchIssue={this.fetchIssue}
                   />
                 </div>
               </div>
