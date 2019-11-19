@@ -255,9 +255,6 @@ func putIssueHandler(c *gin.Context, db *sql.DB) {
 	if issue.Body != "" {
 		query = query.Set("body", issue.Body)
 	}
-	if issue.Pinned != "" {
-		query = query.Set("pinned", issue.Pinned)
-	}
 	query = query.Where(sq.Eq{"id": Id})
 
 	q, args, err := query.ToSql()
@@ -269,12 +266,6 @@ func putIssueHandler(c *gin.Context, db *sql.DB) {
 		return
 	}
 
-	// err = UpdateIssue(db, issue)
-	// if err != nil {
-	// 	fmt.Println(err)
-	// 	c.AbortWithStatus(http.StatusInternalServerError)
-	// 	return
-	// }
 
 	c.Status(http.StatusNoContent)
 }
