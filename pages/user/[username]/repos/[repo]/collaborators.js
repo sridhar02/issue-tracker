@@ -2,11 +2,11 @@ import React, { Component, Fragment } from 'react';
 import Router from 'next/router';
 import Link from 'next/link';
 import axios from 'axios';
-import { formatDistance, parseISO } from 'date-fns';
 
 import { withStyles } from '@material-ui/core/styles';
 import { TextField, Button, Typography } from '@material-ui/core';
 import cx from 'classnames';
+import CloseIcon from '@material-ui/icons/Close';
 
 import { TextInput, ButtonPrimary } from '@primer/components';
 
@@ -47,12 +47,17 @@ const collaboratorsStyles = theme => ({
   },
   collaboratorDetails: {
     display: 'flex',
-    margin: theme.spacing(1)
+    margin: theme.spacing(1),
+    justifyContent: 'space-between'
   },
   collaboratorImage: {
     height: theme.spacing(5),
     width: theme.spacing(5),
     marginRight: theme.spacing(2)
+  },
+  closeButton: {
+    border: 0,
+    backgroundColor: '#fff'
   }
 });
 
@@ -77,7 +82,6 @@ class _Collaborators extends Component {
       );
       if (response.status === 200) {
         this.setState({ collaborators: response.data });
-        console.log(this.state.collaborators);
       }
     } catch (error) {
       console.log(error);
@@ -112,6 +116,23 @@ class _Collaborators extends Component {
       console.log(error);
     }
   };
+
+  removeCollaborator = async collaborator => {
+    const { username, repo } = Router.router.query;
+    event.preventDefault();
+    try {
+      const response = await axios.delete(
+        `/repos/${username}/${repo}/collaborators/${collaborator.username}`,
+        authHeaders()
+      );
+      if (response.status === 204) {
+        this.fetchCollaborator();
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   render() {
     const { classes } = this.props;
     const { collaborators } = this.state;
@@ -124,11 +145,20 @@ class _Collaborators extends Component {
       ) : (
         collaborators.map(collaborator => (
           <div key={collaborator.name} className={classes.collaboratorDetails}>
-            <img
-              src={collaborator.userImage}
-              className={classes.collaboratorImage}
-            />
-            <div>{collaborator.username}</div>
+            <div key={collaborator.userImage}>
+              <img
+                src={collaborator.userImage}
+                className={classes.collaboratorImage}
+              />
+              <div>{collaborator.username}</div>
+            </div>
+            <button
+              key={collaborator.username}
+              className={classes.closeButton}
+              onClick={() => this.removeCollaborator(collaborator)}
+            >
+              <CloseIcon />
+            </button>
           </div>
         ))
       );
@@ -146,23 +176,23 @@ class _Collaborators extends Component {
               </div>
             </div>
             <div className="col-9">
-              <form onSubmit={this.handleSubmit}>
-                <div className={classes.mainSection}>
-                  <Typography variant="body2" className={classes.name}>
-                    Collaborators
+              <div className={classes.mainSection}>
+                <Typography variant="body2" className={classes.name}>
+                  Collaborators
+                </Typography>
+                <div className={classes.descripition}>
+                  {collaboratorDetails}
+                </div>
+                <div>
+                  <Typography variant="body2" className={classes.search}>
+                    Search by username, full name or email address
                   </Typography>
-                  <div className={classes.descripition}>
-                    {collaboratorDetails}
-                  </div>
-                  <div>
-                    <Typography variant="body2" className={classes.search}>
-                      Search by username, full name or email address
-                    </Typography>
-                    <Typography variant="body2" className={classes.searchText}>
-                      You’ll only be able to find a GitHub user by their email
-                      address if they’ve chosen to list it publicly. Otherwise,
-                      use their username instea
-                    </Typography>
+                  <Typography variant="body2" className={classes.searchText}>
+                    You’ll only be able to find a GitHub user by their email
+                    address if they’ve chosen to list it publicly. Otherwise,
+                    use their username instea
+                  </Typography>
+                  <form onSubmit={this.handleSubmit}>
                     <div className={classes.addCollaborator}>
                       <TextInput
                         name="collaboratorName"
@@ -172,9 +202,9 @@ class _Collaborators extends Component {
                       />
                       <Button type="submit">Add collaborator</Button>
                     </div>
-                  </div>
+                  </form>
                 </div>
-              </form>
+              </div>
             </div>
           </div>
         </div>

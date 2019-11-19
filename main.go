@@ -551,12 +551,10 @@ func postAssignee(c *gin.Context, db *sql.DB) {
 }
 
 func deleteCollaborator(c *gin.Context, db *sql.DB) {
-
 	userId, err := authorization(c, db)
 	if err != nil {
 		return
 	}
-
 	username := c.Param("owner")
 	collaboratorUsername := c.Param("username")
 	repoName := c.Param("repo")
@@ -567,7 +565,6 @@ func deleteCollaborator(c *gin.Context, db *sql.DB) {
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
-
 	var repoId, repoOwnerId string
 	row := db.QueryRow(`SELECT repos.id,repos.user_id FROM repos JOIN users ON repos.user_id= users.id
                 		        WHERE repos.name= $1 AND users.username= $2`, repoName, username)
