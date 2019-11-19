@@ -172,12 +172,12 @@ class _Sidebar extends Component {
           </button>
           <div>
             {issue.assignees.map(assignee => (
-              <div key={assignee.User.id}>
+              <div key={assignee.user.id}>
                 <img
-                  src={assignee.User.image}
+                  src={assignee.user.image}
                   className={classes.assigneeImage}
                 />
-                {assignee.User.username}
+                {assignee.user.username}
               </div>
             ))}
           </div>
@@ -185,16 +185,16 @@ class _Sidebar extends Component {
             <Paper className={classes.popper}>
               {collaborators.map(collaborator => (
                 <Button
-                  key={collaborator.Username}
+                  key={collaborator.username}
                   className={classes.collaboratorDetails}
                   onClick={() => this.postAssignee(collaborator)}
                 >
                   <img
-                    key={collaborator.UserImage}
-                    src={collaborator.UserImage}
+                    key={collaborator.userImage}
+                    src={collaborator.userImage}
                     className={classes.collaboratorImage}
                   />
-                  <div key={collaborator.Username}>{collaborator.Username}</div>
+                  <div key={collaborator.username}>{collaborator.username}</div>
                 </Button>
               ))}
             </Paper>
