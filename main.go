@@ -644,6 +644,10 @@ func deleteAssignee(c *gin.Context, db *sql.DB) {
 	c.Status(204)
 }
 
+func getNotifications(c *gin.Context, db *sql.DB) {
+
+}
+
 func main() {
 	rand.Seed(time.Now().UTC().UnixNano())
 	err := godotenv.Load()
@@ -701,6 +705,7 @@ func main() {
 	router.PUT("/repos/:owner/:repo/issues/:issue_number/lock", func(c *gin.Context) { putLockHandler(c, db) })
 	router.GET("/repos/:owner/:repo/issues/:issue_number/comments", func(c *gin.Context) { getCommentsHandler(c, db) })
 	router.POST("/repos/:owner/:repo/issues/:issue_number/comments", func(c *gin.Context) { postCommentHandler(c, db) })
+	router.GET("/notifications", func(c *gin.Context) { getNotifications(c, db) })
 
 	stylesRouter := gin.Default()
 	stylesRouter.Static("/styles", "./styles")
