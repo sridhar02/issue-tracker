@@ -134,6 +134,17 @@ const assigneePopperStyles = theme => ({
   },
   assigneeText: {
     fontWeight: 'bold'
+  },
+  assigneeImage: {
+    height: theme.spacing(3),
+    width: theme.spacing(3),
+    marginBottom: theme.spacing(1),
+    marginRight: theme.spacing(2)
+  },
+  assigneeButton: {
+    backgroundColor: '#fff',
+    border: 0,
+    marginBottom: theme.spacing(1)
   }
 });
 
@@ -153,11 +164,11 @@ class _Assignee extends Component {
   togglePopper = event => {
     const { open, addAssignees, removeAssignees, assigneed } = this.state;
     if (open) {
-      if (assigneed) {
+      if (removeAssignees !== []) {
         this.deleteAssignee(removeAssignees);
-      } else {
-        this.postAssignee(addAssignees);
       }
+      this.postAssignee(addAssignees);
+
       this.setState({
         anchorEl: null,
         open: !open
@@ -196,44 +207,40 @@ class _Assignee extends Component {
     const { fetchIssue } = this.props;
     event.preventDefault();
     const { username, repo, issueNumber } = Router.router.query;
-    for (let i = 0; i < addAssignees.length; i++) {
-      try {
-        const response = await axios.post(
-          `/repos/${username}/${repo}/issues/${issueNumber}/assignees`,
-          {
-            username: addAssignees[i]
-          },
-          authHeaders()
-        );
-        if (response.status === 201) {
-          fetchIssue();
-          this.fetchCollaborator();
-          this.setState({
-            addAssignees: []
-          });
-        }
-      } catch (error) {
-        console.log(error);
+    try {
+      const response = await axios.post(
+        `/repos/${username}/${repo}/issues/${issueNumber}/assignees`,
+        {
+          usernames: addAssignees
+        },
+        authHeaders()
+      );
+      if (response.status === 201) {
+        fetchIssue();
+        this.fetchCollaborator();
+        this.setState({
+          addAssignees: []
+        });
       }
+    } catch (error) {
+      console.log(error);
     }
   };
 
   deleteAssignee = async removeAssignees => {
     const { username, repo, issueNumber } = Router.router.query;
-    for (let j = 0; j < removeAssignees.lenght; j++) {
-      try {
-        const response = await axios.delete(
-          `/repos/${username}/${repo}/issues/${issueNumber}/assignees`,
-          {
-            username: removeAssignees[j]
-          },
-          authHeaders()
-        );
-        if (response.status === 204) {
-        }
-      } catch (error) {
-        console.log(error);
+    try {
+      const response = await axios({
+        method: 'delete',
+        url: `/repos/${username}/${repo}/issues/${issueNumber}/assignees`,
+        headers: authHeaders().headers,
+        data: { usernames: removeAssignees }
+      });
+      if (response.status === 204) {
+        this.setState({ removeAssignees: [] });
       }
+    } catch (error) {
+      console.log(error);
     }
   };
 
@@ -243,23 +250,19 @@ class _Assignee extends Component {
     if (
       issue.assignees.some(
         assignee => assignee.user.username === collaborator.username
-      )
-    ) {
-      const remove = this.state.removeAssignees.concat(collaborator.username);
-      this.setState({
-        removeAssignees: remove,
-      });
-    } else if (
-      issue.assignees.some(
-        assignee => assignee.user.username === collaborator.username
       ) ||
       addAssignees.includes(collaborator.username)
     ) {
       const newRemove = this.state.addAssignees.filter(
         addAssignee => addAssignee !== collaborator.username
       );
+      const remove = this.state.removeAssignees.concat(collaborator.username);
       this.setState({
-        addAssignees: newRemove
+        removeAssignees: remove
+      });
+      this.setState({
+        addAssignees: newRemove,
+        removeAssignees: remove
       });
     } else {
       const newAdd = this.state.addAssignees.concat([collaborator.username]);
@@ -350,17 +353,6 @@ const sidebarStyles = theme => ({
     padding: theme.spacing(1),
     margin: theme.spacing(1),
     borderBottom: '1px solid #ddd'
-  },
-  assigneeImage: {
-    height: theme.spacing(3),
-    width: theme.spacing(3),
-    marginBottom: theme.spacing(1),
-    marginRight: theme.spacing(2)
-  },
-  assigneeButton: {
-    backgroundColor: '#fff',
-    border: 0,
-    marginBottom: theme.spacing(1)
   }
 });
 

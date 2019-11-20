@@ -172,7 +172,7 @@ post("http://localhost:8000/repos/sridhar02/repo2/issues/3/assignees",
 	    "Authorization": "Bearer GmnJxKMfWFuikbCFzSETAXqOZxTSLShj"
 	},
 	json={
-		'username':'dp21'
+		'usernames':["DONE","dp1","Sridhar1997"]
 	})
 
 delete('http://localhost:8000/repos/sridhar02/repo2/collaborators/dp21',
@@ -185,5 +185,5 @@ delete("http://localhost:8000/repos/sridhar02/repo2/issues/3/assignees",
 	    "Authorization": "Bearer GmnJxKMfWFuikbCFzSETAXqOZxTSLShj"
 	},
 	json={
-		'username':'dp21'
+		'usernames': ["DONE","dp1","Sridhar1997"]
 	})
