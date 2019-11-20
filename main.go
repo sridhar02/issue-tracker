@@ -115,7 +115,6 @@ func authorization(c *gin.Context, db *sql.DB) (string, error) {
 
 	value := c.GetHeader("Authorization")
 	secret := strings.TrimPrefix(value, "Bearer ")
-
 	var userId string
 	row := db.QueryRow(`SELECT user_id FROM logins WHERE secret=$1`, secret)
 	err := row.Scan(&userId)
@@ -129,7 +128,6 @@ func authorization(c *gin.Context, db *sql.DB) (string, error) {
 			return "", err
 		}
 	}
-
 	return userId, nil
 
 }
@@ -484,13 +482,9 @@ func postCollaborator(c *gin.Context, db *sql.DB) {
 }
 
 type Assignee struct {
-	Username string `json:"username"`
-	Image    string `json:"image"`
-	User     User   `json:"user"`
-}
-
-func getAssignees(c *gin.Context, db *sql.DB) {
-
+	Usernames []string `json:"usernames"`
+	Image     string   `json:"image"`
+	User      User     `json:"user"`
 }
 
 func postAssignee(c *gin.Context, db *sql.DB) {
@@ -503,7 +497,7 @@ func postAssignee(c *gin.Context, db *sql.DB) {
 	repoName := c.Param("repo")
 	issueNumber := c.Param("issue_number")
 
-	var Id int
+	var issueId int
 	var repoId string
 	row := db.QueryRow(`WITH repo_cte AS (
 		                     SELECT repos.id FROM repos JOIN users ON repos.user_id= users.id
@@ -511,7 +505,7 @@ func postAssignee(c *gin.Context, db *sql.DB) {
                 		     )
                 		SELECT id,repo_id from issues WHERE repo_id
                 		IN (SELECT id FROM repo_cte) and issue_number=$3 `, repoName, username, issueNumber)
-	err = row.Scan(&Id, &repoId)
+	err = row.Scan(&issueId, &repoId)
 	if err != nil {
 		fmt.Println(err)
 		c.AbortWithStatus(http.StatusInternalServerError)
@@ -525,27 +519,20 @@ func postAssignee(c *gin.Context, db *sql.DB) {
 		return
 	}
 
-	assigneeUser, err := GetUserByUserName(db, assignee.Username)
-	if err != nil {
-		fmt.Println(err)
-		c.AbortWithStatus(http.StatusInternalServerError)
-		return
-	}
+	for _, assigneeUsername := range assignee.Usernames {
+		assigneeUser, err := GetUserByUserName(db, assigneeUsername)
+		if err != nil {
+			fmt.Println(err)
+			c.AbortWithStatus(http.StatusInternalServerError)
+			return
+		}
 
-	var userId string
-	row = db.QueryRow(`SELECT user_id FROM collaborators WHERE repo_id = $1 AND user_id = $2`, repoId, assigneeUser.ID)
-	err = row.Scan(&userId)
-	if err != nil {
-		fmt.Println(err)
-		c.AbortWithStatus(http.StatusInternalServerError)
-		return
-	}
-
-	_, err = db.Exec(`INSERT INTO assignees ( issue_id , user_id ) VALUES ( $1 , $2) `, Id, userId)
-	if err != nil {
-		fmt.Println(err)
-		c.AbortWithStatus(http.StatusInternalServerError)
-		return
+		_, err = db.Exec(`INSERT INTO assignees ( issue_id , user_id ) VALUES ( $1 , $2) `, issueId, assigneeUser.ID)
+		if err != nil {
+			fmt.Println(err)
+			c.AbortWithStatus(http.StatusInternalServerError)
+			return
+		}
 	}
 	c.Status(201)
 }
@@ -588,30 +575,30 @@ func deleteCollaborator(c *gin.Context, db *sql.DB) {
 }
 
 func deleteAssignee(c *gin.Context, db *sql.DB) {
-
 	_, err := authorization(c, db)
 	if err != nil {
+		fmt.Println(err)
 		return
 	}
+
 	username := c.Param("owner")
 	repoName := c.Param("repo")
 	issueNumber := c.Param("issue_number")
 
 	var issueId int
 	var repoId string
+
 	row := db.QueryRow(`WITH repo_cte AS (
 		                     SELECT repos.id FROM repos JOIN users ON repos.user_id= users.id
                 		     WHERE repos.name= $1 AND users.username= $2
                 		     )
-                		SELECT id,repo_id from issues WHERE repo_id
-                		IN (SELECT id FROM repo_cte) and issue_number=$3 `, repoName, username, issueNumber)
+                		SELECT id, repo_id from issues
+										WHERE repo_id IN (SELECT id FROM repo_cte) and issue_number = $3 `, repoName, username, issueNumber)
 	err = row.Scan(&issueId, &repoId)
 	if err != nil {
 		fmt.Println(err)
-		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
-
 	assignee := Assignee{}
 	err = c.BindJSON(&assignee)
 	if err != nil {
@@ -619,31 +606,23 @@ func deleteAssignee(c *gin.Context, db *sql.DB) {
 		return
 	}
 
-	assigneeUser, err := GetUserByUserName(db, assignee.Username)
-	if err != nil {
-		fmt.Println(err)
-		c.AbortWithStatus(http.StatusInternalServerError)
-		return
-	}
+	for _, assigneeUsername := range assignee.Usernames {
+		assigneeUser, err := GetUserByUserName(db, assigneeUsername)
+		if err != nil {
+			fmt.Println(err)
+			c.AbortWithStatus(http.StatusInternalServerError)
+			return
+		}
 
-	var userId string
-	row = db.QueryRow(`SELECT user_id FROM collaborators WHERE repo_id = $1 AND user_id = $2`, repoId, assigneeUser.ID)
-	err = row.Scan(&userId)
-	if err != nil {
-		fmt.Println(err)
-		c.AbortWithStatus(http.StatusInternalServerError)
-		return
-	}
-
-	_, err = db.Exec(`DELETE FROM assignees WHERE issue_id = $1 AND user_id= $2 `, issueId, assigneeUser.ID)
-	if err != nil {
-		fmt.Println(err)
-		c.AbortWithStatus(http.StatusInternalServerError)
-		return
+		_, err = db.Exec(`DELETE FROM assignees WHERE issue_id = $1 AND user_id= $2 `, issueId, assigneeUser.ID)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
 	}
 	c.Status(204)
-}
 
+}
 func getNotifications(c *gin.Context, db *sql.DB) {
 
 }
@@ -696,7 +675,6 @@ func main() {
 	router.GET("/repos/:owner/:repo/collaborators", func(c *gin.Context) { getCollaborators(c, db) })
 	router.POST("repos/:owner/:repo/collaborators/:username", func(c *gin.Context) { postCollaborator(c, db) })
 	router.DELETE("repos/:owner/:repo/collaborators/:username", func(c *gin.Context) { deleteCollaborator(c, db) })
-	router.GET("/repos/:owner/:repo/assignees", func(c *gin.Context) { getAssignees(c, db) })
 	router.POST("/repos/:owner/:repo/issues/:issue_number/assignees", func(c *gin.Context) { postAssignee(c, db) })
 	router.DELETE("/repos/:owner/:repo/issues/:issue_number/assignees", func(c *gin.Context) { deleteAssignee(c, db) })
 	router.GET("/repos/:owner/:repo/issues/:issue_number", func(c *gin.Context) { getIssueHandler(c, db) })
