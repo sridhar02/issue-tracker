@@ -12,7 +12,7 @@ import TextField from '@material-ui/core/TextField';
 import LockIcon from '@material-ui/icons/Lock';
 import DeleteIcon from '@material-ui/icons/Delete';
 import ErrorOutlineIcon from '@material-ui/icons/ErrorOutline';
-import Popper from '@material-ui/core/Popper';
+import Popover from '@material-ui/core/Popover';
 import Paper from '@material-ui/core/Paper';
 import CheckIcon from '@material-ui/icons/Check';
 
@@ -142,12 +142,13 @@ function _AssigneePopper({
   id,
   open,
   anchorEl,
+  onClose,
   collaborators,
   issue,
   postAssignee
 }) {
   return (
-    <Popper id={id} open={open} anchorEl={anchorEl}>
+    <Popover id={id} open={open} anchorEl={anchorEl} onClose={onClose}>
       <Paper className={classes.popper}>
         <div className={classes.paperTop}>
           <Typography variant="body2" className={classes.assigneeText}>
@@ -156,26 +157,29 @@ function _AssigneePopper({
           <TextInput />
         </div>
         <div className={classes.paperBottom}>
-          {collaborators.map(collaborator => (
-            <Button
-              key={collaborator.username}
-              className={classes.collaboratorDetails}
-              onClick={() => postAssignee(collaborator)}
-            >
-              {issue.assignees.some(
-                assignee => assignee.user.username === collaborator.username
-              ) && <CheckIcon />}
-              <img
-                key={collaborator.userImage}
-                src={collaborator.userImage}
-                className={classes.collaboratorImage}
-              />
-              <div key={collaborator.username}>{collaborator.username}</div>
-            </Button>
-          ))}
+          {collaborators.map(collaborator => {
+            const assigned = issue.assignees.some(
+              assignee => assignee.user.username === collaborator.username
+            );
+            return (
+              <Button
+                key={collaborator.username}
+                className={classes.collaboratorDetails}
+                onClick={() => (assigned ? postAssignee(collaborator) : null)}
+              >
+                {assigned && <CheckIcon />}
+                <img
+                  key={collaborator.userImage}
+                  src={collaborator.userImage}
+                  className={classes.collaboratorImage}
+                />
+                <div key={collaborator.username}>{collaborator.username}</div>
+              </Button>
+            );
+          })}
         </div>
       </Paper>
-    </Popper>
+    </Popover>
   );
 }
 
@@ -211,12 +215,20 @@ class _Sidebar extends Component {
     };
   }
 
-  handleClickPoper = event => {
-    const { currentTarget } = event;
-    this.setState(state => ({
-      anchorEl: currentTarget,
-      open: !state.open
-    }));
+  togglePopper = event => {
+    const { open } = this.state;
+    if (open) {
+      this.setState({
+        anchorEl: null,
+        open: !open
+      });
+    } else {
+      const { currentTarget } = event;
+      this.setState({
+        anchorEl: currentTarget,
+        open: !open
+      });
+    }
   };
 
   fetchCollaborator = async () => {
@@ -269,7 +281,7 @@ class _Sidebar extends Component {
           <button
             type="button"
             aria-describedby={id}
-            onClick={this.handleClickPoper}
+            onClick={this.togglePopper}
             className={classes.assigneeButton}
           >
             Assignee <SettingsIcon />
@@ -289,6 +301,7 @@ class _Sidebar extends Component {
             id={id}
             open={open}
             anchorEl={anchorEl}
+            onClose={this.togglePopper}
             collaborators={collaborators}
             issue={issue}
             postAssignee={this.postAssignee}
@@ -308,6 +321,7 @@ class _Sidebar extends Component {
     );
   }
 }
+
 const Sidebar = withStyles(sidebarStyles)(_Sidebar);
 
 const issueHeaderStyles = theme => ({
