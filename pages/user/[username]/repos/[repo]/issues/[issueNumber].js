@@ -137,87 +137,27 @@ const assigneePopperStyles = theme => ({
   }
 });
 
-function _AssigneePopper({
-  classes,
-  id,
-  open,
-  anchorEl,
-  onClose,
-  collaborators,
-  issue,
-  postAssignee
-}) {
-  return (
-    <Popover id={id} open={open} anchorEl={anchorEl} onClose={onClose}>
-      <Paper className={classes.popper}>
-        <div className={classes.paperTop}>
-          <Typography variant="body2" className={classes.assigneeText}>
-            Assign up to 10 people to this issue
-          </Typography>
-          <TextInput />
-        </div>
-        <div className={classes.paperBottom}>
-          {collaborators.map(collaborator => {
-            const assigned = issue.assignees.some(
-              assignee => assignee.user.username === collaborator.username
-            );
-            return (
-              <Button
-                key={collaborator.username}
-                className={classes.collaboratorDetails}
-                onClick={() => (assigned ? postAssignee(collaborator) : null)}
-              >
-                {assigned && <CheckIcon />}
-                <img
-                  key={collaborator.userImage}
-                  src={collaborator.userImage}
-                  className={classes.collaboratorImage}
-                />
-                <div key={collaborator.username}>{collaborator.username}</div>
-              </Button>
-            );
-          })}
-        </div>
-      </Paper>
-    </Popover>
-  );
-}
-
-const AssigneePopper = withStyles(assigneePopperStyles)(_AssigneePopper);
-
-const sidebarStyles = theme => ({
-  sidebar: {
-    padding: theme.spacing(1),
-    margin: theme.spacing(1),
-    borderBottom: '1px solid #ddd'
-  },
-  assigneeImage: {
-    height: theme.spacing(3),
-    width: theme.spacing(3),
-    marginBottom: theme.spacing(1),
-    marginRight: theme.spacing(2)
-  },
-  assigneeButton: {
-    backgroundColor: '#fff',
-    border: 0,
-    marginBottom: theme.spacing(1)
-  }
-});
-
-class _Sidebar extends Component {
+class _Assignee extends Component {
   constructor(props) {
     super(props);
     this.state = {
       anchorEl: null,
       open: false,
       collaborators: [],
-      assigneed: false
+      assigneed: false,
+      addAssignees: [],
+      removeAssignees: []
     };
   }
 
   togglePopper = event => {
-    const { open } = this.state;
+    const { open, addAssignees, removeAssignees, assigneed } = this.state;
     if (open) {
+      if (assigneed) {
+        this.deleteAssignee(removeAssignees);
+      } else {
+        this.postAssignee(addAssignees);
+      }
       this.setState({
         anchorEl: null,
         open: !open
@@ -239,7 +179,9 @@ class _Sidebar extends Component {
         authHeaders()
       );
       if (response.status === 200) {
-        this.setState({ collaborators: response.data });
+        this.setState({
+          collaborators: response.data
+        });
       }
     } catch (error) {
       console.log(error);
@@ -250,62 +192,185 @@ class _Sidebar extends Component {
     this.fetchCollaborator();
   }
 
-  postAssignee = async collaborator => {
+  postAssignee = async addAssignees => {
     const { fetchIssue } = this.props;
     event.preventDefault();
     const { username, repo, issueNumber } = Router.router.query;
-    try {
-      const response = await axios.post(
-        `/repos/${username}/${repo}/issues/${issueNumber}/assignees`,
-        {
-          username: collaborator.username
-        },
-        authHeaders()
-      );
-      if (response.status === 201) {
-        fetchIssue();
-        this.fetchCollaborator();
+    for (let i = 0; i < addAssignees.length; i++) {
+      try {
+        const response = await axios.post(
+          `/repos/${username}/${repo}/issues/${issueNumber}/assignees`,
+          {
+            username: addAssignees[i]
+          },
+          authHeaders()
+        );
+        if (response.status === 201) {
+          fetchIssue();
+          this.fetchCollaborator();
+          this.setState({
+            addAssignees: []
+          });
+        }
+      } catch (error) {
+        console.log(error);
       }
-    } catch (error) {
-      console.log(error);
+    }
+  };
+
+  deleteAssignee = async removeAssignees => {
+    const { username, repo, issueNumber } = Router.router.query;
+    for (let j = 0; j < removeAssignees.lenght; j++) {
+      try {
+        const response = await axios.delete(
+          `/repos/${username}/${repo}/issues/${issueNumber}/assignees`,
+          {
+            username: removeAssignees[j]
+          },
+          authHeaders()
+        );
+        if (response.status === 204) {
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    }
+  };
+
+  checkAssignee = collaborator => {
+    const { issue } = this.props;
+    const { addAssignees } = this.state;
+    if (
+      issue.assignees.some(
+        assignee => assignee.user.username === collaborator.username
+      )
+    ) {
+      const remove = this.state.removeAssignees.concat(collaborator.username);
+      this.setState({
+        removeAssignees: remove,
+      });
+    } else if (
+      issue.assignees.some(
+        assignee => assignee.user.username === collaborator.username
+      ) ||
+      addAssignees.includes(collaborator.username)
+    ) {
+      const newRemove = this.state.addAssignees.filter(
+        addAssignee => addAssignee !== collaborator.username
+      );
+      this.setState({
+        addAssignees: newRemove
+      });
+    } else {
+      const newAdd = this.state.addAssignees.concat([collaborator.username]);
+      this.setState({
+        addAssignees: newAdd
+      });
     }
   };
 
   render() {
-    const { classes, lockButton, pinButton, issue } = this.props;
-    const { anchorEl, open, collaborators, assigneed } = this.state;
-    const id = open ? 'simple-popper' : null;
+    const { classes, issue } = this.props;
+    const {
+      anchorEl,
+      open,
+      collaborators,
+      addAssignees,
+      removeAssignees
+    } = this.state;
+    console.log(addAssignees);
+    console.log(removeAssignees);
+    return (
+      <Fragment>
+        <button
+          type="button"
+          onClick={this.togglePopper}
+          className={classes.assigneeButton}
+        >
+          Assignee <SettingsIcon />
+        </button>
+        <div>
+          {issue.assignees.map(assignee => (
+            <div key={assignee.user.id}>
+              <img
+                src={assignee.user.image}
+                className={classes.assigneeImage}
+              />
+              {assignee.user.username}
+            </div>
+          ))}
+        </div>
+        <Popover open={open} anchorEl={anchorEl} onClose={this.togglePopper}>
+          <Paper className={classes.popper}>
+            <div className={classes.paperTop}>
+              <Typography variant="body2" className={classes.assigneeText}>
+                Assign up to 10 people to this issue
+              </Typography>
+              <TextInput />
+            </div>
+            <div className={classes.paperBottom}>
+              {collaborators.map(collaborator => {
+                {
+                  /*const assigned = issue.assignees.some(
+                  assignee =>
+                    assignee.user.username === collaborator.username ||
+                    addAssignees.some(assignee.user.username)
+                );*/
+                }
+                return (
+                  <Button
+                    key={collaborator.username}
+                    className={classes.collaboratorDetails}
+                    onClick={() => this.checkAssignee(collaborator)}
+                  >
+                    {<CheckIcon />}
+                    <img
+                      key={collaborator.userImage}
+                      src={collaborator.userImage}
+                      className={classes.collaboratorImage}
+                    />
+                    <div key={collaborator.username}>
+                      {collaborator.username}
+                    </div>
+                  </Button>
+                );
+              })}
+            </div>
+          </Paper>
+        </Popover>
+      </Fragment>
+    );
+  }
+}
+
+const Assignee = withStyles(assigneePopperStyles)(_Assignee);
+
+const sidebarStyles = theme => ({
+  sidebar: {
+    padding: theme.spacing(1),
+    margin: theme.spacing(1),
+    borderBottom: '1px solid #ddd'
+  },
+  assigneeImage: {
+    height: theme.spacing(3),
+    width: theme.spacing(3),
+    marginBottom: theme.spacing(1),
+    marginRight: theme.spacing(2)
+  },
+  assigneeButton: {
+    backgroundColor: '#fff',
+    border: 0,
+    marginBottom: theme.spacing(1)
+  }
+});
+
+class _Sidebar extends Component {
+  render() {
+    const { classes, lockButton, pinButton, issue, fetchIssue } = this.props;
     return (
       <Fragment>
         <div className={classes.sidebar}>
-          <button
-            type="button"
-            aria-describedby={id}
-            onClick={this.togglePopper}
-            className={classes.assigneeButton}
-          >
-            Assignee <SettingsIcon />
-          </button>
-          <div>
-            {issue.assignees.map(assignee => (
-              <div key={assignee.user.id}>
-                <img
-                  src={assignee.user.image}
-                  className={classes.assigneeImage}
-                />
-                {assignee.user.username}
-              </div>
-            ))}
-          </div>
-          <AssigneePopper
-            id={id}
-            open={open}
-            anchorEl={anchorEl}
-            onClose={this.togglePopper}
-            collaborators={collaborators}
-            issue={issue}
-            postAssignee={this.postAssignee}
-          />
+          <Assignee issue={issue} fetchIssue={fetchIssue} />
         </div>
         <div className={classes.sidebar}>Labels</div>
         <div className={classes.sidebar}>Projects</div>

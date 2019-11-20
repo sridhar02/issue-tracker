@@ -216,7 +216,9 @@ class _Navbar extends Component {
                 <div className="d-none d-md-block">Marketplace</div>
                 <div className="d-none d-md-block">Explore</div>
                 <div className={cx(classes.space, 'd-none d-md-block')}></div>
-                <NotificationsIcon />
+                <Link href="/notifications">
+                  <NotificationsIcon />
+                </Link>
                 {user && (
                   <div className="d-none d-md-block">
                     <button
