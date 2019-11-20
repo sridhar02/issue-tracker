@@ -155,7 +155,6 @@ class _Assignee extends Component {
       anchorEl: null,
       open: false,
       collaborators: [],
-      assigneed: false,
       addAssignees: [],
       removeAssignees: []
     };
@@ -246,25 +245,25 @@ class _Assignee extends Component {
 
   checkAssignee = collaborator => {
     const { issue } = this.props;
-    const { addAssignees } = this.state;
+    const { addAssignees, removeAssignees } = this.state;
+    // if collaborator is present  issue(assignees) && removeAssignees not includes collaborator then  add collaborator to removeAssignees list
+    //
     if (
       issue.assignees.some(
         assignee => assignee.user.username === collaborator.username
-      ) ||
-      addAssignees.includes(collaborator.username)
+      ) &&
+      !removeAssignees.includes(collaborator.username)
     ) {
-      const newRemove = this.state.addAssignees.filter(
-        addAssignee => addAssignee !== collaborator.username
-      );
       const remove = this.state.removeAssignees.concat(collaborator.username);
       this.setState({
         removeAssignees: remove
       });
-      this.setState({
-        addAssignees: newRemove,
-        removeAssignees: remove
-      });
-    } else {
+    } else if (
+      !issue.assignees.some(
+        assignee => assignee.user.username === collaborator.username
+      ) &&
+      !addAssignees.includes(collaborator.username)
+    ) {
       const newAdd = this.state.addAssignees.concat([collaborator.username]);
       this.setState({
         addAssignees: newAdd
@@ -313,20 +312,19 @@ class _Assignee extends Component {
             </div>
             <div className={classes.paperBottom}>
               {collaborators.map(collaborator => {
-                {
-                  /*const assigned = issue.assignees.some(
-                  assignee =>
-                    assignee.user.username === collaborator.username ||
-                    addAssignees.some(assignee.user.username)
-                );*/
-                }
+                const assigned =
+                  (issue.assignees.some(
+                    assignee => assignee.user.username === collaborator.username
+                  ) ||
+                    addAssignees.includes(collaborator.username)) &&
+                  !removeAssignees.includes(collaborator.username);
                 return (
                   <Button
                     key={collaborator.username}
                     className={classes.collaboratorDetails}
                     onClick={() => this.checkAssignee(collaborator)}
                   >
-                    {<CheckIcon />}
+                    {assigned && <CheckIcon />}
                     <img
                       key={collaborator.userImage}
                       src={collaborator.userImage}
