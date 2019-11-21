@@ -10,6 +10,7 @@ type Notification struct {
 	ID        int       `json:"id,omitempty"`
 	Read      string    `json:"read,omitempty"`
 	CreatedAt time.Time `json:"created_at,omitempty"`
+	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	IssueId   int       `json:"issue_id,omitempty"`
 	UserId    string    `json:"user_id,omitempty"`
 	RepoId    string    `json:"repo_id,omitempty"`
@@ -17,9 +18,10 @@ type Notification struct {
 
 func CreateNotification(db *sql.DB, issueId int, userId string, repoId string) error {
 
-	_, err := db.Exec(`INSERT INTO notifications(read,created_at,issue_id,user_id,repo_id)
-						VALUES($1,$2,$3,$4,$5)`,
+	_, err := db.Exec(`INSERT INTO notifications ( read, created_at, updated_at, issue_id, user_id, repo_id)
+	                          VALUES ( $1 , $2, $3, $4, $5, $6)`,
 		"unread",
+		time.Now().Format(time.RFC3339),
 		time.Now().Format(time.RFC3339),
 		issueId,
 		userId,

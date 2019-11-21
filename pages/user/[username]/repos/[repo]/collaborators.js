@@ -157,7 +157,7 @@ class _AddCollaborator extends Component {
           <div className={classes.addCollaborator}>
             <TextInput
               name="collaboratorName"
-              value={collaboratorName}
+              value={this.state.collaboratorName}
               onChange={this.handleChange}
               className={classes.textInput}
             />
