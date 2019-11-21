@@ -122,12 +122,14 @@ const assigneePopperStyles = theme => ({
   },
   collaboratorDetails: {
     display: 'flex',
-    margin: theme.spacing(0.5)
+    margin: theme.spacing(0.5),
+    marginLeft: theme.spacing(3)
   },
   collaboratorImage: {
     height: theme.spacing(3),
     width: theme.spacing(3),
-    marginRight: theme.spacing(1)
+    marginRight: theme.spacing(1),
+    marginLeft: theme.spacing(2)
   },
   paperBottom: {
     backgroundColor: '#fff'

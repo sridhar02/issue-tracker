@@ -52,7 +52,7 @@ function _Sidebar({ classes }) {
 }
 const Sidebar = withStyles(sidebarStyles)(_Sidebar);
 
-const listCollaboratorsStyles = theme => ({
+const listCollaboratorStyles = theme => ({
   collaboratorDetails: {
     display: 'flex',
     margin: theme.spacing(1),
@@ -69,7 +69,7 @@ const listCollaboratorsStyles = theme => ({
   }
 });
 
-function _ListOfCollaborators({ collaborator, removeCollaborator, classes }) {
+function _ListOfCollaborator({ collaborator, removeCollaborator, classes }) {
   return (
     <div key={collaborator.name} className={classes.collaboratorDetails}>
       <div key={collaborator.userImage}>
@@ -90,8 +90,8 @@ function _ListOfCollaborators({ collaborator, removeCollaborator, classes }) {
   );
 }
 
-const ListOfCollaborators = withStyles(listCollaboratorsStyles)(
-  _ListOfCollaborators
+const ListOfCollaborator = withStyles(listCollaboratorStyles)(
+  _ListOfCollaborator
 );
 
 const addCollaboratorStyles = theme => ({
@@ -107,36 +107,67 @@ const addCollaboratorStyles = theme => ({
   }
 });
 
-function _AddCollaborator({
-  classes,
-  handleSubmit,
-  handleChange,
-  collaboratorName
-}) {
-  return (
-    <div>
-      <Typography variant="body2" className={classes.search}>
-        Search by username, full name or email address
-      </Typography>
-      <Typography variant="body2" className={classes.searchText}>
-        You’ll only be able to find a GitHub user by their email address if
-        they’ve chosen to list it publicly. Otherwise, use their username instea
-      </Typography>
-      <form onSubmit={handleSubmit}>
-        <div className={classes.addCollaborator}>
-          <TextInput
-            name="collaboratorName"
-            value={collaboratorName}
-            onChange={handleChange}
-            className={classes.textInput}
-          />
-          <Button type="submit">Add collaborator</Button>
-        </div>
-      </form>
-    </div>
-  );
-}
+class _AddCollaborator extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      collaboratorName: ''
+    };
+  }
+  handleChange = event => {
+    this.setState({
+      [event.target.name]: event.target.value
+    });
+  };
 
+  handleSubmit = async event => {
+    const { username, repo } = Router.router.query;
+    const { collaboratorName } = this.state;
+    const { fetchCollaborators } = this.props;
+    event.preventDefault();
+    try {
+      const response = await axios.post(
+        `/repos/${username}/${repo}/collaborators/${collaboratorName}`,
+        {},
+        authHeaders()
+      );
+      if (response.status === 201) {
+        this.setState({ collaboratorName: '' });
+        fetchCollaborators();
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  render() {
+    const { classes } = this.props;
+    const { collaboratorName } = this.props;
+    return (
+      <div>
+        <Typography variant="body2" className={classes.search}>
+          Search by username, full name or email address
+        </Typography>
+        <Typography variant="body2" className={classes.searchText}>
+          You’ll only be able to find a GitHub user by their email address if
+          they’ve chosen to list it publicly. Otherwise, use their username
+          instea
+        </Typography>
+        <form onSubmit={this.handleSubmit}>
+          <div className={classes.addCollaborator}>
+            <TextInput
+              name="collaboratorName"
+              value={collaboratorName}
+              onChange={this.handleChange}
+              className={classes.textInput}
+            />
+            <Button type="submit">Add collaborator</Button>
+          </div>
+        </form>
+      </div>
+    );
+  }
+}
 const AddCollaborator = withStyles(addCollaboratorStyles)(_AddCollaborator);
 
 class _Collaborators extends Component {
@@ -146,12 +177,11 @@ class _Collaborators extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      collaboratorName: '',
       collaborators: []
     };
   }
 
-  fetchCollaborator = async () => {
+  fetchCollaborators = async () => {
     const { username, repo } = Router.router.query;
     try {
       const response = await axios.get(
@@ -167,33 +197,8 @@ class _Collaborators extends Component {
   };
 
   componentDidMount() {
-    this.fetchCollaborator();
+    this.fetchCollaborators();
   }
-
-  handleChange = event => {
-    this.setState({
-      [event.target.name]: event.target.value
-    });
-  };
-
-  handleSubmit = async event => {
-    const { username, repo } = Router.router.query;
-    const { collaboratorName } = this.state;
-    event.preventDefault();
-    try {
-      const response = await axios.post(
-        `/repos/${username}/${repo}/collaborators/${collaboratorName}`,
-        {},
-        authHeaders()
-      );
-      if (response.status === 201) {
-        this.setState({ collaboratorName: '' });
-        this.fetchCollaborator();
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  };
 
   removeCollaborator = async collaborator => {
     const { username, repo } = Router.router.query;
@@ -204,7 +209,7 @@ class _Collaborators extends Component {
         authHeaders()
       );
       if (response.status === 204) {
-        this.fetchCollaborator();
+        this.fetchCollaborators();
       }
     } catch (error) {
       console.log(error);
@@ -222,7 +227,7 @@ class _Collaborators extends Component {
         </Typography>
       ) : (
         collaborators.map(collaborator => (
-          <ListOfCollaborators
+          <ListOfCollaborator
             collaborator={collaborator}
             removeCollaborator={this.removeCollaborator}
           />
@@ -244,11 +249,7 @@ class _Collaborators extends Component {
                 <div className={classes.descripition}>
                   {collaboratorDetails}
                 </div>
-                <AddCollaborator
-                  handleChange={this.handleChange}
-                  handleSubmit={this.handleSubmit}
-                  collaboratorName={this.state.collaboratorName}
-                />
+                <AddCollaborator fetchCollaborators={this.fetchCollaborators} />
               </div>
             </div>
           </div>
