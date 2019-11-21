@@ -69,7 +69,7 @@ const listCollaboratorStyles = theme => ({
   }
 });
 
-function _ListOfCollaborator({ collaborator, removeCollaborator, classes }) {
+function _Collaborator({ collaborator, removeCollaborator, classes }) {
   return (
     <div key={collaborator.name} className={classes.collaboratorDetails}>
       <div key={collaborator.userImage}>
@@ -90,9 +90,7 @@ function _ListOfCollaborator({ collaborator, removeCollaborator, classes }) {
   );
 }
 
-const ListOfCollaborator = withStyles(listCollaboratorStyles)(
-  _ListOfCollaborator
-);
+const Collaborator = withStyles(listCollaboratorStyles)(_Collaborator);
 
 const addCollaboratorStyles = theme => ({
   search: {
@@ -227,7 +225,7 @@ class _Collaborators extends Component {
         </Typography>
       ) : (
         collaborators.map(collaborator => (
-          <ListOfCollaborator
+          <Collaborator
             collaborator={collaborator}
             removeCollaborator={this.removeCollaborator}
           />

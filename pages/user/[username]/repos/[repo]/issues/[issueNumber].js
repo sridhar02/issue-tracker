@@ -249,26 +249,36 @@ class _Assignee extends Component {
     const { issue } = this.props;
     const { addAssignees, removeAssignees } = this.state;
     // if collaborator is present  issue(assignees) && removeAssignees not includes collaborator then  add collaborator to removeAssignees list
-    //
-    if (
-      issue.assignees.some(
-        assignee => assignee.user.username === collaborator.username
-      ) &&
-      !removeAssignees.includes(collaborator.username)
-    ) {
-      const remove = this.state.removeAssignees.concat(collaborator.username);
+    // if collaborator is not in issue assignees list && collaborator is not in addAssignees list then add collaborator to addAssignees list
+    // if collaborator is in addAssignees list  && collaborator is not in issue Assignees list then remove collaborator from addAssignees list.
+    // if collaborator is in removeAssignees list
+    const alreadyAssigned = issue.assignees.some(
+      assignee => assignee.user.username === collaborator.username
+    );
+
+    const alreadyInAdd = addAssignees.includes(collaborator.username);
+
+    const alreadyInRemove = removeAssignees.includes(collaborator.username);
+
+    if (alreadyAssigned && !alreadyInRemove) {
       this.setState({
-        removeAssignees: remove
+        removeAssignees: [...removeAssignees, collaborator.username]
       });
-    } else if (
-      !issue.assignees.some(
-        assignee => assignee.user.username === collaborator.username
-      ) &&
-      !addAssignees.includes(collaborator.username)
-    ) {
-      const newAdd = this.state.addAssignees.concat([collaborator.username]);
+    } else if (!alreadyAssigned && !alreadyInAdd) {
       this.setState({
-        addAssignees: newAdd
+        addAssignees: [...addAssignees, collaborator.username]
+      });
+    } else if (!alreadyAssigned && alreadyInAdd) {
+      this.setState({
+        addAssignees: addAssignees.filter(
+          addAssignee => addAssignee !== collaborator.username
+        )
+      });
+    } else if (alreadyAssigned && alreadyInRemove) {
+      this.setState({
+        removeAssignees: removeAssignees.filter(
+          removeAssignee => removeAssignee !== collaborator.username
+        )
       });
     }
   };
@@ -282,8 +292,6 @@ class _Assignee extends Component {
       addAssignees,
       removeAssignees
     } = this.state;
-    console.log(addAssignees);
-    console.log(removeAssignees);
     return (
       <Fragment>
         <button
