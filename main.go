@@ -623,8 +623,79 @@ func deleteAssignee(c *gin.Context, db *sql.DB) {
 	c.Status(204)
 
 }
+
+type Subject struct {
+	Title string `json:"title,omitempty"`
+	Type  string `json:"type,omitempty"`
+}
+
+type UserNotification struct {
+	ID        int       `json:"id,omitempty"`
+	Repo      Repo      `json:"repo,omitempty"`
+	Read      string    `json:"read,omitempty"`
+	Subject   Subject   `json:"subject,omitempty"`
+	CreatedAt time.Time `json:"created_at,omitempty"`
+	UpdatedAt time.Time `json:"updated_at,omitempty"`
+}
+
 func getNotifications(c *gin.Context, db *sql.DB) {
 
+	userId, err := authorization(c, db)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	rows, err := db.Query(`SELECT DISTINCT
+                                issues.id,issues.title, notifications.id, notifications.repo_id, notifications.read, notifications.created_at, notifications.updated_at
+		                       FROM issues
+													      JOIN notifications ON issues.id = notifications.issue_id WHERE notifications.user_id = $1 AND notifications.read = $2`, userId, "unread")
+
+	if err != nil {
+		fmt.Println(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	notifications := []UserNotification{}
+	for rows.Next() {
+		var issueId, id int
+		var issueTitle, read, repoId, createdAt, updatedAt string
+		err = rows.Scan(&issueId, &issueTitle, &id, &repoId, &read, &createdAt, &updatedAt)
+		if err != nil {
+			fmt.Println(err)
+			c.AbortWithStatus(http.StatusInternalServerError)
+			return
+		}
+
+		CreatedAt, err := time.Parse(time.RFC3339, createdAt)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		UpdatedAt, err := time.Parse(time.RFC3339, updatedAt)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		repo, err := GetRepo(db, repoId)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		subject := Subject{
+			Title: issueTitle,
+			Type:  "issue",
+		}
+		notification := UserNotification{
+			ID:        id,
+			Repo:      repo,
+			Read:      read,
+			Subject:   subject,
+			CreatedAt: CreatedAt,
+			UpdatedAt: UpdatedAt,
+		}
+		notifications = append(notifications, notification)
+	}
+	c.JSON(200, notifications)
 }
 
 func main() {

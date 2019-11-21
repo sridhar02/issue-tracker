@@ -43,7 +43,11 @@ func GetRepo(db *sql.DB, id string) (Repo, error) {
 	if err != nil {
 		return Repo{}, err
 	}
-
+	user, err := GetUser(db, userId)
+	if err != nil {
+		fmt.Println(err)
+		return Repo{}, err
+	}
 	repo := Repo{
 		ID:          id,
 		Name:        name,
@@ -53,6 +57,7 @@ func GetRepo(db *sql.DB, id string) (Repo, error) {
 		UpdatedAt:   UpdatedAt,
 		Description: description,
 		Type:        TYPE,
+		User:        user,
 	}
 
 	return repo, nil
@@ -187,7 +192,7 @@ func getReposHandler(c *gin.Context, db *sql.DB) {
 		return
 	}
 
-	rows, err := db.Query(`SELECT id,name,issue_count,created_at,updated_at,description,type FROM repos 
+	rows, err := db.Query(`SELECT id,name,issue_count,created_at,updated_at,description,type FROM repos
 						  where user_id=$1 ORDER BY id ASC`, user.ID)
 	if err != nil {
 		fmt.Println(err)
