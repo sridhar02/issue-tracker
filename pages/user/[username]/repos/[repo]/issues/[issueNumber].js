@@ -248,10 +248,12 @@ class _Assignee extends Component {
   checkAssignee = collaborator => {
     const { issue } = this.props;
     const { addAssignees, removeAssignees } = this.state;
+
     // if collaborator is present  issue(assignees) && removeAssignees not includes collaborator then  add collaborator to removeAssignees list
     // if collaborator is not in issue assignees list && collaborator is not in addAssignees list then add collaborator to addAssignees list
     // if collaborator is in addAssignees list  && collaborator is not in issue Assignees list then remove collaborator from addAssignees list.
-    // if collaborator is in removeAssignees list
+    // if collaborator is in removeAssignees list && collaborator is in issue Assignees list them remove from removeAssignees list.
+
     const alreadyAssigned = issue.assignees.some(
       assignee => assignee.user.username === collaborator.username
     );
