@@ -187,3 +187,9 @@ delete("http://localhost:8000/repos/sridhar02/repo2/issues/3/assignees",
 	json={
 		'usernames': ["DONE","dp1","Sridhar1997"]
 	})
+
+get("http://localhost:8000/notifications",
+	headers={
+	    "Authorization": "Bearer GLwbNaKqmjutiOEfJrwwloKUYlwagKzc"
+	})
+

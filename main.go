@@ -533,6 +533,13 @@ func postAssignee(c *gin.Context, db *sql.DB) {
 			c.AbortWithStatus(http.StatusInternalServerError)
 			return
 		}
+
+		err = CreateNotification(db, issueId, assigneeUser.ID, repoId)
+		if err != nil {
+			fmt.Println(err)
+			c.AbortWithStatus(http.StatusInternalServerError)
+			return
+		}
 	}
 	c.Status(201)
 }
@@ -698,6 +705,10 @@ func getNotifications(c *gin.Context, db *sql.DB) {
 	c.JSON(200, notifications)
 }
 
+func getRepoNotifications(c *gin.Context, db *sql.DB) {
+
+}
+
 func main() {
 	rand.Seed(time.Now().UTC().UnixNano())
 	err := godotenv.Load()
@@ -755,7 +766,7 @@ func main() {
 	router.GET("/repos/:owner/:repo/issues/:issue_number/comments", func(c *gin.Context) { getCommentsHandler(c, db) })
 	router.POST("/repos/:owner/:repo/issues/:issue_number/comments", func(c *gin.Context) { postCommentHandler(c, db) })
 	router.GET("/notifications", func(c *gin.Context) { getNotifications(c, db) })
-
+	router.GET("/repos/:owner/:repo/notifications", func(c *gin.Context) { getRepoNotifications(c, db) })
 	stylesRouter := gin.Default()
 	stylesRouter.Static("/styles", "./styles")
 
