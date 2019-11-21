@@ -52,7 +52,7 @@ function _Sidebar({ classes }) {
 }
 const Sidebar = withStyles(sidebarStyles)(_Sidebar);
 
-const listCollaboratorStyles = theme => ({
+const collaboratorStyles = theme => ({
   collaboratorDetails: {
     display: 'flex',
     margin: theme.spacing(1),
@@ -90,7 +90,7 @@ function _Collaborator({ collaborator, removeCollaborator, classes }) {
   );
 }
 
-const Collaborator = withStyles(listCollaboratorStyles)(_Collaborator);
+const Collaborator = withStyles(collaboratorStyles)(_Collaborator);
 
 const addCollaboratorStyles = theme => ({
   search: {
