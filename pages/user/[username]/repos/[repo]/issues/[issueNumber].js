@@ -135,7 +135,8 @@ const assigneePopperStyles = theme => ({
     marginLeft: theme.spacing(2)
   },
   paperBottom: {
-    backgroundColor: '#fff'
+    backgroundColor: '#fff',
+    marginLeft: theme.spacing(5)
   },
   assigneeText: {
     fontWeight: 'bold'
@@ -150,6 +151,13 @@ const assigneePopperStyles = theme => ({
     backgroundColor: '#fff',
     border: 0,
     marginBottom: theme.spacing(1)
+  },
+  assigneeClick: {
+    display: 'flex',
+    justifyContent: 'space-between'
+  },
+  assigneeIcon: {
+    margin: theme.spacing(1)
   }
 });
 
@@ -165,14 +173,19 @@ class _Assignee extends Component {
     };
   }
 
-  togglePopper = event => {
+  togglePopper = async event => {
     const { open, addAssignees, removeAssignees, assigneed } = this.state;
+    const { fetchIssue } = this.props;
     if (open) {
-      if (removeAssignees !== []) {
-        this.deleteAssignee(removeAssignees);
+      if (removeAssignees.length !== 0) {
+        await this.deleteAssignee(removeAssignees);
       }
-      this.postAssignee(addAssignees);
-
+      if (addAssignees.length !== 0) {
+        await this.postAssignee(addAssignees);
+      }
+      if (removeAssignees.length !== 0 || addAssignees.length !== 0) {
+        fetchIssue();
+      }
       this.setState({
         anchorEl: null,
         open: !open
@@ -186,7 +199,7 @@ class _Assignee extends Component {
     }
   };
 
-  fetchCollaborator = async () => {
+  fetchCollaborators = async () => {
     const { username, repo } = Router.router.query;
     try {
       const response = await axios.get(
@@ -204,11 +217,10 @@ class _Assignee extends Component {
   };
 
   componentDidMount() {
-    this.fetchCollaborator();
+    this.fetchCollaborators();
   }
 
   postAssignee = async addAssignees => {
-    const { fetchIssue } = this.props;
     event.preventDefault();
     const { username, repo, issueNumber } = Router.router.query;
     try {
@@ -220,8 +232,6 @@ class _Assignee extends Component {
         authHeaders()
       );
       if (response.status === 201) {
-        fetchIssue();
-        this.fetchCollaborator();
         this.setState({
           addAssignees: []
         });
@@ -252,10 +262,10 @@ class _Assignee extends Component {
     const { issue } = this.props;
     const { addAssignees, removeAssignees } = this.state;
 
-    // if collaborator is present  issue(assignees) && removeAssignees not includes collaborator then  add collaborator to removeAssignees list
-    // if collaborator is not in issue assignees list && collaborator is not in addAssignees list then add collaborator to addAssignees list
-    // if collaborator is in addAssignees list  && collaborator is not in issue Assignees list then remove collaborator from addAssignees list.
-    // if collaborator is in removeAssignees list && collaborator is in issue Assignees list them remove from removeAssignees list.
+    // if collaborator is in issue(assignees) && removeAssignees not includes collaborator then  add collaborator to removeAssignees list.
+    // if collaborator is not in issue assignees list && removeAssignees not includes collaborator then add collaborator to addAssignee list.
+    // if collaborator is not in issue Assignees list then remove collaborator from addAssignees list && collaborator is in addAssignees list.
+    // if collaborator is in issue Assignees list them remove from removeAssignees list && collaborator is in removeAssignees list.
 
     const alreadyAssigned = issue.assignees.some(
       assignee => assignee.user.username === collaborator.username
@@ -297,6 +307,8 @@ class _Assignee extends Component {
       addAssignees,
       removeAssignees
     } = this.state;
+    console.log(addAssignees);
+    console.log(removeAssignees);
     return (
       <Fragment>
         <button
@@ -334,21 +346,25 @@ class _Assignee extends Component {
                     addAssignees.includes(collaborator.username)) &&
                   !removeAssignees.includes(collaborator.username);
                 return (
-                  <Button
-                    key={collaborator.username}
-                    className={classes.collaboratorDetails}
-                    onClick={() => this.checkAssignee(collaborator)}
-                  >
-                    {assigned && <CheckIcon />}
-                    <img
-                      key={collaborator.userImage}
-                      src={collaborator.userImage}
-                      className={classes.collaboratorImage}
-                    />
-                    <div key={collaborator.username}>
-                      {collaborator.username}
+                  <div className={classes.assigneeClick}>
+                    <div className={classes.assigneeIcon}>
+                      {assigned && <CheckIcon />}
                     </div>
-                  </Button>
+                    <Button
+                      key={collaborator.username}
+                      className={classes.collaboratorDetails}
+                      onClick={() => this.checkAssignee(collaborator)}
+                    >
+                      <img
+                        key={collaborator.userImage}
+                        src={collaborator.userImage}
+                        className={classes.collaboratorImage}
+                      />
+                      <div key={collaborator.username}>
+                        {collaborator.username}
+                      </div>
+                    </Button>
+                  </div>
                 );
               })}
             </div>
