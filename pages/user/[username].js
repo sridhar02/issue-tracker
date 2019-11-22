@@ -5,8 +5,7 @@ import axios from 'axios';
 import cx from 'classnames';
 
 import { withStyles } from '@material-ui/core/styles';
-import { Button, Typography } from '@material-ui/core';
-import TextField from '@material-ui/core/TextField';
+import { Button, Typography, TextField } from '@material-ui/core';
 
 import { TabNav, UnderlineNav } from '@primer/components';
 
