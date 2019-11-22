@@ -7,13 +7,16 @@ import { formatDistance, parseISO } from 'date-fns';
 
 import SettingsIcon from '@material-ui/icons/Settings';
 import { withStyles } from '@material-ui/core/styles';
-import { Button, Typography } from '@material-ui/core';
-import TextField from '@material-ui/core/TextField';
+import {
+  Button,
+  Typography,
+  TextField,
+  Popover,
+  Paper
+} from '@material-ui/core';
 import LockIcon from '@material-ui/icons/Lock';
 import DeleteIcon from '@material-ui/icons/Delete';
 import ErrorOutlineIcon from '@material-ui/icons/ErrorOutline';
-import Popover from '@material-ui/core/Popover';
-import Paper from '@material-ui/core/Paper';
 import CheckIcon from '@material-ui/icons/Check';
 
 import { TextInput } from '@primer/components';
