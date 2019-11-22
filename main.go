@@ -58,12 +58,8 @@ type Login struct {
 func CreateLogin(db *sql.DB, userId string) (Login, error) {
 
 	secret := RandStringBytes(32)
-	_, err := db.Exec(`INSERT INTO logins(user_id,secret,created_at,updated_at)
-									VALUES($1,$2,$3,$4)`,
-		userId,
-		secret,
-		time.Now().Format(time.RFC3339),
-		time.Now().Format(time.RFC3339))
+	_, err := db.Exec(`INSERT INTO logins (user_id, secret, created_at, updated_at ) VALUES ( $1, $2, $3, $4)`,
+		userId, secret, time.Now().Format(time.RFC3339), time.Now().Format(time.RFC3339))
 
 	login := Login{
 		UserId:    userId,
@@ -89,7 +85,7 @@ func PostUserSigninPageHandler(c *gin.Context, db *sql.DB) {
 	}
 
 	var Password, Id string
-	row := db.QueryRow(`SELECT password,id FROM users WHERE username=$1`, user.Username)
+	row := db.QueryRow(`SELECT password, id FROM users WHERE username = $1`, user.Username)
 	err = row.Scan(&Password, &Id)
 	if err != nil {
 		fmt.Println(err)
@@ -107,7 +103,7 @@ func PostUserSigninPageHandler(c *gin.Context, db *sql.DB) {
 		return
 	}
 
-	c.JSON(201, login)
+	c.JSON(http.StatusCreated, login)
 
 }
 
@@ -140,13 +136,12 @@ func getAuthenticatedUserHandler(c *gin.Context, db *sql.DB) {
 	}
 
 	user, err := GetUser(db, userId)
-
 	if err != nil {
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
-	c.JSON(http.StatusOK, user)
 
+	c.JSON(http.StatusOK, user)
 }
 
 func getAuthenticatedUserReposHandler(c *gin.Context, db *sql.DB) {
@@ -156,8 +151,8 @@ func getAuthenticatedUserReposHandler(c *gin.Context, db *sql.DB) {
 		return
 	}
 
-	rows, err := db.Query(`SELECT id,name,issue_count,created_at,updated_at,description,type FROM repos
-						  where user_id=$1 ORDER BY id ASC`, userId)
+	rows, err := db.Query(`SELECT id, name, issue_count, created_at, updated_at, description, type FROM repos
+						                    WHERE user_id = $1 ORDER BY id ASC `, userId)
 	if err != nil {
 		fmt.Println(err)
 		c.AbortWithStatus(http.StatusInternalServerError)
@@ -206,7 +201,7 @@ func getAuthenticatedUserReposHandler(c *gin.Context, db *sql.DB) {
 		}
 		Repos = append(Repos, repo)
 	}
-	c.JSON(200, Repos)
+	c.JSON(http.StatusOK, Repos)
 }
 
 func getIssuesHandler(c *gin.Context, db *sql.DB) {
@@ -215,12 +210,12 @@ func getIssuesHandler(c *gin.Context, db *sql.DB) {
 	repoName := c.Param("repo")
 
 	rows, err := db.Query(`WITH repoCTE AS (
-							     SELECT repos.id FROM repos JOIN users ON repos.user_id= users.id
-						         WHERE repos.name=$1 AND users.username=$2
-						         )
-						    SELECT id,title,user_id ,body, created_at, updated_at,issue_number,pinned,
-						    status, lock FROM issues WHERE repo_id IN
-						    (SELECT id FROM repoCTE) ORDER BY id DESC`, repoName, username)
+							                SELECT repos.id FROM repos JOIN users ON repos.user_id= users.id
+						                  WHERE repos.name=$1 AND users.username=$2
+						                  )
+						             SELECT id,title,user_id ,body, created_at, updated_at,issue_number,pinned,
+						             status, lock FROM issues WHERE repo_id IN
+						             (SELECT id FROM repoCTE) ORDER BY id DESC`, repoName, username)
 	if err != nil {
 		fmt.Println(err)
 		c.AbortWithStatus(http.StatusInternalServerError)
@@ -271,7 +266,7 @@ func getIssuesHandler(c *gin.Context, db *sql.DB) {
 		}
 		issues = append(issues, issue)
 	}
-	c.JSON(200, issues)
+	c.JSON(http.StatusOK, issues)
 }
 func getIssueHandler(c *gin.Context, db *sql.DB) {
 
@@ -281,11 +276,11 @@ func getIssueHandler(c *gin.Context, db *sql.DB) {
 
 	var Id int
 	row := db.QueryRow(`WITH repo_cte AS (
-		                     SELECT repos.id FROM repos JOIN users ON repos.user_id= users.id
-                		     WHERE repos.name= $1 AND users.username= $2
-                		     )
-                		SELECT id from issues WHERE repo_id
-                		IN (SELECT id FROM repo_cte) and issue_number=$3 `, repoName, username, issueNumber)
+		                       SELECT repos.id FROM repos JOIN users ON repos.user_id= users.id
+                		       WHERE repos.name = $1 AND users.username = $2
+                		       )
+                		  SELECT id from issues WHERE repo_id
+                		  IN (SELECT id FROM repo_cte) and issue_number=$3 `, repoName, username, issueNumber)
 	err := row.Scan(&Id)
 	if err != nil {
 		fmt.Println(err)
@@ -309,13 +304,13 @@ func getCommentsHandler(c *gin.Context, db *sql.DB) {
 	issueNumber := c.Param("issue_number")
 
 	rows, err := db.Query(`WITH repo_cte AS (
-		                        SELECT repos.id FROM repos JOIN users ON repos.user_id= users.id
-         				        WHERE repos.name= $1 AND users.username= $2
-         				        ),
-         				    issue_cte AS (
-         				    	      SELECT id FROM issues WHERE repo_id IN
-         				             (select id from repo_cte) AND issue_number=$3
-         				             )
+		                          SELECT repos.id FROM repos JOIN users ON repos.user_id= users.id
+         				              WHERE repos.name= $1 AND users.username= $2
+         				              ),
+         				         issue_cte AS (
+         				    	         SELECT id FROM issues WHERE repo_id IN
+         				               (select id from repo_cte) AND issue_number=$3
+         				                )
          				        SELECT id ,user_id,body,created_at,updated_at FROM comments
          				        WHERE issue_id in (select id from issue_cte)`, repoName, username, issueNumber)
 	if err != nil {
@@ -326,6 +321,7 @@ func getCommentsHandler(c *gin.Context, db *sql.DB) {
 
 	comments := []Comment{}
 	for rows.Next() {
+
 		var userId, body, createdAt, updatedAt string
 		var id int
 		err = rows.Scan(&id, &userId, &body, &createdAt, &updatedAt)
@@ -334,6 +330,7 @@ func getCommentsHandler(c *gin.Context, db *sql.DB) {
 			c.AbortWithStatus(http.StatusInternalServerError)
 			return
 		}
+
 		CreatedAt, err := time.Parse(time.RFC3339, createdAt)
 		if err != nil {
 			fmt.Println(err)
@@ -364,7 +361,8 @@ func getCommentsHandler(c *gin.Context, db *sql.DB) {
 		}
 		comments = append(comments, comment)
 	}
-	c.JSON(200, comments)
+
+	c.JSON(http.StatusOK, comments)
 }
 
 type CurrentRepo struct {
@@ -375,7 +373,7 @@ type CurrentRepo struct {
 func getCurrentRepo(db *sql.DB, username string, repoName string) (CurrentRepo, error) {
 
 	var userId, repoId string
-	row := db.QueryRow(`SELECT users.id,repos.id FROM repos JOIN users ON
+	row := db.QueryRow(`SELECT users.id, repos.id FROM repos JOIN users ON
                              repos.user_id = users.id WHERE users.username= $1 AND repos.name = $2`, username, repoName)
 	err := row.Scan(&userId, &repoId)
 	if err != nil {
@@ -413,7 +411,7 @@ func getCollaborators(c *gin.Context, db *sql.DB) {
 		return
 	}
 
-	rows, err := db.Query(`SELECT users.username,users.image,users.name FROM users JOIN collaborators
+	rows, err := db.Query(`SELECT users.username, users.image, users.name FROM users JOIN collaborators
                                 ON users.id = collaborators.user_id  WHERE collaborators.repo_id = $1`, currentRepo.RepoId)
 	if err != nil {
 		fmt.Println(err)
@@ -439,7 +437,7 @@ func getCollaborators(c *gin.Context, db *sql.DB) {
 		collaborators = append(collaborators, collaborator)
 	}
 
-	c.JSON(200, collaborators)
+	c.JSON(http.StatusOK, collaborators)
 
 }
 func postCollaborator(c *gin.Context, db *sql.DB) {
@@ -460,8 +458,8 @@ func postCollaborator(c *gin.Context, db *sql.DB) {
 	}
 
 	var repoId, repoOwnerId string
-	row := db.QueryRow(`SELECT repos.id,repos.user_id FROM repos JOIN users ON repos.user_id= users.id
-                		        WHERE repos.name= $1 AND users.username= $2`, repoName, username)
+	row := db.QueryRow(`SELECT repos.id, repos.user_id FROM repos JOIN users ON repos.user_id= users.id
+                		         WHERE repos.name= $1 AND users.username= $2`, repoName, username)
 	err = row.Scan(&repoId, &repoOwnerId)
 	if err != nil {
 		fmt.Println(err)
@@ -475,9 +473,9 @@ func postCollaborator(c *gin.Context, db *sql.DB) {
 			c.AbortWithStatus(http.StatusInternalServerError)
 			return
 		}
-		c.Status(201)
+		c.Status(http.StatusCreated)
 	} else {
-		c.Status(401)
+		c.Status(http.StatusUnauthorized)
 	}
 }
 
@@ -503,7 +501,7 @@ func postAssignee(c *gin.Context, db *sql.DB) {
 		                     SELECT repos.id FROM repos JOIN users ON repos.user_id= users.id
                 		     WHERE repos.name= $1 AND users.username= $2
                 		     )
-                		SELECT id,repo_id from issues WHERE repo_id
+                		SELECT id, repo_id from issues WHERE repo_id
                 		IN (SELECT id FROM repo_cte) and issue_number=$3 `, repoName, username, issueNumber)
 	err = row.Scan(&issueId, &repoId)
 	if err != nil {
@@ -541,7 +539,7 @@ func postAssignee(c *gin.Context, db *sql.DB) {
 			return
 		}
 	}
-	c.Status(201)
+	c.Status(http.StatusCreated)
 }
 
 func deleteCollaborator(c *gin.Context, db *sql.DB) {
@@ -560,8 +558,8 @@ func deleteCollaborator(c *gin.Context, db *sql.DB) {
 		return
 	}
 	var repoId, repoOwnerId string
-	row := db.QueryRow(`SELECT repos.id,repos.user_id FROM repos JOIN users ON repos.user_id= users.id
-                		        WHERE repos.name= $1 AND users.username= $2`, repoName, username)
+	row := db.QueryRow(`SELECT repos.id, repos.user_id FROM repos JOIN users ON repos.user_id= users.id
+                		         WHERE repos.name= $1 AND users.username= $2`, repoName, username)
 	err = row.Scan(&repoId, &repoOwnerId)
 	if err != nil {
 		fmt.Println(err)
@@ -575,9 +573,9 @@ func deleteCollaborator(c *gin.Context, db *sql.DB) {
 			c.AbortWithStatus(http.StatusInternalServerError)
 			return
 		}
-		c.Status(204)
+		c.Status(http.StatusNoContent)
 	} else {
-		c.Status(401)
+		c.Status(http.StatusUnauthorized)
 	}
 }
 
@@ -627,7 +625,7 @@ func deleteAssignee(c *gin.Context, db *sql.DB) {
 			return
 		}
 	}
-	c.Status(204)
+	c.Status(http.StatusNoContent)
 
 }
 
@@ -653,7 +651,7 @@ func getNotifications(c *gin.Context, db *sql.DB) {
 		return
 	}
 	rows, err := db.Query(`SELECT DISTINCT
-                                issues.id,issues.title, notifications.id, notifications.repo_id, notifications.read, notifications.created_at, notifications.updated_at
+                                issues.id, issues.title, notifications.id, notifications.repo_id, notifications.read, notifications.created_at, notifications.updated_at
 		                       FROM issues
 													      JOIN notifications ON issues.id = notifications.issue_id WHERE notifications.user_id = $1 AND notifications.read = $2`, userId, "unread")
 
@@ -702,7 +700,7 @@ func getNotifications(c *gin.Context, db *sql.DB) {
 		}
 		notifications = append(notifications, notification)
 	}
-	c.JSON(200, notifications)
+	c.JSON(http.StatusOK, notifications)
 }
 
 func getRepoNotifications(c *gin.Context, db *sql.DB) {
