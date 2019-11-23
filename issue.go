@@ -31,13 +31,8 @@ func GetIssue(db *sql.DB, Id int) (Issue, error) {
 	var title, body, repoId, status, createdAt, userId, updatedAt, pinned, lock string
 	var issueNumber int
 
-	row := db.QueryRow(`SELECT
-		                     title,body,repo_id,issue_number,status,
-		                     pinned,lock,user_id,created_at,
-						     updated_at
-						     FROM
-						     issues
-						     WHERE id=$1`, Id)
+	row := db.QueryRow(`SELECT title, body, repo_id, issue_number, status, pinned,lock, user_id,
+                              created_at, updated_at	FROM issues WHERE id = $1 `, Id)
 	err := row.Scan(&title, &body, &repoId, &issueNumber, &status, &pinned, &lock, &userId, &createdAt, &updatedAt)
 	if err != nil {
 		fmt.Println(err)
@@ -111,7 +106,7 @@ func CreateIssue(db *sql.DB, issue Issue) (int, int, error) {
 	var issueId int
 	var issueCount int
 
-	row := db.QueryRow("SELECT issue_count FROM repos WHERE id=$1", issue.RepoId)
+	row := db.QueryRow(" SELECT issue_count FROM repos WHERE id = $1 ", issue.RepoId)
 	err := row.Scan(&issueCount)
 	if err != nil {
 		return 0, 0, err
@@ -153,7 +148,7 @@ func CreateIssue(db *sql.DB, issue Issue) (int, int, error) {
 
 func UpdateIssue(db *sql.DB, issue Issue) error {
 
-	_, err := db.Exec(`UPDATE issues SET title = $1,body =$2, updated_at =$3 WHERE id = $4`,
+	_, err := db.Exec(`UPDATE issues SET title = $1,body = $2, updated_at = $3 WHERE id = $4`,
 		issue.Title, issue.Body, time.Now().Format(time.RFC3339), issue.ID)
 
 	if err != nil {
@@ -183,7 +178,7 @@ func postIssueHandler(c *gin.Context, db *sql.DB) {
 	repoName := c.Param("repo")
 	var repoId string
 	row := db.QueryRow(`SELECT repos.id FROM repos JOIN users ON repos.user_id= users.id
-						       WHERE repos.name=$1 AND users.username=$2`, repoName, username)
+						                 WHERE repos.name = $1 AND users.username = $2 `, repoName, username)
 	err = row.Scan(&repoId)
 	if err != nil {
 		fmt.Println(err)
@@ -226,10 +221,9 @@ func putIssueHandler(c *gin.Context, db *sql.DB) {
 	row := db.QueryRow(`WITH repo_cte AS (
 		                    SELECT repos.id FROM repos JOIN users ON repos.user_id= users.id
                 		    WHERE repos.name= $1 AND users.username= $2
-                		)
+                		    )
                 		SELECT id FROM issues
-                		WHERE  repo_id in (select id from repo_cte) AND issue_number=$3`,
-		repoName, username, issueNumber)
+                		WHERE  repo_id in (select id from repo_cte) AND issue_number=$3`, repoName, username, issueNumber)
 	err = row.Scan(&Id)
 	if err != nil {
 		fmt.Println(err)
@@ -266,7 +260,6 @@ func putIssueHandler(c *gin.Context, db *sql.DB) {
 		return
 	}
 
-
 	c.Status(http.StatusNoContent)
 }
 
@@ -286,7 +279,6 @@ func deleteIssueHandler(c *gin.Context, db *sql.DB) {
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
-	// c.JSON(http.StatusOK, repo)
 
 	c.Status(http.StatusNoContent)
 
@@ -343,12 +335,11 @@ func putPinHandler(c *gin.Context, db *sql.DB) {
 	var Id int
 	var repoId string
 	row := db.QueryRow(`WITH repo_cte AS (
-		                    SELECT repos.id FROM repos JOIN users ON repos.user_id= users.id
-                		    WHERE repos.name= $1 AND users.username= $2
-                	        )
+		                       SELECT repos.id FROM repos JOIN users ON repos.user_id= users.id
+                		       WHERE repos.name= $1 AND users.username= $2
+                	         )
                 	    SELECT id,repo_id FROM issues
-                	    WHERE repo_id in (SELECT id FROM repo_cte) AND issue_number=$3`,
-		repoName, username, issueNumber)
+                	    WHERE repo_id in (SELECT id FROM repo_cte) AND issue_number=$3`, repoName, username, issueNumber)
 	err = row.Scan(&Id, &repoId)
 	if err != nil {
 		fmt.Println(err)
