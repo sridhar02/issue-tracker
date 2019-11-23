@@ -92,29 +92,105 @@ const postCommentStyles = theme => ({
   }
 });
 
-function _PostComments({ classes, handleSubmit, body, handleChange, button }) {
-  return (
-    <form onSubmit={handleSubmit}>
-      <div>
-        <textarea
-          className={cx(classes.commentSection, 'form-control')}
-          name="body"
-          value={body}
-          onChange={handleChange}
-        />
-        {button}
-        <Button
-          variant="contained"
-          className={classes.commentButton}
-          type="submit"
-        >
-          Comment
-        </Button>
-      </div>
-    </form>
-  );
-}
+class _PostComments extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      body: ''
+    };
+  }
+  handleChange = event => {
+    this.setState({
+      [event.target.name]: event.target.value
+    });
+  };
 
+  postCommenthandler = async event => {
+    const { username, repo, issueNumber } = Router.router.query;
+    const { fetchComments } = this.props;
+    event.preventDefault();
+    const { user } = this.state;
+    try {
+      const response = await axios.post(
+        `/repos/${username}/${repo}/issues/${issueNumber}/comments`,
+        {
+          body: this.state.body
+        },
+        authHeaders()
+      );
+      if (response.status === 201) {
+        fetchComments();
+        this.setState({
+          body: ''
+        });
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  toggleIssueStatus = async event => {
+    const { username, repo, issueNumber } = Router.router.query;
+    const { issue, fetchIssue } = this.props;
+    const newStatus =
+      issue.status === STATUS_OPEN ? STATUS_CLOSED : STATUS_OPEN;
+    try {
+      const response = await axios.put(
+        `/repos/${username}/${repo}/issues/${issueNumber}`,
+        {
+          status: newStatus
+        },
+        authHeaders()
+      );
+      if (response.status === 204) {
+        fetchIssue();
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  render() {
+    const { classes, issue } = this.props;
+    const closeButton = (
+      <Button
+        variant="contained"
+        onClick={this.toggleIssueStatus}
+        className={
+          issue.status === STATUS_OPEN
+            ? classes.commentOpen
+            : classes.commentClose
+        }
+      >
+        {issue.status === STATUS_OPEN && (
+          <ErrorOutlineIcon className={classes.statusCloseIcon} />
+        )}
+        {issue.status === STATUS_OPEN ? 'Close' : 'Reopen'} issue
+      </Button>
+    );
+
+    return (
+      <form onSubmit={this.postCommenthandler}>
+        <div>
+          <textarea
+            className={cx(classes.commentSection, 'form-control')}
+            name="body"
+            value={this.state.body}
+            onChange={this.handleChange}
+          />
+          {closeButton}
+          <Button
+            variant="contained"
+            className={classes.commentButton}
+            type="submit"
+          >
+            Comment
+          </Button>
+        </div>
+      </form>
+    );
+  }
+}
 const PostComments = withStyles(postCommentStyles)(_PostComments);
 
 const assigneePopperStyles = theme => ({
@@ -386,8 +462,60 @@ const sidebarStyles = theme => ({
 });
 
 class _Sidebar extends Component {
+  toggleLockIssue = async event => {
+    const { username, repo, issueNumber } = Router.router.query;
+    const { issue, fetchIssue } = this.props;
+    const lockStatus = issue.lock === LOCK_LOCK ? LOCK_UNLOCK : LOCK_LOCK;
+    try {
+      const response = await axios.put(
+        `/repos/${username}/${repo}/issues/${issueNumber}/lock`,
+        {
+          lock: lockStatus
+        },
+        authHeaders()
+      );
+      if (response.status === 204) {
+        fetchIssue();
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  togglePinIssue = async event => {
+    const { username, repo, issueNumber } = Router.router.query;
+    const { issue, fetchIssue } = this.props;
+    const pinStatus = issue.pinned === PIN_UNPIN ? PIN_PIN : PIN_UNPIN;
+    try {
+      const response = await axios.put(
+        `/repos/${username}/${repo}/issues/${issueNumber}/pin`,
+        {
+          pinned: pinStatus
+        },
+        authHeaders()
+      );
+      if (response.status === 204) {
+        fetchIssue();
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   render() {
-    const { classes, lockButton, pinButton, issue, fetchIssue } = this.props;
+    const { classes, issue, fetchIssue } = this.props;
+    const lockButton = (
+      <Button onClick={this.toggleLockIssue} className={classes.lockButton}>
+        <LockIcon /> {issue.lock === LOCK_UNLOCK ? 'Lock' : 'Unlock'}
+        conversation
+      </Button>
+    );
+    const pinButton = (
+      <Button onClick={this.togglePinIssue}>
+        {issue.pinned === PIN_PIN ? 'Unpin' : 'Pin'} Issue
+      </Button>
+    );
+
     return (
       <Fragment>
         <div className={classes.sidebar}>
@@ -466,6 +594,28 @@ const issueHeaderStyles = theme => ({
     [theme.breakpoints.up('md')]: {
       order: 2
     }
+  },
+  statusOpen: {
+    marginRight: theme.spacing(1),
+    fontSize: theme.spacing(1.5),
+    padding: theme.spacing(0.5),
+    backgroundColor: '#2cbe4e',
+    color: '#fff',
+    fontWeight: 'bold',
+    '&:hover': {
+      backgroundColor: '#2cbe4e'
+    }
+  },
+  statusClose: {
+    marginRight: theme.spacing(1),
+    fontSize: theme.spacing(1.5),
+    padding: theme.spacing(0.5),
+    backgroundColor: '#CB2431',
+    color: '#fff',
+    fontWeight: 'bold',
+    '&:hover': {
+      backgroundColor: '#CB2431'
+    }
   }
 });
 
@@ -522,7 +672,7 @@ class _IssueHeader extends Component {
   };
 
   render() {
-    const { classes, issue, status, fetchIssue } = this.props;
+    const { classes, issue, fetchIssue } = this.props;
     const { username, repo, issueNumber } = Router.router.query;
     const { editTitle } = this.state;
     const title =
@@ -560,6 +710,19 @@ class _IssueHeader extends Component {
           {issue.title}
         </Typography>
       );
+    const status = (
+      <Button
+        variant="contained"
+        className={
+          issue.status === STATUS_OPEN
+            ? classes.statusOpen
+            : classes.statusClose
+        }
+      >
+        <ErrorOutlineIcon className={classes.statusIcon} /> {issue.status}
+      </Button>
+    );
+
     return (
       <Fragment>
         <div className={classes.headerTop}>
@@ -616,28 +779,7 @@ const issueStyles = theme => ({
     padding: theme.spacing(1),
     margin: theme.spacing(1)
   },
-  statusOpen: {
-    marginRight: theme.spacing(1),
-    fontSize: theme.spacing(1.5),
-    padding: theme.spacing(0.5),
-    backgroundColor: '#2cbe4e',
-    color: '#fff',
-    fontWeight: 'bold',
-    '&:hover': {
-      backgroundColor: '#2cbe4e'
-    }
-  },
-  statusClose: {
-    marginRight: theme.spacing(1),
-    fontSize: theme.spacing(1.5),
-    padding: theme.spacing(0.5),
-    backgroundColor: '#CB2431',
-    color: '#fff',
-    fontWeight: 'bold',
-    '&:hover': {
-      backgroundColor: '#CB2431'
-    }
-  },
+
   image: {
     height: theme.spacing(3),
     width: theme.spacing(3),
@@ -738,96 +880,6 @@ class _Issue extends Component {
     this.fetchComments();
   }
 
-  handleChange = event => {
-    this.setState({
-      [event.target.name]: event.target.value
-    });
-  };
-
-  handleSubmit = async event => {
-    const { username, repo, issueNumber } = Router.router.query;
-    event.preventDefault();
-    const { user } = this.state;
-    try {
-      const response = await axios.post(
-        `/repos/${username}/${repo}/issues/${issueNumber}/comments`,
-        {
-          body: this.state.body
-        },
-        authHeaders()
-      );
-      if (response.status === 201) {
-        this.fetchComments();
-        this.setState({
-          body: ''
-        });
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  toggleIssueStatus = async event => {
-    const { username, repo, issueNumber } = Router.router.query;
-    const { issue } = this.state;
-    const newStatus =
-      issue.status === STATUS_OPEN ? STATUS_CLOSED : STATUS_OPEN;
-    try {
-      const response = await axios.put(
-        `/repos/${username}/${repo}/issues/${issueNumber}`,
-        {
-          status: newStatus
-        },
-        authHeaders()
-      );
-      if (response.status === 204) {
-        this.fetchIssue();
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  toggleLockIssue = async event => {
-    const { username, repo, issueNumber } = Router.router.query;
-    const { issue } = this.state;
-    const lockStatus = issue.lock === LOCK_LOCK ? LOCK_UNLOCK : LOCK_LOCK;
-    try {
-      const response = await axios.put(
-        `/repos/${username}/${repo}/issues/${issueNumber}/lock`,
-        {
-          lock: lockStatus
-        },
-        authHeaders()
-      );
-      if (response.status === 204) {
-        this.fetchIssue();
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  togglePinIssue = async event => {
-    const { username, repo, issueNumber } = Router.router.query;
-    const { issue } = this.state;
-    const pinStatus = issue.pinned === PIN_UNPIN ? PIN_PIN : PIN_UNPIN;
-    try {
-      const response = await axios.put(
-        `/repos/${username}/${repo}/issues/${issueNumber}/pin`,
-        {
-          pinned: pinStatus
-        },
-        authHeaders()
-      );
-      if (response.status === 204) {
-        this.fetchIssue();
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
   render() {
     const { issue, user, editTitle } = this.state;
     const { classes } = this.props;
@@ -835,48 +887,6 @@ class _Issue extends Component {
     if (issue === undefined) {
       return null;
     }
-
-    const button = (
-      <Button
-        variant="contained"
-        onClick={this.toggleIssueStatus}
-        className={
-          issue.status === STATUS_OPEN
-            ? classes.commentOpen
-            : classes.commentClose
-        }
-      >
-        {issue.status === STATUS_OPEN && (
-          <ErrorOutlineIcon className={classes.statusCloseIcon} />
-        )}
-        {issue.status === STATUS_OPEN ? 'Close' : 'Reopen'} issue
-      </Button>
-    );
-
-    const status = (
-      <Button
-        variant="contained"
-        className={
-          issue.status === STATUS_OPEN
-            ? classes.statusOpen
-            : classes.statusClose
-        }
-      >
-        <ErrorOutlineIcon className={classes.statusIcon} /> {issue.status}
-      </Button>
-    );
-
-    const lockButton = (
-      <Button onClick={this.toggleLockIssue} className={classes.lockButton}>
-        <LockIcon /> {issue.lock === LOCK_UNLOCK ? 'Lock' : 'Unlock'}
-        conversation
-      </Button>
-    );
-    const pinButton = (
-      <Button onClick={this.togglePinIssue}>
-        {issue.pinned === PIN_PIN ? 'Unpin' : 'Pin'} Issue
-      </Button>
-    );
 
     return (
       <Fragment>
@@ -886,12 +896,7 @@ class _Issue extends Component {
             <div className="col-12">
               <div className="row">
                 <div className="col-12">
-                  <IssueHeader
-                    issue={issue}
-                    status={status}
-                    updateIssueTitle={this.updateIssueTitle}
-                    fetchIssue={this.fetchIssue}
-                  />
+                  <IssueHeader issue={issue} fetchIssue={this.fetchIssue} />
                 </div>
               </div>
               <div className="row">
@@ -906,8 +911,11 @@ class _Issue extends Component {
                         {issue.user.username}
                       </Typography>
                       <div>
-                        commented{' '}
-                        {formatDistance(Date.now(), parseISO(issue.updated_at))}{' '}
+                        commented
+                        {formatDistance(
+                          Date.now(),
+                          parseISO(issue.updated_at)
+                        )}{' '}
                         ago
                       </div>
                     </div>
@@ -917,19 +925,13 @@ class _Issue extends Component {
                   </div>
                   <Comment comments={this.state.comments} />
                   <PostComments
-                    handleSubmit={this.handleSubmit}
-                    body={this.state.body}
-                    handleChange={this.handleChange}
-                    button={button}
+                    issue={issue}
+                    fetchComments={this.fetchComments}
+                    fetchIssue={this.fetchIssue}
                   />
                 </div>
                 <div className="col-lg-2">
-                  <Sidebar
-                    issue={issue}
-                    lockButton={lockButton}
-                    pinButton={pinButton}
-                    fetchIssue={this.fetchIssue}
-                  />
+                  <Sidebar issue={issue} fetchIssue={this.fetchIssue} />
                 </div>
               </div>
             </div>
