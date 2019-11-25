@@ -178,7 +178,10 @@ const assigneePopperStyles = theme => ({
     backgroundColor: '#F6F8FA'
   },
   collaboratorDetails: {
-    display: 'flex'
+    display: 'flex',
+    justifyContent: 'flex-start',
+    width: '100%',
+    marginTop: theme.spacing(1)
   },
   collaboratorImage: {
     height: theme.spacing(3),
@@ -201,16 +204,23 @@ const assigneePopperStyles = theme => ({
   assigneeButton: {
     backgroundColor: '#fff',
     border: 0,
-    marginBottom: theme.spacing(1)
-  },
-  assigneeClick: {
+    marginBottom: theme.spacing(1),
+    width: '100%',
     display: 'flex',
     justifyContent: 'space-between',
     '&:hover': {
-      backgroundColor: 'blue'
+      border: 0
     }
   },
-  assigneeIcon: {},
+  assigneeClick: {
+    '&:hover': {
+      backgroundColor: 'blue',
+      border: 0
+    }
+  },
+  assigneeIcon: {
+    width: '20px'
+  },
   collaborator: {
     display: 'flex',
     justifyContent: 'flex-end'
@@ -372,7 +382,10 @@ class _Assignee extends Component {
           onClick={this.togglePopper}
           className={classes.assigneeButton}
         >
-          Assignee <SettingsIcon />
+          Assignee
+          <div>
+            <SettingsIcon />
+          </div>
         </button>
         <div>
           {issue.assignees.map(assignee => (
