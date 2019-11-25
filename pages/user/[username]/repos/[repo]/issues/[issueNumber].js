@@ -23,48 +23,18 @@ import { TextInput } from '@primer/components';
 
 import { Navbar, authHeaders } from '../../../../../../utils/utils.js';
 
-const commentStyles = theme => ({
-  image: {
-    height: theme.spacing(3),
-    width: theme.spacing(3),
-    marginRight: theme.spacing(1)
-  },
-  comment: {
-    border: '1px solid #ddd',
-    marginBottom: theme.spacing(1),
-    marginTop: theme.spacing(1)
-  },
-  commentUser: {
-    display: 'flex',
-    backgroundColor: '#f6f8fa',
-    borderBottom: '1px solid #ddd'
-  },
-  body: {
-    margin: theme.spacing(1),
-    padding: theme.spacing(1)
-  },
-  username: {
-    fontWeight: 'bold',
-    marginRight: theme.spacing(1)
-  }
-});
+const commentStyles = theme => ({});
 
 function _Comment({ comments, classes }) {
   return (
     <div>
       {comments.map(comment => (
-        <div key={comment.id} className={classes.comment}>
-          <div className={classes.commentUser}>
-            <img src={comment.user.image} className={cx(classes.image)} />
-            <Typography variant="body2" className={classes.username}>
-              {comment.user.username}
-            </Typography>
-            <div>
-              commented{' '}
-              {formatDistance(Date.now(), parseISO(comment.created_at))} ago
-            </div>
-          </div>
-          <div className={classes.body}> {comment.body}</div>
+        <div key={comment.id}>
+          <Body
+            user={comment.user}
+            body={comment.body}
+            updated_at={comment.created_at}
+          />
         </div>
       ))}
     </div>
@@ -89,6 +59,14 @@ const postCommentStyles = theme => ({
     '&:hover': {
       backgroundColor: 'green'
     }
+  },
+  commentClose: {
+    marginRight: theme.spacing(1),
+    backgroundColor: '#eff3f6'
+  },
+  commentOpen: {
+    marginRight: theme.spacing(1),
+    backgroundColor: '#eff3f6'
   }
 });
 
@@ -200,19 +178,16 @@ const assigneePopperStyles = theme => ({
     backgroundColor: '#F6F8FA'
   },
   collaboratorDetails: {
-    display: 'flex',
-    margin: theme.spacing(0.5),
-    marginLeft: theme.spacing(3)
+    display: 'flex'
   },
   collaboratorImage: {
     height: theme.spacing(3),
     width: theme.spacing(3),
     marginRight: theme.spacing(1),
-    marginLeft: theme.spacing(2)
+    marginLeft: theme.spacing(3)
   },
   paperBottom: {
-    backgroundColor: '#fff',
-    marginLeft: theme.spacing(5)
+    backgroundColor: '#fff'
   },
   assigneeText: {
     fontWeight: 'bold'
@@ -230,10 +205,14 @@ const assigneePopperStyles = theme => ({
   },
   assigneeClick: {
     display: 'flex',
-    justifyContent: 'space-between'
+    justifyContent: 'space=between',
+    '&:hover': {
+      backgroundColor: 'blue'
+    }
   },
-  assigneeIcon: {
-    margin: theme.spacing(1)
+  assigneeIcon: {},
+  collaborator: {
+    display: 'flex'
   }
 });
 
@@ -383,8 +362,6 @@ class _Assignee extends Component {
       addAssignees,
       removeAssignees
     } = this.state;
-    console.log(addAssignees);
-    console.log(removeAssignees);
     return (
       <Fragment>
         <button
@@ -423,21 +400,23 @@ class _Assignee extends Component {
                   !removeAssignees.includes(collaborator.username);
                 return (
                   <div className={classes.assigneeClick}>
-                    <div className={classes.assigneeIcon}>
-                      {assigned && <CheckIcon />}
-                    </div>
                     <Button
                       key={collaborator.username}
                       className={classes.collaboratorDetails}
                       onClick={() => this.checkAssignee(collaborator)}
                     >
-                      <img
-                        key={collaborator.userImage}
-                        src={collaborator.userImage}
-                        className={classes.collaboratorImage}
-                      />
-                      <div key={collaborator.username}>
-                        {collaborator.username}
+                      <div className={classes.assigneeIcon}>
+                        {assigned && <CheckIcon />}
+                      </div>
+                      <div className={classes.collaborator}>
+                        <img
+                          key={collaborator.user.image}
+                          src={collaborator.user.image}
+                          className={classes.collaboratorImage}
+                        />
+                        <div key={collaborator.username}>
+                          {collaborator.user.username}
+                        </div>
                       </div>
                     </Button>
                   </div>
@@ -755,8 +734,7 @@ class _IssueHeader extends Component {
           {status}
           <Typography variant="body2">
             opened this issue{' '}
-            {formatDistance(Date.now(), parseISO(issue.created_at))}
-            ago
+            {formatDistance(Date.now(), parseISO(issue.created_at))} ago
           </Typography>
         </div>
       </Fragment>
@@ -764,6 +742,56 @@ class _IssueHeader extends Component {
   }
 }
 const IssueHeader = withStyles(issueHeaderStyles)(_IssueHeader);
+
+const bodyStyles = theme => ({
+  image: {
+    height: theme.spacing(3),
+    width: theme.spacing(3),
+    marginRight: theme.spacing(1)
+  },
+  userSection: {
+    display: 'flex',
+    borderBottom: '1px solid #ddd',
+    padding: theme.spacing(1),
+    backgroundColor: '#f6f8fa'
+  },
+  content: {
+    border: '1px solid #ddd',
+    marginBottom: theme.spacing(1),
+    marginTop: theme.spacing(1)
+  },
+  body: {
+    padding: theme.spacing(1),
+    margin: theme.spacing(1)
+  },
+  time: {},
+  username: {
+    paddingRight: theme.spacing(2)
+  }
+});
+
+function _Body({ classes, user, body, updated_at }) {
+  return (
+    <div className={classes.content}>
+      <div className={classes.userSection}>
+        <img src={user.image} className={classes.image} />
+        <Typography variant="body2" className={classes.username}>
+          {user.username}
+        </Typography>
+        <div className={classes.time}>
+          commented {formatDistance(Date.now(), parseISO(updated_at))} ago
+        </div>
+      </div>
+      <div>
+        <Typography variant="body2" className={classes.body}>
+          {body}
+        </Typography>
+      </div>
+    </div>
+  );
+}
+
+const Body = withStyles(bodyStyles)(_Body);
 
 const STATUS_OPEN = 'Open';
 const STATUS_CLOSED = 'Closed';
@@ -775,11 +803,6 @@ const PIN_PIN = 'Pinned';
 const PIN_UNPIN = 'Unpinned';
 
 const issueStyles = theme => ({
-  body: {
-    padding: theme.spacing(1),
-    margin: theme.spacing(1)
-  },
-
   image: {
     height: theme.spacing(3),
     width: theme.spacing(3),
@@ -805,14 +828,6 @@ const issueStyles = theme => ({
   name: {
     fontWeight: 'bold',
     marginRight: theme.spacing(1)
-  },
-  commentClose: {
-    marginRight: theme.spacing(1),
-    backgroundColor: '#eff3f6'
-  },
-  commentOpen: {
-    marginRight: theme.spacing(1),
-    backgroundColor: '#eff3f6'
   },
   statusIcon: {
     marginRight: theme.spacing(0.5)
@@ -901,28 +916,11 @@ class _Issue extends Component {
               </div>
               <div className="row">
                 <div className="col-lg-10">
-                  <div className={classes.issueBody}>
-                    <div className={classes.username}>
-                      <img
-                        src={issue.user.image}
-                        className={cx(classes.image)}
-                      />
-                      <Typography variant="body2" className={classes.name}>
-                        {issue.user.username}
-                      </Typography>
-                      <div>
-                        commented
-                        {formatDistance(
-                          Date.now(),
-                          parseISO(issue.updated_at)
-                        )}{' '}
-                        ago
-                      </div>
-                    </div>
-                    <Typography variant="body2" className={classes.body}>
-                      {issue.body}
-                    </Typography>
-                  </div>
+                  <Body
+                    user={issue.user}
+                    body={issue.body}
+                    updated_at={issue.updated_at}
+                  />
                   <Comment comments={this.state.comments} />
                   <PostComments
                     issue={issue}
