@@ -184,7 +184,7 @@ const assigneePopperStyles = theme => ({
     height: theme.spacing(3),
     width: theme.spacing(3),
     marginRight: theme.spacing(1),
-    marginLeft: theme.spacing(3)
+    marginLeft: theme.spacing(1)
   },
   paperBottom: {
     backgroundColor: '#fff'
@@ -205,14 +205,15 @@ const assigneePopperStyles = theme => ({
   },
   assigneeClick: {
     display: 'flex',
-    justifyContent: 'space=between',
+    justifyContent: 'space-between',
     '&:hover': {
       backgroundColor: 'blue'
     }
   },
   assigneeIcon: {},
   collaborator: {
-    display: 'flex'
+    display: 'flex',
+    justifyContent: 'flex-end'
   }
 });
 
@@ -323,31 +324,33 @@ class _Assignee extends Component {
     // if collaborator is in issue Assignees list them remove from removeAssignees list && collaborator is in removeAssignees list.
 
     const alreadyAssigned = issue.assignees.some(
-      assignee => assignee.user.username === collaborator.username
+      assignee => assignee.user.username === collaborator.user.username
     );
 
-    const alreadyInAdd = addAssignees.includes(collaborator.username);
+    const alreadyInAdd = addAssignees.includes(collaborator.user.username);
 
-    const alreadyInRemove = removeAssignees.includes(collaborator.username);
+    const alreadyInRemove = removeAssignees.includes(
+      collaborator.user.username
+    );
 
     if (alreadyAssigned && !alreadyInRemove) {
       this.setState({
-        removeAssignees: [...removeAssignees, collaborator.username]
+        removeAssignees: [...removeAssignees, collaborator.user.username]
       });
     } else if (!alreadyAssigned && !alreadyInAdd) {
       this.setState({
-        addAssignees: [...addAssignees, collaborator.username]
+        addAssignees: [...addAssignees, collaborator.user.username]
       });
     } else if (!alreadyAssigned && alreadyInAdd) {
       this.setState({
         addAssignees: addAssignees.filter(
-          addAssignee => addAssignee !== collaborator.username
+          addAssignee => addAssignee !== collaborator.user.username
         )
       });
     } else if (alreadyAssigned && alreadyInRemove) {
       this.setState({
         removeAssignees: removeAssignees.filter(
-          removeAssignee => removeAssignee !== collaborator.username
+          removeAssignee => removeAssignee !== collaborator.user.username
         )
       });
     }
@@ -394,14 +397,15 @@ class _Assignee extends Component {
               {collaborators.map(collaborator => {
                 const assigned =
                   (issue.assignees.some(
-                    assignee => assignee.user.username === collaborator.username
+                    assignee =>
+                      assignee.user.username === collaborator.user.username
                   ) ||
-                    addAssignees.includes(collaborator.username)) &&
-                  !removeAssignees.includes(collaborator.username);
+                    addAssignees.includes(collaborator.user.username)) &&
+                  !removeAssignees.includes(collaborator.user.username);
                 return (
                   <div className={classes.assigneeClick}>
                     <Button
-                      key={collaborator.username}
+                      key={collaborator.user.username}
                       className={classes.collaboratorDetails}
                       onClick={() => this.checkAssignee(collaborator)}
                     >
@@ -414,7 +418,7 @@ class _Assignee extends Component {
                           src={collaborator.user.image}
                           className={classes.collaboratorImage}
                         />
-                        <div key={collaborator.username}>
+                        <div key={collaborator.user.username}>
                           {collaborator.user.username}
                         </div>
                       </div>
