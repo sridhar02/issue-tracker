@@ -71,16 +71,16 @@ const collaboratorStyles = theme => ({
 
 function _Collaborator({ collaborator, removeCollaborator, classes }) {
   return (
-    <div key={collaborator.name} className={classes.collaboratorDetails}>
-      <div key={collaborator.userImage}>
+    <div key={collaborator.user.name} className={classes.collaboratorDetails}>
+      <div key={collaborator.user.image}>
         <img
-          src={collaborator.userImage}
+          src={collaborator.user.image}
           className={classes.collaboratorImage}
         />
-        <div>{collaborator.username}</div>
+        <div>{collaborator.user.username}</div>
       </div>
       <button
-        key={collaborator.username}
+        key={collaborator.user.username}
         className={classes.closeButton}
         onClick={() => removeCollaborator(collaborator)}
       >
@@ -203,7 +203,7 @@ class _Collaborators extends Component {
     event.preventDefault();
     try {
       const response = await axios.delete(
-        `/repos/${username}/${repo}/collaborators/${collaborator.username}`,
+        `/repos/${username}/${repo}/collaborators/${collaborator.user.username}`,
         authHeaders()
       );
       if (response.status === 204) {

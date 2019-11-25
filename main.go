@@ -389,9 +389,7 @@ func getCurrentRepo(db *sql.DB, username string, repoName string) (CurrentRepo, 
 }
 
 type Collaborator struct {
-	Username  string `json:"username"`
-	UserImage string `json:"userImage"`
-	Name      string `json:"name"`
+	User User `json:"user"`
 }
 
 func getCollaborators(c *gin.Context, db *sql.DB) {
@@ -411,7 +409,7 @@ func getCollaborators(c *gin.Context, db *sql.DB) {
 		return
 	}
 
-	rows, err := db.Query(`SELECT users.username, users.image, users.name FROM users JOIN collaborators
+	rows, err := db.Query(`SELECT users.id FROM users JOIN collaborators
                                 ON users.id = collaborators.user_id  WHERE collaborators.repo_id = $1`, currentRepo.RepoId)
 	if err != nil {
 		fmt.Println(err)
@@ -422,17 +420,20 @@ func getCollaborators(c *gin.Context, db *sql.DB) {
 	collaborators := []Collaborator{}
 
 	for rows.Next() {
-		var UserName, image, name string
-		err = rows.Scan(&UserName, &image, &name)
+		var userId string
+		err = rows.Scan(&userId)
 		if err != nil {
 			fmt.Println(err)
 			c.AbortWithStatus(http.StatusInternalServerError)
 			return
 		}
+		user, err := GetUser(db, userId)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
 		collaborator := Collaborator{
-			Username:  UserName,
-			UserImage: image,
-			Name:      name,
+			User: user,
 		}
 		collaborators = append(collaborators, collaborator)
 	}
