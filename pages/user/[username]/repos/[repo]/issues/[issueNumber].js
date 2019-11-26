@@ -289,6 +289,7 @@ class _Assignee extends Component {
   postAssignee = async addAssignees => {
     event.preventDefault();
     const { username, repo, issueNumber } = Router.router.query;
+    console.log(addAssignees);
     try {
       const response = await axios.post(
         `/repos/${username}/${repo}/issues/${issueNumber}/assignees`,
@@ -375,6 +376,18 @@ class _Assignee extends Component {
       addAssignees,
       removeAssignees
     } = this.state;
+    const AssigneeList =
+      issue.assignees.length !== 0 ? (
+        issue.assignees.map(assignee => (
+          <div key={assignee.user.id}>
+            <img src={assignee.user.image} className={classes.assigneeImage} />
+            {assignee.user.username}
+          </div>
+        ))
+      ) : (
+        <div>No one — assignee yourself</div>
+      );
+    console.log(issue.user.username);
     return (
       <Fragment>
         <button
@@ -387,17 +400,7 @@ class _Assignee extends Component {
             <SettingsIcon />
           </div>
         </button>
-        <div>
-          {issue.assignees.map(assignee => (
-            <div key={assignee.user.id}>
-              <img
-                src={assignee.user.image}
-                className={classes.assigneeImage}
-              />
-              {assignee.user.username}
-            </div>
-          ))}
-        </div>
+        <div>{AssigneeList}</div>
         <Popover open={open} anchorEl={anchorEl} onClose={this.togglePopper}>
           <Paper className={classes.popper}>
             <div className={classes.paperTop}>
