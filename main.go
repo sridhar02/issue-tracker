@@ -751,6 +751,7 @@ func main() {
 	router.GET("/users/:username/repos", func(c *gin.Context) { getReposHandler(c, db) })
 	router.GET("/user/repos", func(c *gin.Context) { getAuthenticatedUserReposHandler(c, db) })
 	router.POST("/user/repos", func(c *gin.Context) { postRepoHandler(c, db) })
+	router.GET("/repos/:owner/:repo", func(c *gin.Context) { getRepoHandler(c, db) })
 	router.GET("/repos/:owner/:repo/issues", func(c *gin.Context) { getIssuesHandler(c, db) })
 	router.POST("/repos/:owner/:repo/issues", func(c *gin.Context) { postIssueHandler(c, db) })
 	router.GET("/repos/:owner/:repo/collaborators", func(c *gin.Context) { getCollaborators(c, db) })

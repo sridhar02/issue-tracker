@@ -51,7 +51,6 @@ func GetRepo(db *sql.DB, id string) (Repo, error) {
 	repo := Repo{
 		ID:          id,
 		Name:        name,
-		UserId:      userId,
 		IssuesCount: issueCount,
 		CreatedAt:   CreatedAt,
 		UpdatedAt:   UpdatedAt,
@@ -108,9 +107,17 @@ func DeleteRepo(db *sql.DB, id string) error {
 
 func getRepoHandler(c *gin.Context, db *sql.DB) {
 
-	id := c.Param("id")
+	username := c.Param("owner")
+	repoName := c.Param("repo")
 
-	repo, err := GetRepo(db, id)
+	currentRepo, err := getCurrentRepo(db, username, repoName)
+	if err != nil {
+		fmt.Println(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	repo, err := GetRepo(db, currentRepo.RepoId)
 
 	if err != nil {
 		c.AbortWithStatus(http.StatusInternalServerError)
@@ -118,7 +125,6 @@ func getRepoHandler(c *gin.Context, db *sql.DB) {
 	}
 	c.JSON(http.StatusOK, repo)
 
-	// c.Status(http.StatusNoContent)
 
 }
 

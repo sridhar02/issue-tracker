@@ -193,3 +193,4 @@ get("http://localhost:8000/notifications",
 	    "Authorization": "Bearer GLwbNaKqmjutiOEfJrwwloKUYlwagKzc"
 	})
 
+get("http://localhost:8000/repos/sridhar02/repo2")

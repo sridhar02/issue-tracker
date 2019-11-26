@@ -18,6 +18,7 @@ import LockIcon from '@material-ui/icons/Lock';
 import DeleteIcon from '@material-ui/icons/Delete';
 import ErrorOutlineIcon from '@material-ui/icons/ErrorOutline';
 import CheckIcon from '@material-ui/icons/Check';
+import MoreHorizIcon from '@material-ui/icons/MoreHoriz';
 
 import { TextInput } from '@primer/components';
 
@@ -387,7 +388,6 @@ class _Assignee extends Component {
       ) : (
         <div>No one — assignee yourself</div>
       );
-    console.log(issue.user.username);
     return (
       <Fragment>
         <button
@@ -401,7 +401,19 @@ class _Assignee extends Component {
           </div>
         </button>
         <div>{AssigneeList}</div>
-        <Popover open={open} anchorEl={anchorEl} onClose={this.togglePopper}>
+        <Popover
+          open={open}
+          anchorEl={anchorEl}
+          onClose={this.togglePopper}
+          anchorOrigin={{
+            vertical: 'bottom',
+            horizontal: 'right'
+          }}
+          transformOrigin={{
+            vertical: 'top',
+            horizontal: 'right'
+          }}
+        >
           <Paper className={classes.popper}>
             <div className={classes.paperTop}>
               <Typography variant="body2" className={classes.assigneeText}>
@@ -767,13 +779,11 @@ const bodyStyles = theme => ({
   image: {
     height: theme.spacing(3),
     width: theme.spacing(3),
-    marginRight: theme.spacing(1)
+    marginRight: theme.spacing(1),
+    borderRadius: '4px'
   },
   userSection: {
-    display: 'flex',
-    borderBottom: '1px solid #ddd',
-    padding: theme.spacing(1),
-    backgroundColor: '#f6f8fa'
+    display: 'flex'
   },
   content: {
     border: '1px solid #ddd',
@@ -784,33 +794,124 @@ const bodyStyles = theme => ({
     padding: theme.spacing(1),
     margin: theme.spacing(1)
   },
-  time: {},
+  issueHead: {
+    display: 'flex',
+    justifyContent: ' space-between',
+    borderBottom: '1px solid #ddd',
+    padding: theme.spacing(1),
+    backgroundColor: '#f6f8fa'
+  },
   username: {
-    paddingRight: theme.spacing(2)
+    paddingRight: theme.spacing(2),
+    marginTop: theme.spacing(0),
+    fontWeight: 'bold',
+    fontSize: '16px'
+  },
+  time: {
+    marginTop: theme.spacing(0)
+  },
+  popover: {
+    width: '100%',
+    '&:hover': {
+      backgroundColor: 'blue'
+    }
+  },
+  optionsButton: {
+    border: 0,
+    backgroundColor: '#f6f8fa',
+    marginLeft: theme.spacing(2)
   }
 });
 
-function _Body({ classes, user, body, updated_at }) {
-  return (
-    <div className={classes.content}>
-      <div className={classes.userSection}>
-        <img src={user.image} className={classes.image} />
-        <Typography variant="body2" className={classes.username}>
-          {user.username}
-        </Typography>
-        <div className={classes.time}>
-          commented {formatDistance(Date.now(), parseISO(updated_at))} ago
+class _Body extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      anchorEl: null,
+      open: false
+    };
+  }
+  togglePopper = event => {
+    const { anchorEl, open } = this.state;
+    if (open) {
+      this.setState({
+        anchorEl: null,
+        open: !open
+      });
+    } else {
+      const { currentTarget } = event;
+      this.setState({
+        anchorEl: currentTarget,
+        open: !open
+      });
+    }
+  };
+
+  render() {
+    const { classes, user, body, updated_at, repoUserName } = this.props;
+    const { anchorEl, open } = this.state;
+    let userStatus;
+    if (repoUserName === user.username) {
+      userStatus = <div>Owner</div>;
+    }
+    return (
+      <div className={classes.content}>
+        <div className={classes.issueHead}>
+          <div className={classes.userSection}>
+            <img src={user.image} className={classes.image} />
+            <Typography variant="body2" className={classes.username}>
+              {user.username}
+            </Typography>
+            <div className={classes.time}>
+              commented {formatDistance(Date.now(), parseISO(updated_at))} ago
+            </div>
+          </div>
+          <div className={classes.userSection}>
+            {userStatus}
+            <button
+              onClick={this.togglePopper}
+              className={classes.optionsButton}
+            >
+              <MoreHorizIcon />
+            </button>
+            <Popover
+              open={open}
+              anchorEl={anchorEl}
+              onClose={this.togglePopper}
+              anchorOrigin={{
+                vertical: 'bottom',
+                horizontal: 'right'
+              }}
+              transformOrigin={{
+                vertical: 'top',
+                horizontal: 'right'
+              }}
+            >
+              <div>
+                <Button className={classes.popover}>Copy Link</Button>
+              </div>
+              <div>
+                <Button className={classes.popover}>Quote reply</Button>
+              </div>
+              <div>
+                <Button className={classes.popover}>Edit</Button>
+              </div>
+              <div>
+                <Button className={classes.popover}>Report Content</Button>
+              </div>
+            </Popover>
+          </div>
+        </div>
+
+        <div>
+          <Typography variant="body2" className={classes.body}>
+            {body}
+          </Typography>
         </div>
       </div>
-      <div>
-        <Typography variant="body2" className={classes.body}>
-          {body}
-        </Typography>
-      </div>
-    </div>
-  );
+    );
+  }
 }
-
 const Body = withStyles(bodyStyles)(_Body);
 
 const STATUS_OPEN = 'Open';
@@ -871,12 +972,27 @@ class _Issue extends Component {
     super(props);
     this.state = {
       issue: undefined,
+      repo: undefined,
       title: '',
       body: '',
       editTitle: false,
       comments: []
     };
   }
+
+  fetchRepo = async () => {
+    const { username, repo } = Router.router.query;
+    try {
+      const response = await axios.get(`repos/${username}/${repo}`);
+      if (response.status === 200) {
+        this.setState({
+          repo: response.data
+        });
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   fetchIssue = async () => {
     const { username, repo, issueNumber } = Router.router.query;
@@ -913,16 +1029,15 @@ class _Issue extends Component {
     const { username, repo, issueNumber } = Router.router.query;
     this.fetchIssue();
     this.fetchComments();
+    this.fetchRepo();
   }
 
   render() {
-    const { issue, user, editTitle } = this.state;
+    const { issue, user, editTitle, repo } = this.state;
     const { classes } = this.props;
-
-    if (issue === undefined) {
+    if (issue === undefined || repo === undefined) {
       return null;
     }
-
     return (
       <Fragment>
         <Navbar />
@@ -940,6 +1055,7 @@ class _Issue extends Component {
                     user={issue.user}
                     body={issue.body}
                     updated_at={issue.updated_at}
+                    repoUserName={repo.user.username}
                   />
                   <Comment comments={this.state.comments} />
                   <PostComments
