@@ -32,6 +32,7 @@ function _Comment({ comments, classes }) {
       {comments.map(comment => (
         <div key={comment.id}>
           <Body
+            commentUserName={comment.user.username}
             user={comment.user}
             body={comment.body}
             updated_at={comment.created_at}
@@ -290,7 +291,6 @@ class _Assignee extends Component {
   postAssignee = async addAssignees => {
     event.preventDefault();
     const { username, repo, issueNumber } = Router.router.query;
-    console.log(addAssignees);
     try {
       const response = await axios.post(
         `/repos/${username}/${repo}/issues/${issueNumber}/assignees`,
@@ -324,6 +324,18 @@ class _Assignee extends Component {
     } catch (error) {
       console.log(error);
     }
+  };
+
+  removeAllAssignees = () => {
+    const { removeAssignees } = this.state;
+    const { issue } = this.props;
+    let allAssignees = [];
+    issue.assignees.forEach(assignee =>
+      allAssignees.push(assignee.user.username)
+    );
+    this.setState({
+      removeAssignees: allAssignees
+    });
   };
 
   checkAssignee = collaborator => {
@@ -388,6 +400,7 @@ class _Assignee extends Component {
       ) : (
         <div>No one — assignee yourself</div>
       );
+    console.log(issue.assignees[0]);
     return (
       <Fragment>
         <button
@@ -420,6 +433,11 @@ class _Assignee extends Component {
                 Assign up to 10 people to this issue
               </Typography>
               <TextInput />
+            </div>
+            <div>
+              <Button onClick={this.removeAllAssignees}>
+                clear all assignees
+              </Button>
             </div>
             <div className={classes.paperBottom}>
               {collaborators.map(collaborator => {
@@ -848,7 +866,14 @@ class _Body extends Component {
   };
 
   render() {
-    const { classes, user, body, updated_at, repoUserName } = this.props;
+    const {
+      classes,
+      user,
+      body,
+      updated_at,
+      repoUserName,
+      commentUserName
+    } = this.props;
     const { anchorEl, open } = this.state;
     let userStatus;
     if (repoUserName === user.username) {
