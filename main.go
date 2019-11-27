@@ -467,17 +467,20 @@ func postCollaborator(c *gin.Context, db *sql.DB) {
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
-	if userId == repoOwnerId {
-		_, err = db.Exec(`INSERT INTO collaborators ( repo_id , user_id ) VALUES ( $1 , $2) `, repoId, collaboratorUser.ID)
-		if err != nil {
-			fmt.Println(err)
-			c.AbortWithStatus(http.StatusInternalServerError)
-			return
-		}
-		c.Status(http.StatusCreated)
-	} else {
-		c.Status(http.StatusUnauthorized)
+
+	if userId != repoOwnerId {
+		c.Status(http.StatusForbidden)
+		return
 	}
+
+	_, err = db.Exec(`INSERT INTO collaborators ( repo_id , user_id ) VALUES ( $1 , $2) `, repoId, collaboratorUser.ID)
+	if err != nil {
+		fmt.Println(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	c.Status(http.StatusCreated)
+
 }
 
 type Assignee struct {
@@ -526,35 +529,36 @@ func postAssignee(c *gin.Context, db *sql.DB) {
 		return
 	}
 
-	if authorizedUserId == currentRepo.UserId {
-		for _, assigneeUsername := range assignee.Usernames {
-			assigneeUser, err := GetUserByUserName(db, assigneeUsername)
-			if err != nil {
-				fmt.Println(err)
-				c.AbortWithStatus(http.StatusInternalServerError)
-				return
-			}
+	if authorizedUserId != currentRepo.UserId {
+		c.Status(http.StatusForbidden)
+		return
+	}
 
-			_, err = db.Exec(`INSERT INTO assignees ( issue_id , user_id ) VALUES ( $1 , $2) `, issueId, assigneeUser.ID)
-			if err != nil {
-				fmt.Println(err)
-				c.AbortWithStatus(http.StatusInternalServerError)
-				return
-			}
-
-			err = CreateNotification(db, issueId, assigneeUser.ID, repoId)
-			if err != nil {
-				fmt.Println(err)
-				c.AbortWithStatus(http.StatusInternalServerError)
-				return
-			}
+	for _, assigneeUsername := range assignee.Usernames {
+		assigneeUser, err := GetUserByUserName(db, assigneeUsername)
+		if err != nil {
+			fmt.Println(err)
+			c.AbortWithStatus(http.StatusInternalServerError)
+			return
 		}
 
-		c.Status(http.StatusCreated)
+		_, err = db.Exec(`INSERT INTO assignees ( issue_id , user_id ) VALUES ( $1 , $2) `, issueId, assigneeUser.ID)
+		if err != nil {
+			fmt.Println(err)
+			c.AbortWithStatus(http.StatusInternalServerError)
+			return
+		}
 
-	} else {
-		c.Status(http.StatusUnauthorized)
+		err = CreateNotification(db, issueId, assigneeUser.ID, repoId)
+		if err != nil {
+			fmt.Println(err)
+			c.AbortWithStatus(http.StatusInternalServerError)
+			return
+		}
 	}
+
+	c.Status(http.StatusCreated)
+
 }
 
 func deleteCollaborator(c *gin.Context, db *sql.DB) {
@@ -581,17 +585,17 @@ func deleteCollaborator(c *gin.Context, db *sql.DB) {
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
-	if userId == repoOwnerId {
-		_, err = db.Exec(`DELETE FROM collaborators WHERE repo_id = $1 AND user_id= $2 `, repoId, collaboratorUser.ID)
-		if err != nil {
-			fmt.Println(err)
-			c.AbortWithStatus(http.StatusInternalServerError)
-			return
-		}
-		c.Status(http.StatusNoContent)
-	} else {
-		c.Status(http.StatusUnauthorized)
+	if userId != repoOwnerId {
+		c.Status(http.StatusForbidden)
+		return
 	}
+	_, err = db.Exec(`DELETE FROM collaborators WHERE repo_id = $1 AND user_id= $2 `, repoId, collaboratorUser.ID)
+	if err != nil {
+		fmt.Println(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	c.Status(http.StatusNoContent)
 }
 
 func deleteAssignee(c *gin.Context, db *sql.DB) {
@@ -631,25 +635,26 @@ func deleteAssignee(c *gin.Context, db *sql.DB) {
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
-	if authorizedUserId == currentRepo.UserId {
-		for _, assigneeUsername := range assignee.Usernames {
-			assigneeUser, err := GetUserByUserName(db, assigneeUsername)
-			if err != nil {
-				fmt.Println(err)
-				c.AbortWithStatus(http.StatusInternalServerError)
-				return
-			}
-
-			_, err = db.Exec(`DELETE FROM assignees WHERE issue_id = $1 AND user_id= $2 `, issueId, assigneeUser.ID)
-			if err != nil {
-				fmt.Println(err)
-				return
-			}
-		}
-		c.Status(http.StatusNoContent)
-	} else {
-		c.Status(http.StatusUnauthorized)
+	if authorizedUserId != currentRepo.UserId {
+		c.Status(http.StatusForbidden)
+		return
 	}
+
+	for _, assigneeUsername := range assignee.Usernames {
+		assigneeUser, err := GetUserByUserName(db, assigneeUsername)
+		if err != nil {
+			fmt.Println(err)
+			c.AbortWithStatus(http.StatusInternalServerError)
+			return
+		}
+
+		_, err = db.Exec(`DELETE FROM assignees WHERE issue_id = $1 AND user_id= $2 `, issueId, assigneeUser.ID)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+	}
+	c.Status(http.StatusNoContent)
 
 }
 

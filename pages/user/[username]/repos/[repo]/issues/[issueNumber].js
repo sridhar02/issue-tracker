@@ -338,8 +338,8 @@ class _Assignee extends Component {
 
   postYourSelfAsAssignee = async () => {
     const { addAssignees } = this.state;
-    const { repo, fetchIssue } = this.props;
-    let newAssignee = [repo.user.username];
+    const { authorizedUser, fetchIssue } = this.props;
+    let newAssignee = [authorizedUser.username];
     await this.postAssignee(newAssignee);
     await fetchIssue();
   };
@@ -389,7 +389,7 @@ class _Assignee extends Component {
   render() {
     const { classes, issue, collaborators } = this.props;
     const { anchorEl, open, addAssignees, removeAssignees } = this.state;
-    const AssigneeList =
+    const assigneeList =
       issue.assignees.length !== 0 ? (
         issue.assignees.map(assignee => (
           <div key={assignee.user.id}>
@@ -408,7 +408,6 @@ class _Assignee extends Component {
           </button>
         </div>
       );
-    console.log(issue.assignees[0]);
     return (
       <Fragment>
         <button
@@ -421,7 +420,7 @@ class _Assignee extends Component {
             <SettingsIcon />
           </div>
         </button>
-        <div>{AssigneeList}</div>
+        <div>{assigneeList}</div>
         <Popover
           open={open}
           anchorEl={anchorEl}
@@ -542,7 +541,14 @@ class _Sidebar extends Component {
   };
 
   render() {
-    const { classes, issue, fetchIssue, repo, collaborators } = this.props;
+    const {
+      classes,
+      issue,
+      fetchIssue,
+      repo,
+      collaborators,
+      authorizedUser
+    } = this.props;
     const lockButton = (
       <Button onClick={this.toggleLockIssue} className={classes.lockButton}>
         <LockIcon /> {issue.lock === LOCK_UNLOCK ? 'Lock' : 'Unlock'}
@@ -562,6 +568,7 @@ class _Sidebar extends Component {
             repo={repo}
             issue={issue}
             fetchIssue={fetchIssue}
+            authorizedUser={authorizedUser}
             collaborators={collaborators}
           />
         </div>
@@ -895,15 +902,14 @@ class _Body extends Component {
     const collaboratorNames = collaborators.map(
       collaborator => collaborator.user.username
     );
-    const userStatus =
-      collaboratorNames.includes(user.username)  ? (
-        <div>Collaborator</div>
-      ) : (
-        <div></div>
-      );
+    const userStatus = collaboratorNames.includes(user.username) ? (
+      <div>Collaborator</div>
+    ) : (
+      <div></div>
+    );
     const userInfo =
       repoUserName === user.username ? <div> Owner</div> : <div></div>;
-    console.log("owner",collaboratorNames);
+    console.log('owner', collaboratorNames);
     return (
       <div className={classes.content}>
         <div className={classes.issueHead}>
@@ -1028,7 +1034,8 @@ class _Issue extends Component {
       body: '',
       editTitle: false,
       comments: [],
-      collaborators: []
+      collaborators: [],
+      authorizedUser: undefined
     };
   }
 
@@ -1093,20 +1100,42 @@ class _Issue extends Component {
       console.log(error);
     }
   };
+  fetchUser = async () => {
+    const { username } = Router.router.query;
+    try {
+      const response = await axios.get(`/users/${username}`);
+      if (response.status === 200) {
+        this.setState({ authorizedUser: response.data });
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   componentDidMount() {
     const { username, repo, issueNumber } = Router.router.query;
     this.fetchIssue();
     this.fetchComments();
     this.fetchRepo();
-
+    this.fetchUser();
     this.fetchCollaborators();
   }
 
   render() {
-    const { issue, user, editTitle, repo, collaborators } = this.state;
+    const {
+      issue,
+      user,
+      editTitle,
+      repo,
+      collaborators,
+      authorizedUser
+    } = this.state;
     const { classes } = this.props;
-    if (issue === undefined || repo === undefined) {
+    if (
+      issue === undefined ||
+      repo === undefined ||
+      authorizedUser === undefined
+    ) {
       return null;
     }
     console.log(collaborators);
@@ -1143,6 +1172,7 @@ class _Issue extends Component {
                 </div>
                 <div className="col-lg-2">
                   <Sidebar
+                    authorizedUser={authorizedUser}
                     collaborators={collaborators}
                     repo={repo}
                     issue={issue}
