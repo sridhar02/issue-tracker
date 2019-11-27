@@ -71,8 +71,8 @@ const collaboratorStyles = theme => ({
 
 function _Collaborator({ collaborator, removeCollaborator, classes }) {
   return (
-    <div key={collaborator.user.name} className={classes.collaboratorDetails}>
-      <div key={collaborator.user.image}>
+    <div className={classes.collaboratorDetails}>
+      <div>
         <img
           src={collaborator.user.image}
           className={classes.collaboratorImage}
@@ -80,7 +80,6 @@ function _Collaborator({ collaborator, removeCollaborator, classes }) {
         <div>{collaborator.user.username}</div>
       </div>
       <button
-        key={collaborator.user.username}
         className={classes.closeButton}
         onClick={() => removeCollaborator(collaborator)}
       >
@@ -226,6 +225,7 @@ class _Collaborators extends Component {
       ) : (
         collaborators.map(collaborator => (
           <Collaborator
+            key={collaborator.user.id}
             collaborator={collaborator}
             removeCollaborator={this.removeCollaborator}
           />

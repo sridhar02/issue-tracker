@@ -26,16 +26,17 @@ import { Navbar, authHeaders } from '../../../../../../utils/utils.js';
 
 const commentStyles = theme => ({});
 
-function _Comment({ comments, classes }) {
+function _Comment({ comments, classes, collaborators, repoUserName }) {
   return (
     <div>
       {comments.map(comment => (
         <div key={comment.id}>
           <Body
-            commentUserName={comment.user.username}
+            collaborators={collaborators}
             user={comment.user}
             body={comment.body}
             updated_at={comment.created_at}
+            repoUserName={repoUserName}
           />
         </div>
       ))}
@@ -226,6 +227,22 @@ const assigneePopperStyles = theme => ({
   collaborator: {
     display: 'flex',
     justifyContent: 'flex-end'
+  },
+  removeAllAssignees: {
+    width: '100%',
+    '&:hover': {
+      backgroundColor: 'blue'
+    },
+    display: 'flex',
+    justifyContent: 'flex-start'
+  },
+  postYourSelfButton: {
+    border: 0,
+    padding: 0,
+    margin: 0,
+    fontStyle: 'normal',
+    backgroundColor: '#fff',
+    fontSize: '14px'
   }
 });
 
@@ -235,7 +252,6 @@ class _Assignee extends Component {
     this.state = {
       anchorEl: null,
       open: false,
-      collaborators: [],
       addAssignees: [],
       removeAssignees: []
     };
@@ -267,28 +283,8 @@ class _Assignee extends Component {
     }
   };
 
-  fetchCollaborators = async () => {
-    const { username, repo } = Router.router.query;
-    try {
-      const response = await axios.get(
-        `/repos/${username}/${repo}/collaborators`,
-        authHeaders()
-      );
-      if (response.status === 200) {
-        this.setState({
-          collaborators: response.data
-        });
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  componentDidMount() {
-    this.fetchCollaborators();
-  }
-
   postAssignee = async addAssignees => {
+    console.log(addAssignees);
     event.preventDefault();
     const { username, repo, issueNumber } = Router.router.query;
     try {
@@ -329,13 +325,23 @@ class _Assignee extends Component {
   removeAllAssignees = () => {
     const { removeAssignees } = this.state;
     const { issue } = this.props;
-    let allAssignees = [];
-    issue.assignees.forEach(assignee =>
-      allAssignees.push(assignee.user.username)
+    const allAssignees = issue.assignees.map(
+      assignee => assignee.user.username
     );
-    this.setState({
-      removeAssignees: allAssignees
-    });
+    this.setState(
+      {
+        removeAssignees: allAssignees
+      },
+      () => this.togglePopper()
+    );
+  };
+
+  postYourSelfAsAssignee = async () => {
+    const { addAssignees } = this.state;
+    const { repo, fetchIssue } = this.props;
+    let newAssignee = [repo.user.username];
+    await this.postAssignee(newAssignee);
+    await fetchIssue();
   };
 
   checkAssignee = collaborator => {
@@ -381,14 +387,8 @@ class _Assignee extends Component {
   };
 
   render() {
-    const { classes, issue } = this.props;
-    const {
-      anchorEl,
-      open,
-      collaborators,
-      addAssignees,
-      removeAssignees
-    } = this.state;
+    const { classes, issue, collaborators } = this.props;
+    const { anchorEl, open, addAssignees, removeAssignees } = this.state;
     const AssigneeList =
       issue.assignees.length !== 0 ? (
         issue.assignees.map(assignee => (
@@ -398,7 +398,15 @@ class _Assignee extends Component {
           </div>
         ))
       ) : (
-        <div>No one — assignee yourself</div>
+        <div>
+          No one —{' '}
+          <button
+            onClick={this.postYourSelfAsAssignee}
+            className={classes.postYourSelfButton}
+          >
+            assignee yourself
+          </button>
+        </div>
       );
     console.log(issue.assignees[0]);
     return (
@@ -435,7 +443,10 @@ class _Assignee extends Component {
               <TextInput />
             </div>
             <div>
-              <Button onClick={this.removeAllAssignees}>
+              <Button
+                onClick={this.removeAllAssignees}
+                className={classes.removeAllAssignees}
+              >
                 clear all assignees
               </Button>
             </div>
@@ -449,9 +460,11 @@ class _Assignee extends Component {
                     addAssignees.includes(collaborator.user.username)) &&
                   !removeAssignees.includes(collaborator.user.username);
                 return (
-                  <div className={classes.assigneeClick}>
+                  <div
+                    className={classes.assigneeClick}
+                    key={collaborator.user.username}
+                  >
                     <Button
-                      key={collaborator.user.username}
                       className={classes.collaboratorDetails}
                       onClick={() => this.checkAssignee(collaborator)}
                     >
@@ -460,13 +473,10 @@ class _Assignee extends Component {
                       </div>
                       <div className={classes.collaborator}>
                         <img
-                          key={collaborator.user.image}
                           src={collaborator.user.image}
                           className={classes.collaboratorImage}
                         />
-                        <div key={collaborator.user.username}>
-                          {collaborator.user.username}
-                        </div>
+                        <div>{collaborator.user.username}</div>
                       </div>
                     </Button>
                   </div>
@@ -532,7 +542,7 @@ class _Sidebar extends Component {
   };
 
   render() {
-    const { classes, issue, fetchIssue } = this.props;
+    const { classes, issue, fetchIssue, repo, collaborators } = this.props;
     const lockButton = (
       <Button onClick={this.toggleLockIssue} className={classes.lockButton}>
         <LockIcon /> {issue.lock === LOCK_UNLOCK ? 'Lock' : 'Unlock'}
@@ -548,7 +558,12 @@ class _Sidebar extends Component {
     return (
       <Fragment>
         <div className={classes.sidebar}>
-          <Assignee issue={issue} fetchIssue={fetchIssue} />
+          <Assignee
+            repo={repo}
+            issue={issue}
+            fetchIssue={fetchIssue}
+            collaborators={collaborators}
+          />
         </div>
         <div className={classes.sidebar}>Labels</div>
         <div className={classes.sidebar}>Projects</div>
@@ -864,7 +879,9 @@ class _Body extends Component {
       });
     }
   };
-
+  // if user.username is equal to repoUserName then we show owner .
+  // if user.usrname is in collaborators we show him as collaborator.
+  //
   render() {
     const {
       classes,
@@ -872,13 +889,21 @@ class _Body extends Component {
       body,
       updated_at,
       repoUserName,
-      commentUserName
+      collaborators
     } = this.props;
     const { anchorEl, open } = this.state;
-    let userStatus;
-    if (repoUserName === user.username) {
-      userStatus = <div>Owner</div>;
-    }
+    const collaboratorNames = collaborators.map(
+      collaborator => collaborator.user.username
+    );
+    const userStatus =
+      collaboratorNames.includes(user.username)  ? (
+        <div>Collaborator</div>
+      ) : (
+        <div></div>
+      );
+    const userInfo =
+      repoUserName === user.username ? <div> Owner</div> : <div></div>;
+    console.log("owner",collaboratorNames);
     return (
       <div className={classes.content}>
         <div className={classes.issueHead}>
@@ -893,6 +918,7 @@ class _Body extends Component {
           </div>
           <div className={classes.userSection}>
             {userStatus}
+            {userInfo}
             <button
               onClick={this.togglePopper}
               className={classes.optionsButton}
@@ -1001,7 +1027,8 @@ class _Issue extends Component {
       title: '',
       body: '',
       editTitle: false,
-      comments: []
+      comments: [],
+      collaborators: []
     };
   }
 
@@ -1050,19 +1077,39 @@ class _Issue extends Component {
     }
   };
 
+  fetchCollaborators = async () => {
+    const { username, repo } = Router.router.query;
+    try {
+      const response = await axios.get(
+        `/repos/${username}/${repo}/collaborators`,
+        authHeaders()
+      );
+      if (response.status === 200) {
+        this.setState({
+          collaborators: response.data
+        });
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   componentDidMount() {
     const { username, repo, issueNumber } = Router.router.query;
     this.fetchIssue();
     this.fetchComments();
     this.fetchRepo();
+
+    this.fetchCollaborators();
   }
 
   render() {
-    const { issue, user, editTitle, repo } = this.state;
+    const { issue, user, editTitle, repo, collaborators } = this.state;
     const { classes } = this.props;
     if (issue === undefined || repo === undefined) {
       return null;
     }
+    console.log(collaborators);
     return (
       <Fragment>
         <Navbar />
@@ -1077,12 +1124,17 @@ class _Issue extends Component {
               <div className="row">
                 <div className="col-lg-10">
                   <Body
+                    collaborators={collaborators}
                     user={issue.user}
                     body={issue.body}
                     updated_at={issue.updated_at}
                     repoUserName={repo.user.username}
                   />
-                  <Comment comments={this.state.comments} />
+                  <Comment
+                    comments={this.state.comments}
+                    collaborators={collaborators}
+                    repoUserName={repo.user.username}
+                  />
                   <PostComments
                     issue={issue}
                     fetchComments={this.fetchComments}
@@ -1090,7 +1142,12 @@ class _Issue extends Component {
                   />
                 </div>
                 <div className="col-lg-2">
-                  <Sidebar issue={issue} fetchIssue={this.fetchIssue} />
+                  <Sidebar
+                    collaborators={collaborators}
+                    repo={repo}
+                    issue={issue}
+                    fetchIssue={this.fetchIssue}
+                  />
                 </div>
               </div>
             </div>

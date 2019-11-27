@@ -488,13 +488,21 @@ type Assignee struct {
 
 func postAssignee(c *gin.Context, db *sql.DB) {
 
-	_, err := authorization(c, db)
+	authorizedUserId, err := authorization(c, db)
 	if err != nil {
 		return
 	}
+
 	username := c.Param("owner")
 	repoName := c.Param("repo")
 	issueNumber := c.Param("issue_number")
+
+	currentRepo, err := getCurrentRepo(db, username, repoName)
+	if err != nil {
+		fmt.Println(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
 
 	var issueId int
 	var repoId string
@@ -518,29 +526,35 @@ func postAssignee(c *gin.Context, db *sql.DB) {
 		return
 	}
 
-	for _, assigneeUsername := range assignee.Usernames {
-		assigneeUser, err := GetUserByUserName(db, assigneeUsername)
-		if err != nil {
-			fmt.Println(err)
-			c.AbortWithStatus(http.StatusInternalServerError)
-			return
+	if authorizedUserId == currentRepo.UserId {
+		for _, assigneeUsername := range assignee.Usernames {
+			assigneeUser, err := GetUserByUserName(db, assigneeUsername)
+			if err != nil {
+				fmt.Println(err)
+				c.AbortWithStatus(http.StatusInternalServerError)
+				return
+			}
+
+			_, err = db.Exec(`INSERT INTO assignees ( issue_id , user_id ) VALUES ( $1 , $2) `, issueId, assigneeUser.ID)
+			if err != nil {
+				fmt.Println(err)
+				c.AbortWithStatus(http.StatusInternalServerError)
+				return
+			}
+
+			err = CreateNotification(db, issueId, assigneeUser.ID, repoId)
+			if err != nil {
+				fmt.Println(err)
+				c.AbortWithStatus(http.StatusInternalServerError)
+				return
+			}
 		}
 
-		_, err = db.Exec(`INSERT INTO assignees ( issue_id , user_id ) VALUES ( $1 , $2) `, issueId, assigneeUser.ID)
-		if err != nil {
-			fmt.Println(err)
-			c.AbortWithStatus(http.StatusInternalServerError)
-			return
-		}
+		c.Status(http.StatusCreated)
 
-		err = CreateNotification(db, issueId, assigneeUser.ID, repoId)
-		if err != nil {
-			fmt.Println(err)
-			c.AbortWithStatus(http.StatusInternalServerError)
-			return
-		}
+	} else {
+		c.Status(http.StatusUnauthorized)
 	}
-	c.Status(http.StatusCreated)
 }
 
 func deleteCollaborator(c *gin.Context, db *sql.DB) {
@@ -581,7 +595,8 @@ func deleteCollaborator(c *gin.Context, db *sql.DB) {
 }
 
 func deleteAssignee(c *gin.Context, db *sql.DB) {
-	_, err := authorization(c, db)
+
+	authorizedUserId, err := authorization(c, db)
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -590,7 +605,12 @@ func deleteAssignee(c *gin.Context, db *sql.DB) {
 	username := c.Param("owner")
 	repoName := c.Param("repo")
 	issueNumber := c.Param("issue_number")
-
+	currentRepo, err := getCurrentRepo(db, username, repoName)
+	if err != nil {
+		fmt.Println(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
 	var issueId int
 	var repoId string
 
@@ -611,22 +631,25 @@ func deleteAssignee(c *gin.Context, db *sql.DB) {
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
+	if authorizedUserId == currentRepo.UserId {
+		for _, assigneeUsername := range assignee.Usernames {
+			assigneeUser, err := GetUserByUserName(db, assigneeUsername)
+			if err != nil {
+				fmt.Println(err)
+				c.AbortWithStatus(http.StatusInternalServerError)
+				return
+			}
 
-	for _, assigneeUsername := range assignee.Usernames {
-		assigneeUser, err := GetUserByUserName(db, assigneeUsername)
-		if err != nil {
-			fmt.Println(err)
-			c.AbortWithStatus(http.StatusInternalServerError)
-			return
+			_, err = db.Exec(`DELETE FROM assignees WHERE issue_id = $1 AND user_id= $2 `, issueId, assigneeUser.ID)
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
 		}
-
-		_, err = db.Exec(`DELETE FROM assignees WHERE issue_id = $1 AND user_id= $2 `, issueId, assigneeUser.ID)
-		if err != nil {
-			fmt.Println(err)
-			return
-		}
+		c.Status(http.StatusNoContent)
+	} else {
+		c.Status(http.StatusUnauthorized)
 	}
-	c.Status(http.StatusNoContent)
 
 }
 
