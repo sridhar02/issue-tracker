@@ -860,6 +860,10 @@ const bodyStyles = theme => ({
     border: 0,
     backgroundColor: '#f6f8fa',
     marginLeft: theme.spacing(2)
+  },
+  userStatus: {
+    border: '1px solid #ddd',
+    padding: theme.spacing(0.5)
   }
 });
 
@@ -903,12 +907,39 @@ class _Body extends Component {
       collaborator => collaborator.user.username
     );
     const userStatus = collaboratorNames.includes(user.username) ? (
-      <div>Collaborator</div>
+      <div className={classes.userStatus}>Collaborator</div>
     ) : (
       <div></div>
     );
+
     const userInfo =
-      repoUserName === user.username ? <div> Owner</div> : <div></div>;
+      repoUserName === user.username ? (
+        <div className={classes.userStatus}> Owner</div>
+      ) : (
+        <div></div>
+      );
+
+    const collaboratorPopoverMenu = collaboratorNames.includes(
+      user.username
+    ) ? (
+      <div>
+        <Button className={classes.popover}>Report Issue Content</Button>
+      </div>
+    ) : (
+      <div></div>
+    );
+
+    const ownerPopoverMenu =
+      repoUserName === user.username ? (
+        <div>
+          <Button className={classes.popover}>Edit</Button>
+          <Button className={classes.popover}>Delete</Button>
+          <Button className={classes.popover}>Report</Button>
+        </div>
+      ) : (
+        <div></div>
+      );
+
     console.log('owner', collaboratorNames);
     return (
       <div className={classes.content}>
@@ -950,12 +981,8 @@ class _Body extends Component {
               <div>
                 <Button className={classes.popover}>Quote reply</Button>
               </div>
-              <div>
-                <Button className={classes.popover}>Edit</Button>
-              </div>
-              <div>
-                <Button className={classes.popover}>Report Content</Button>
-              </div>
+              {collaboratorPopoverMenu}
+              {ownerPopoverMenu}
             </Popover>
           </div>
         </div>
