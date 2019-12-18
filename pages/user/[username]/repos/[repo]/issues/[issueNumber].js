@@ -491,6 +491,75 @@ class _Assignee extends Component {
 
 const Assignee = withStyles(assigneePopperStyles)(_Assignee);
 
+const labelStyles = theme => ({
+  labelButton: {
+    backgroundColor: '#fff',
+    border: 0,
+    marginBottom: theme.spacing(1),
+    width: '100%',
+    display: 'flex',
+    justifyContent: 'space-between',
+    '&:hover': {
+      border: 0
+    }
+  }
+});
+
+class _Labels extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      anchorEl: null,
+      open: false
+    };
+  }
+
+  togglePopper = async event => {
+    const { open } = this.state;
+    if (open) {
+      this.setState({
+        anchorEl: null,
+        open: !open
+      });
+    } else {
+      const { currentTarget } = event;
+      this.setState({
+        anchorEl: currentTarget,
+        open: !open
+      });
+    }
+  };
+
+  render() {
+    const { classes } = this.props;
+    const { anchorEl, open } = this.state;
+    return (
+      <Fragment>
+        <button className={classes.labelButton} onClick={this.togglePopper}>
+          labels {''}
+          <SettingsIcon />
+        </button>
+        <Popover
+          open={open}
+          anchorEl={anchorEl}
+          onClose={this.togglePopper}
+          anchorOrigin={{
+            vertical: 'bottom',
+            horizontal: 'right'
+          }}
+          transformOrigin={{
+            vertical: 'top',
+            horizontal: 'right'
+          }}
+        >
+          <Paper className={classes.popper}></Paper>
+        </Popover>
+      </Fragment>
+    );
+  }
+}
+const Labels = withStyles(labelStyles)(_Labels);
+
 const sidebarStyles = theme => ({
   sidebar: {
     padding: theme.spacing(1),
@@ -572,7 +641,9 @@ class _Sidebar extends Component {
             collaborators={collaborators}
           />
         </div>
-        <div className={classes.sidebar}>Labels</div>
+        <div className={classes.sidebar}>
+          <Labels />
+        </div>
         <div className={classes.sidebar}>Projects</div>
         <div className={classes.sidebar}>Milestone</div>
         <div className={classes.sidebar}>{lockButton}</div>

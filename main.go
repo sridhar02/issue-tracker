@@ -736,6 +736,12 @@ func getRepoNotifications(c *gin.Context, db *sql.DB) {
 
 }
 
+func getLabelsHandler(c *gin.Context,db *sql.DB ){ 
+
+
+
+
+}
 func main() {
 	rand.Seed(time.Now().UTC().UnixNano())
 	err := godotenv.Load()
@@ -780,6 +786,7 @@ func main() {
 	router.GET("/user/repos", func(c *gin.Context) { getAuthenticatedUserReposHandler(c, db) })
 	router.POST("/user/repos", func(c *gin.Context) { postRepoHandler(c, db) })
 	router.GET("/repos/:owner/:repo", func(c *gin.Context) { getRepoHandler(c, db) })
+	router.GET("/repos/:owner/:repo/labels", func(c *gin.Context) { getLabelsHandler(c,db) })
 	router.GET("/repos/:owner/:repo/issues", func(c *gin.Context) { getIssuesHandler(c, db) })
 	router.POST("/repos/:owner/:repo/issues", func(c *gin.Context) { postIssueHandler(c, db) })
 	router.GET("/repos/:owner/:repo/collaborators", func(c *gin.Context) { getCollaborators(c, db) })
