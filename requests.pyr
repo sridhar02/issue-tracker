@@ -194,3 +194,8 @@ get("http://localhost:8000/notifications",
 	})
 
 get("http://localhost:8000/repos/sridhar02/repo2")
+
+get("http://localhost:8000/repos/sridhar02/repo2/labels",
+	headers={
+	    "Authorization": "Bearer GLwbNaKqmjutiOEfJrwwloKUYlwagKzc"
+	})
