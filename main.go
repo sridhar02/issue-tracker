@@ -736,12 +736,61 @@ func getRepoNotifications(c *gin.Context, db *sql.DB) {
 
 }
 
-func getLabelsHandler(c *gin.Context,db *sql.DB ){ 
+func getLabelsHandler(c *gin.Context, db *sql.DB) {
+	_, err := authorization(c, db)
+	if err != nil {
+		return
+	}
+}
 
+func getLabelHandler(c *gin.Context, db *sql.DB) {
+	_, err := authorization(c, db)
+	if err != nil {
+		return
+	}
+}
 
+func postLabelHandler(c *gin.Context, db *sql.DB) {
 
+	_, err := authorization(c, db)
+	if err != nil {
+		return
+	}
+	username := c.Param("owner")
+	repoName := c.Param("repo")
+
+	currentRepo, err := getCurrentRepo(db, username, repoName)
+	if err != nil {
+		fmt.Println(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	label := Label{}
+	err = c.BindJSON(&label)
+	if err != nil {
+		fmt.Println(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	label.RepoId = currentRepo.RepoId
+
+	err = CreateLabel(db, label)
+	if err != nil {
+		fmt.Println(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	c.Status(http.StatusCreated)
 
 }
+
+func getIssueLabels(c *gin.Context, db *sql.DB) {
+
+}
+
 func main() {
 	rand.Seed(time.Now().UTC().UnixNano())
 	err := godotenv.Load()
@@ -786,7 +835,9 @@ func main() {
 	router.GET("/user/repos", func(c *gin.Context) { getAuthenticatedUserReposHandler(c, db) })
 	router.POST("/user/repos", func(c *gin.Context) { postRepoHandler(c, db) })
 	router.GET("/repos/:owner/:repo", func(c *gin.Context) { getRepoHandler(c, db) })
-	router.GET("/repos/:owner/:repo/labels", func(c *gin.Context) { getLabelsHandler(c,db) })
+	router.GET("/repos/:owner/:repo/labels", func(c *gin.Context) { getLabelsHandler(c, db) })
+	router.GET("/repos/:owner/:repo/labels/:name", func(c *gin.Context) { getLabelHandler(c, db) })
+	router.POST("/repos/:owner/:repo/labels", func(c *gin.Context) { postLabelHandler(c, db) })
 	router.GET("/repos/:owner/:repo/issues", func(c *gin.Context) { getIssuesHandler(c, db) })
 	router.POST("/repos/:owner/:repo/issues", func(c *gin.Context) { postIssueHandler(c, db) })
 	router.GET("/repos/:owner/:repo/collaborators", func(c *gin.Context) { getCollaborators(c, db) })
@@ -800,6 +851,7 @@ func main() {
 	router.PUT("/repos/:owner/:repo/issues/:issue_number/lock", func(c *gin.Context) { putLockHandler(c, db) })
 	router.GET("/repos/:owner/:repo/issues/:issue_number/comments", func(c *gin.Context) { getCommentsHandler(c, db) })
 	router.POST("/repos/:owner/:repo/issues/:issue_number/comments", func(c *gin.Context) { postCommentHandler(c, db) })
+	router.GET("/repos/:owner/:repo/issues/:issue_number/labels", func(c *gin.Context) { getIssueLabels(c, db) })
 	router.GET("/notifications", func(c *gin.Context) { getNotifications(c, db) })
 	router.GET("/repos/:owner/:repo/notifications", func(c *gin.Context) { getRepoNotifications(c, db) })
 	stylesRouter := gin.Default()
