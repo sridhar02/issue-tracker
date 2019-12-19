@@ -737,10 +737,49 @@ func getRepoNotifications(c *gin.Context, db *sql.DB) {
 }
 
 func getLabelsHandler(c *gin.Context, db *sql.DB) {
+
 	_, err := authorization(c, db)
 	if err != nil {
 		return
 	}
+
+	username := c.Param("owner")
+	repoName := c.Param("repo")
+
+	currentRepo, err := getCurrentRepo(db, username, repoName)
+	if err != nil {
+		fmt.Println(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	rows, err := db.Query(`SELECT id FROM labels WHERE repo_id = $1`, currentRepo.RepoId)
+	if err != nil {
+		fmt.Println(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	labels := []Label{}
+
+	for rows.Next() {
+		var Id int
+		err = rows.Scan(&Id)
+		if err != nil {
+			fmt.Println(err)
+			c.AbortWithStatus(http.StatusInternalServerError)
+			return
+		}
+		label, err := GetLabel(db, Id)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		labels = append(labels, label)
+	}
+
+	c.JSON(http.StatusOK, labels)
+
 }
 
 func getLabelHandler(c *gin.Context, db *sql.DB) {
