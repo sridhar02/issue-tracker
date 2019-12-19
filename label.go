@@ -10,13 +10,14 @@ type Label struct {
 	Name        string `json:"name,omitempty"`
 	Description string `json:"description,omitempty"`
 	Color       string `json:"color,omitempty"`
+	RepoId      string `json:"repo_id,omitempty"`
 }
 
 func GetLabel(db *sql.DB, Id int) (Label, error) {
 
 	var name, description, color string
 
-	row := db.QueryRow("SELECT  name,description,color FROM labels WHERE id=$1", Id)
+	row := db.QueryRow("SELECT name, description, color FROM labels WHERE id=$1", Id)
 	err := row.Scan(&name, &description, &color)
 	if err != nil {
 		return Label{}, err
@@ -34,7 +35,7 @@ func GetLabel(db *sql.DB, Id int) (Label, error) {
 
 func CreateLabel(db *sql.DB, label Label) error {
 
-	_, err := db.Exec(`INSERT INTO labels ( name, description,color) VALUES ( $1, $2, $3 ) `, label.Name, label.Description, label.Color)
+	_, err := db.Exec(`INSERT INTO labels ( name, description,color ,repo_id) VALUES ( $1, $2, $3,$4 ) `, label.Name, label.Description, label.Color, label.RepoId)
 	if err != nil {
 		fmt.Println(err)
 		return err
@@ -54,5 +55,3 @@ func DeleteLabel(db *sql.DB, id int) error {
 
 	return nil
 }
-
-
