@@ -19,7 +19,7 @@ import Fade from '@material-ui/core/Fade';
 import Paper from '@material-ui/core/Paper';
 import PropTypes from 'prop-types';
 
-import { TextInput } from '@primer/components';
+import { TextInput } from '@primer/react';
 
 const menuStyles = theme => ({
   dashboard: {

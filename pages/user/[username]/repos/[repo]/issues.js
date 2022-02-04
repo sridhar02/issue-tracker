@@ -8,7 +8,7 @@ import { withStyles } from '@material-ui/core/styles';
 import { Button, Typography,TextField } from '@material-ui/core';
 import cx from 'classnames';
 
-import { TextInput, ButtonPrimary,UnderlineNav } from '@primer/components';
+import { TextInput, ButtonPrimary,UnderlineNav } from '@primer/react';
 
 import { Navbar, authHeaders } from '../../../../../utils/utils.js';
 

@@ -9,7 +9,7 @@ import { withStyles } from '@material-ui/core/styles';
 import { Button, Typography } from '@material-ui/core';
 import GitHubIcon from '@material-ui/icons/GitHub';
 
-import { TextInput, ButtonPrimary } from '@primer/components';
+import { TextInput, ButtonPrimary } from '@primer/react';
 
 const navbarStyles = theme => ({
   navbar: {

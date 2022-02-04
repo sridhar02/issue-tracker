@@ -8,7 +8,7 @@ import { TextField, Button, Typography } from '@material-ui/core';
 import cx from 'classnames';
 import CloseIcon from '@material-ui/icons/Close';
 
-import { TextInput, ButtonPrimary } from '@primer/components';
+import { TextInput, ButtonPrimary } from '@primer/react';
 
 import { Navbar, authHeaders } from '../../../../../utils/utils.js';
 

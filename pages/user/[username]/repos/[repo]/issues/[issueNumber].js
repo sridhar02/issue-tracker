@@ -20,7 +20,7 @@ import ErrorOutlineIcon from '@material-ui/icons/ErrorOutline';
 import CheckIcon from '@material-ui/icons/Check';
 import MoreHorizIcon from '@material-ui/icons/MoreHoriz';
 
-import { TextInput } from '@primer/components';
+import { TextInput } from '@primer/react';
 
 import { Navbar, authHeaders } from '../../../../../../utils/utils.js';
 

@@ -7,7 +7,7 @@ import cx from 'classnames';
 import { withStyles } from '@material-ui/core/styles';
 import { Button, Typography, TextField } from '@material-ui/core';
 
-import { TabNav, UnderlineNav } from '@primer/components';
+import { TabNav, UnderlineNav } from '@primer/react';
 
 import { Navbar } from '../../utils/utils.js';
 

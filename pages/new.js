@@ -15,7 +15,7 @@ import FormControlLabel from '@material-ui/core/FormControlLabel';
 import FormControl from '@material-ui/core/FormControl';
 import FormLabel from '@material-ui/core/FormLabel';
 
-import { TextInput } from '@primer/components';
+import { TextInput } from '@primer/react';
 
 import { Navbar, authHeaders } from '../utils/utils.js';
 
