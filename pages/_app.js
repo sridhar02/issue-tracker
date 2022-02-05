@@ -3,14 +3,14 @@ import App from 'next/app';
 
 import { ThemeProvider } from '@material-ui/styles';
 
-import { createMuiTheme } from '@material-ui/core/styles';
+import { createTheme } from '@material-ui/core/styles';
 import blue from '@material-ui/core/colors/blue';
 
 import axios from 'axios';
 
 axios.defaults.baseURL = process.env.API_URL;
 
-export const theme = createMuiTheme({
+export const theme = createTheme({
   palette: {
     primary: {
       main: '#00F'

@@ -62,7 +62,7 @@ import { TextInput, ButtonPrimary } from '@primer/react';
 //   }
 // });
 
-const loginStyles = theme => ({
+const useLoginStyles = makeStyles((theme) =>({
   mainSection: {
     margin: theme.spacing(1),
     [theme.breakpoints.up('md')]: {
@@ -111,13 +111,14 @@ const loginStyles = theme => ({
   Input: {
     marginTop: theme.spacing(1)
   }
-});
+}));
 
 
 
-function _Login({classes}){
+function Login(){
   const [username,setUsername] = useState('')
   const [password,setPassword] = useState('')
+  const classes = useLoginStyles()
 
   const handleSubmit = async event => {
     event.preventDefault();
@@ -202,6 +203,6 @@ function _Login({classes}){
 
 }
 
-const Login = withStyles(loginStyles)(_NewLogin);
+// const Login = withStyles(loginStyles)(_Login);
 
 export default Login;
