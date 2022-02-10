@@ -1,0 +1,14 @@
+{
+	"editor.detectIndentation": false,
+	"prettier.tabWidth": 2,
+	"prettier.useTabs": true,
+	"prettier.jsxSingleQuote": false,
+	"prettier.singleQuote": false,
+	"prettier.semi": true,
+	"prettier.printWidth": 80,
+	"prettier.arrowParens": "always",
+	"editor.insertSpaces": false,
+	"editor.defaultFormatter": "esbenp.prettier-vscode",
+	"files.autoSave": "onFocusChange",
+	"editor.formatOnSave": true
+}
