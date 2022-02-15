@@ -1,20 +1,15 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Router from "next/router";
-import Link from "next/link";
 import axios from "axios";
 import cx from "classnames";
 
-import { withStyles } from "@material-ui/core/styles";
 import { Button, Typography } from "@material-ui/core";
 import TextField from "@material-ui/core/TextField";
-import Input from "@material-ui/core/Input";
 import Radio from "@material-ui/core/Radio";
 import RadioGroup from "@material-ui/core/RadioGroup";
-import FormHelperText from "@material-ui/core/FormHelperText";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
 import FormControl from "@material-ui/core/FormControl";
 import FormLabel from "@material-ui/core/FormLabel";
-
 import { TextInput } from "@primer/react";
 
 import { Navbar, authHeaders } from "../utils/utils.js";
@@ -108,9 +103,6 @@ const NewRepo = async () => {
 			console.log(error);
 		}
 	};
-	// componentDidMount() {
-	// 	fetchUser();
-	// }
 
 	const handleSubmit = async (event) => {
 		event.preventDefault();
@@ -131,6 +123,10 @@ const NewRepo = async () => {
 			console.log(error);
 		}
 	};
+
+	useEffect(() => {
+		fetchUser();
+	}, []);
 
 	if (user === undefined) {
 		return null;

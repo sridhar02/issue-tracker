@@ -1,4 +1,4 @@
-import React, { Component, Fragment } from "react";
+import React, { useEffect } from "react";
 import Router from "next/router";
 
 const Index = () => {
@@ -6,7 +6,7 @@ const Index = () => {
 		Router.push("/join");
 	}, []);
 
-	return <div></div>;
+	return <></>;
 };
 
 export default Index;
