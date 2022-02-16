@@ -9,7 +9,7 @@ import { Button, Typography, TextField } from "@material-ui/core";
 
 import { TabNav, UnderlineNav } from "@primer/react";
 
-import { Navbar } from "../../utils/utils.js";
+import { Navbar } from "../../utils/utils";
 
 import { IUser } from "../types";
 

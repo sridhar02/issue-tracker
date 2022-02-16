@@ -10,7 +10,7 @@ import CloseIcon from '@material-ui/icons/Close';
 
 import { TextInput, ButtonPrimary } from '@primer/react';
 
-import { Navbar, authHeaders } from '../../../../../utils/utils.js';
+import { Navbar, authHeaders } from '../../../../../utils/utils';
 
 const collaboratorsStyles = theme => ({
   container: {

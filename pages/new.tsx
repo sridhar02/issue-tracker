@@ -12,7 +12,7 @@ import FormControl from "@material-ui/core/FormControl";
 import FormLabel from "@material-ui/core/FormLabel";
 import { TextInput } from "@primer/react";
 
-import { Navbar, authHeaders } from "../utils/utils.js";
+import { Navbar, authHeaders } from "../utils/utils";
 import { makeStyles } from "@material-ui/core";
 
 const useRepoStyles = makeStyles((theme) => ({

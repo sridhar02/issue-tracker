@@ -158,17 +158,13 @@ export const Navbar = () => {
 	};
 
 	const handleClick = (event) => {
-		this.setState({
-			navbar: !this.state.navbar,
-		});
+		setNavbar(!navbar);
 	};
 
 	const handleClickPoper = (event) => {
 		const { currentTarget } = event;
-		this.setState((state) => ({
-			anchorEl: currentTarget,
-			open: !state.open,
-		}));
+		setAnchorEl(currentTarget);
+		setOpen(!open);
 	};
 
 	const handleSignout = () => {

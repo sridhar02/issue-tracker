@@ -22,7 +22,7 @@ import MoreHorizIcon from '@material-ui/icons/MoreHoriz';
 
 import { TextInput } from '@primer/react';
 
-import { Navbar, authHeaders } from '../../../../../../utils/utils.js';
+import { Navbar, authHeaders } from '../../../../../../utils/utils';
 
 const commentStyles = theme => ({});
 
