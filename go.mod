@@ -3,7 +3,7 @@ module issue_tracker
 require (
 	github.com/Masterminds/squirrel v1.1.0
 	github.com/gin-contrib/cors v1.3.0
-	github.com/gin-gonic/gin v1.7.0
+	github.com/gin-gonic/gin v1.7.7
 	github.com/go-sql-driver/mysql v1.6.0 // indirect
 	github.com/google/uuid v1.1.1
 	github.com/joho/godotenv v1.3.0
